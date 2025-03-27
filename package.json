@@ -1,0 +1,44 @@
+{
+  "name": "trump-fun-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "prettier --log-level warn --ignore-path .gitignore '**/*.{js,ts,sol}' --write",
+    "format:fix": "prettier --log-level warn --ignore-path .gitignore '**/*.{js,ts,sol}' --write",
+    "lint": "eslint --log-level warn --ignore-path .gitignore '**/*.{js,ts,sol}'",
+    "lint:fix": "eslint --log-level warn --ignore-path .gitignore '**/*.{js,ts,sol}' --fix",
+    "lint:ts": "eslint --log-level warn --ignore-path .gitignore '**/*.{js,ts}'",
+    "lint:ts:fix": "eslint --log-level warn --ignore-path .gitignore '**/*.{js,ts}' --fix",
+    "dev:agent": "bun run --cwd packages/agent dev",
+    "dev:frontend": "bun run --cwd packages/frontend dev",
+    "dev:tg-bot": "bun run --cwd packages/tg-bot dev",
+    "build": "bun run build:common && bun run build:agent && bun run build:frontend && bun run build:tg-bot && bun run build:contracts",
+    "build:common": "bun run --cwd packages/common build",
+    "build:agent": "bun run --cwd packages/agent build",
+    "build:frontend": "bun run --cwd packages/frontend build",
+    "build:tg-bot": "bun run --cwd packages/tg-bot build",
+    "build:contracts": "bun run --cwd packages/contracts build",
+    "deploy:agent": "bun run --cwd packages/agent deploy",
+    "deploy:frontend": "bun run --cwd packages/frontend deploy",
+    "deploy:tg-bot": "bun run --cwd packages/tg-bot deploy",
+    "run:bet-grading": "bun run --cwd packages/agent bet-grading",
+    "run:pool-creation": "bun run --cwd packages/agent pool-creation",
+    "codegen": "bun run --cwd packages/common codegen",
+    "db-types": "bun run --cwd packages/common db-types",
+    "prepare": "husky",
+    "lint-staged": "lint-staged",
+    "fix:unused": "eslint --fix --ext .ts,.tsx ."
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "prettier-plugin-solidity": "^1.4.2",
+    "eslint": "^9.23.0",
+    "eslint-config-prettier": "^9.1.0",
+    "lint-staged": "^15.5.0"
+  }
+}

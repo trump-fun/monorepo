@@ -1,0 +1,180 @@
+enum PoolStatus {
+  NONE
+  PENDING
+  GRADED
+  REGRADED
+}
+
+enum TokenType {
+  USDC
+  POINTS
+}
+
+type Bet @entity {
+  id: String!
+  betId: BigInt! # uint256
+  user: Bytes! # address - this represents the user's address
+  option: BigInt! # uint256
+  amount: BigInt! # uint256
+  poolId: BigInt! # uint256
+  createdAt: BigInt!
+  updatedAt: BigInt!
+  isWithdrawn: Boolean!
+  tokenType: TokenType!
+  pool: Pool!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type Pool @entity {
+  id: String!
+  poolId: BigInt! # uint256
+  question: String! # string
+  options: [String!]! # string[2]
+  usdcBetTotals: [BigInt!]! # uint256[2]
+  pointsBetTotals: [BigInt!]! # uint256[2]
+  usdcVolume: BigInt! # Total USDC bet volume across all options
+  pointsVolume: BigInt! # Total POINTS bet volume across all options
+  betsCloseAt: BigInt! # uint40
+  winningOption: BigInt! # uint256
+  status: PoolStatus!
+  isDraw: Boolean!
+  createdAt: BigInt!
+  closureCriteria: String!
+  closureInstructions: String!
+  originalTruthSocialPostId: String!
+  imageUrl: String! # URL of the image associated with the pool
+  bets: [Bet!]! @derivedFrom(field: "pool")
+
+  createdBlockNumber: BigInt!
+  createdBlockTimestamp: BigInt!
+  createdTransactionHash: Bytes!
+  lastUpdatedBlockNumber: BigInt!
+  lastUpdatedBlockTimestamp: BigInt!
+  lastUpdatedTransactionHash: Bytes!
+  gradedBlockNumber: BigInt!
+  gradedBlockTimestamp: BigInt!
+  gradedTransactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type BetPlaced @entity(immutable: true) {
+  id: Bytes!
+  betId: BigInt! # uint256
+  poolId: BigInt! # uint256
+  user: Bytes! # address
+  optionIndex: BigInt! # uint256
+  amount: BigInt! # uint256
+  tokenType: Int! # uint8
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type BetWithdrawal @entity(immutable: true) {
+  id: Bytes!
+  user: Bytes! # address
+  betId: BigInt! # uint256
+  amount: BigInt! # uint256
+  tokenType: Int! # uint8
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type PayoutClaimed @entity(immutable: true) {
+  id: Bytes!
+  betId: BigInt! # uint256
+  poolId: BigInt! # uint256
+  user: Bytes! # address
+  amount: BigInt! # uint256
+  tokenType: Int! # uint8
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  bet: Bet!
+  pool: Pool!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type PoolClosed @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  selectedOption: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type PoolCreated @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  params_question: String! # string
+  params_options: [String!]! # string[2]
+  params_betsCloseAt: BigInt! # uint40
+  params_closureCriteria: String! # string
+  params_closureInstructions: String! # string
+  params_originalTruthSocialPostId: String! # string
+  params_imageUrl: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type Withdrawal @entity(immutable: true) {
+  id: Bytes!
+  user: Bytes! # address
+  amount: BigInt! # uint256
+  tokenType: Int! # uint8
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}
+
+type PoolImageUrlSet @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  imageUrl: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+
+  chainName: String!
+  chainId: BigInt!
+}

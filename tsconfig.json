@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@trump-fun/common/*": [
+        "packages/common/src/*"
+      ],
+      "@trump-fun/agent/*": [
+        "packages/agent/src/*"
+      ],
+      "@trump-fun/contracts/*": [
+        "packages/contracts/src/*"
+      ],
+      "@trump-fun/frontend/*": [
+        "packages/frontend/src/*"
+      ],
+      "@trump-fun/tg-bot/*": [
+        "packages/tg-bot/src/*"
+      ]
+    }
+  }
+}
