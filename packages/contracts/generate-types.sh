@@ -22,6 +22,7 @@ mkdir -p ../common/abi
 
 # Copy generated types to frontend, backend, and common
 echo "Copying types to frontend, backend, and common directory..."
-cp types/generated.ts ../common/abi/contract.types.ts
+mv types/generated.ts ../common/abi/contract.types.ts
+rm -rf types
 
 echo "✨ Types generated and copied successfully!"
