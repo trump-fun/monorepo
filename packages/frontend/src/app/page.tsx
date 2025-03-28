@@ -37,7 +37,7 @@ export default function Home() {
       }
 
       // Sleep for 2 seconds to ensure the balance is updated
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       fetchBalance();
     } catch (error) {
       console.error('Error in handleTopUp:', error);
@@ -80,40 +80,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {/* TODO: Delete me or fix. This thing just doesn't look good */}
-        {/* <section className='bg-muted/50 py-8'>
-          <div className='container px-4 md:px-6'>
-            <div className='grid gap-4 lg:grid-cols-3 lg:gap-8'>
-              <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                <div className='rounded-full bg-orange-100 p-3'>
-                  <CheckCircle className='h-5 w-5 text-orange-500' />
-                </div>
-                <h3 className='text-xl font-bold'>Predict</h3>
-                <p className='text-muted-foreground text-sm'>
-                  Bet on what Trump will tweet, say, or do next.
-                </p>
-              </div>
-              <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                <div className='rounded-full bg-orange-100 p-3'>
-                  <DollarSign className='h-5 w-5 text-orange-500' />
-                </div>
-                <h3 className='text-xl font-bold'>Earn</h3>
-                <p className='text-muted-foreground text-sm'>
-                  Win big when your predictions come true.
-                </p>
-              </div>
-              <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                <div className='rounded-full bg-orange-100 p-3'>
-                  <Users className='h-5 w-5 text-orange-500' />
-                </div>
-                <h3 className='text-xl font-bold'>Connect</h3>
-                <p className='text-muted-foreground text-sm'>
-                  Join the community and discuss the latest happenings.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section> */}
 
         <section className='py-12'>
           <div className='container px-4 md:px-6'>

@@ -1,6 +1,12 @@
 'use client';
 
-import { POINTS_ADDRESS, TokenType, USDC_ADDRESS } from '@trump-fun/common';
+import {
+  POINTS_ADDRESS,
+  POINTS_DECIMALS,
+  TokenType,
+  USDC_ADDRESS,
+  USDC_DECIMALS,
+} from '@trump-fun/common';
 import Image from 'next/image';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Address } from 'viem';
@@ -25,6 +31,7 @@ interface TokenContextType {
   getTokenAddress: () => Address | null;
   tokenSymbol: string;
   tokenLogo: React.ReactNode;
+  tokenDecimals: number;
 }
 
 // Create context with default values
@@ -34,6 +41,7 @@ const TokenContext = createContext<TokenContextType>({
   getTokenAddress: () => null,
   tokenSymbol: TOKEN_SYMBOLS[TokenType.Usdc].symbol,
   tokenLogo: TOKEN_SYMBOLS[TokenType.Usdc].logo,
+  tokenDecimals: USDC_DECIMALS,
 });
 
 export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
@@ -42,6 +50,7 @@ export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
   // Get token information
   const tokenSymbol = TOKEN_SYMBOLS[tokenType].symbol;
   const tokenLogo = TOKEN_SYMBOLS[tokenType].logo;
+  const tokenDecimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
 
   // Function to get token address for current chain
   const getTokenAddress = (): Address | null => {
@@ -68,12 +77,13 @@ export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [tokenType]);
 
-  const value = {
+  const value: TokenContextType = {
     tokenType,
     setTokenType,
     getTokenAddress,
     tokenSymbol,
     tokenLogo,
+    tokenDecimals,
   };
 
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;

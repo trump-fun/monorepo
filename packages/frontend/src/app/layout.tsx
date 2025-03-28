@@ -6,10 +6,10 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TokenProvider } from '@/hooks/useTokenContext';
 import { Analytics } from '@vercel/analytics/react';
+import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
 import './globals.css';
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
 
 export const metadata: Metadata = {
   title: "Trump.fun - Predict The Donald's Next Move",

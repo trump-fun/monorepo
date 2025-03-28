@@ -1,10 +1,10 @@
 'use client';
 
-import { POINTS_ADDRESS, TokenType, USDC_DECIMALS } from '@trump-fun/common';
+import { TokenType, erc20Abi } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import { type Address } from 'viem';
-import { useBalance } from 'wagmi';
-import { GetBalanceData } from 'wagmi/query';
+import { usePublicClient } from 'wagmi';
+import { useNetwork } from './useNetwork';
 import { useTokenContext } from './useTokenContext';
 import { useWalletAddress } from './useWalletAddress';
 
@@ -13,92 +13,129 @@ interface UseTokenBalanceOptions {
   enabled?: boolean;
 }
 
+interface TokenBalanceData {
+  value: bigint;
+  decimals: number;
+  symbol: string;
+  formatted: string;
+}
+
 /**
- * A custom hook to fetch token balances using wagmi with Privy integration
+ * A custom hook to fetch token balances directly using contract reads
  */
-export const useTokenBalance = (tokenAddress?: Address, options: UseTokenBalanceOptions = {}) => {
+export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
+  const { usdcAddress, pointsAddress } = useNetwork();
   const { address, isConnected, chainId } = useWalletAddress();
-  const { tokenType, getTokenAddress, tokenSymbol, tokenLogo } = useTokenContext();
+  const { tokenType, tokenSymbol, tokenLogo, tokenDecimals } = useTokenContext();
+  const publicClient = usePublicClient();
 
-  // Store separate balances for each token type to avoid mixing them up
-  const [usdcBalance, setUsdcBalance] = useState<GetBalanceData>();
-  const [nativeBalance, setNativeBalance] = useState<GetBalanceData>();
-
-  // Track last token type to detect changes
-  const [lastTokenType, setLastTokenType] = useState<TokenType | null>(null);
-
-  // Get the correct token address based on token type
-  let finalTokenAddress: Address | undefined;
-  if (tokenType === TokenType.Points) {
-    // For POINTS (native token), use undefined to fetch native balance
-    finalTokenAddress = POINTS_ADDRESS;
-  } else {
-    // For USDC, use provided address or look it up from the token context
-    finalTokenAddress = tokenAddress || (chainId ? getTokenAddress() || undefined : undefined);
-  }
+  // Balance state
+  const [balance, setBalance] = useState<TokenBalanceData | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   // Only fetch if wallet is connected
   const shouldFetch = Boolean(isConnected && address && options.enabled !== false);
 
-  // Get USDC balance
-  const usdcBalanceResult = useBalance({
-    address: shouldFetch && tokenType === TokenType.Usdc ? address : undefined,
-    token: shouldFetch && tokenType === TokenType.Usdc ? finalTokenAddress : undefined,
-    chainId: shouldFetch ? chainId : undefined,
-  });
+  // Get token address based on current token type
+  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : pointsAddress;
 
-  // Get native token balance (ETH/POINTS)
-  const nativeBalanceResult = useBalance({
-    address: shouldFetch && tokenType === TokenType.Points ? address : undefined,
-    token: shouldFetch && tokenType === TokenType.Points ? finalTokenAddress : undefined,
-    chainId: shouldFetch ? chainId : undefined,
-  });
-
-  // Reset on token type change
+  // Fetch balance from contract
   useEffect(() => {
-    if (lastTokenType !== null && lastTokenType !== tokenType) {
-      // Reset any token-specific state if needed
+    // Skip if not ready to fetch
+    if (!shouldFetch || !publicClient || !tokenAddress || !address) {
+      return;
     }
-    setLastTokenType(tokenType);
-  }, [tokenType, lastTokenType]);
 
-  // Store successful balances
-  useEffect(() => {
-    if (usdcBalanceResult.isSuccess && usdcBalanceResult.data) {
-      setUsdcBalance(usdcBalanceResult.data);
-    }
-  }, [usdcBalanceResult.isSuccess, usdcBalanceResult.data]);
+    const fetchBalance = async () => {
+      setIsLoading(true);
+      setIsError(false);
 
-  useEffect(() => {
-    if (nativeBalanceResult.isSuccess && nativeBalanceResult.data) {
-      setNativeBalance(nativeBalanceResult.data);
-    }
-  }, [nativeBalanceResult.isSuccess, nativeBalanceResult.data]);
+      try {
+        const tokenAddressHex = tokenAddress as Address;
+        const balanceResult = await publicClient.readContract({
+          abi: erc20Abi,
+          address: tokenAddressHex,
+          functionName: 'balanceOf',
+          args: [address],
+        });
 
-  // Get the appropriate balance object based on token type
-  const activeResult = tokenType === TokenType.Points ? nativeBalanceResult : usdcBalanceResult;
-  const cachedBalance = tokenType === TokenType.Points ? nativeBalance : usdcBalance;
+        // Store result
+        const balanceValue = balanceResult as bigint;
 
-  // Choose current balance or fallback to cached
-  const finalBalance = activeResult.data || cachedBalance;
+        console.log('balanceValue useEffect', balanceValue);
+        setBalance({
+          value: balanceValue,
+          decimals: tokenDecimals,
+          symbol: tokenSymbol,
+          formatted: (balanceValue / BigInt(10 ** tokenDecimals)).toLocaleString(),
+        });
+      } catch (error) {
+        console.error('Error fetching token balance:', error);
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Get token decimals (6 for USDC, 18 for native tokens but display only 4 decimals)
-  const tokenDecimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : 18;
-  // Don't show any decimals in the display (no cents allowed)
+    fetchBalance();
+  }, [
+    shouldFetch,
+    publicClient,
+    tokenAddress,
+    address,
+    tokenType,
+    tokenDecimals,
+    tokenSymbol,
+    chainId,
+  ]);
 
   // Format balance with proper decimal precision - no decimals for display
-  const formattedBalance = finalBalance?.value
-    ? Math.floor(Number(finalBalance.value) / Math.pow(10, finalBalance.decimals)).toString()
+  const formattedBalance = balance?.value
+    ? (balance.value / BigInt(10 ** balance.decimals)).toLocaleString()
     : '0';
 
-  // Determine loading and error states
-  const isLoading = activeResult.isLoading;
-  const isError = activeResult.isError;
-  const refetch = activeResult.refetch;
+  const refetch = async () => {
+    // Reset error state
+    setIsError(false);
+
+    // Skip if not ready to fetch
+    if (!shouldFetch || !publicClient || !tokenAddress || !address) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const tokenAddressHex = tokenAddress as Address;
+      const balanceResult = await publicClient.readContract({
+        abi: erc20Abi,
+        address: tokenAddressHex,
+        functionName: 'balanceOf',
+        args: [address],
+      });
+
+      // Store result
+      const balanceValue = balanceResult as bigint;
+
+      console.log('balanceValue', balanceValue);
+      setBalance({
+        value: balanceValue,
+        decimals: tokenDecimals,
+        symbol: tokenSymbol,
+        formatted: (balanceValue / BigInt(10 ** tokenDecimals)).toLocaleString(),
+      });
+    } catch (error) {
+      console.error('Error fetching token balance:', error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
     // Balance data
-    balance: finalBalance,
+    balance,
     isError,
     isLoading,
     refetch,
@@ -106,7 +143,7 @@ export const useTokenBalance = (tokenAddress?: Address, options: UseTokenBalance
     // Enhanced fields
     formattedBalance,
     symbol: tokenSymbol,
-    decimals: finalBalance?.decimals || tokenDecimals,
+    decimals: tokenDecimals,
     tokenLogo,
     hasValidWallet: shouldFetch,
   };

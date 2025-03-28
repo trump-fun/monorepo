@@ -98,6 +98,7 @@ pm2 start --interpreter ~/.bun/bin/bun index.ts
 ## Integration with Trump.fun Platform
 
 The Telegram bot integrates with other Trump.fun components:
+
 - Connects to the same blockchain contracts as the frontend
 - Uses the AI agent for generating Trump-style responses
 - Synchronizes user accounts across platforms

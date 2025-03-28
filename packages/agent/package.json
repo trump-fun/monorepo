@@ -36,6 +36,7 @@
     "@langchain/openai": "^0.5.0",
     "@supabase/supabase-js": "^2.49.3",
     "@tavily/core": "^0.3.4",
+    "@trump-fun/common": "workspace:*",
     "@types/uuid": "^10.0.0",
     "@wagmi/chains": "^1.8.0",
     "axios": "^1.8.4",
@@ -44,6 +45,7 @@
     "graphql-request": "^7.1.2",
     "http-proxy-agent": "^7.0.2",
     "langchain": "^0.3.19",
+    "openai": "^4.90.0",
     "puppeteer": "^24.4.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
@@ -51,6 +53,6 @@
     "undici": "^7.6.0",
     "uuid": "^11.1.0",
     "viem": "^2.24.1",
-    "@trump-fun/common": "workspace:*"
+    "zod": "^3.24.2"
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePrivy, useWallets, WalletWithMetadata } from '@privy-io/react-auth';
-import { CHAIN_ID } from '@trump-fun/common';
+import { DEFAULT_CHAIN_ID } from '@trump-fun/common';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 // Define EIP1193Provider type
@@ -38,7 +38,7 @@ export const EmbeddedWalletProvider = ({ children }: { children: ReactNode }) =>
   const { ready: privyReady } = usePrivy();
   const { ready: readyWallets, wallets } = useWallets();
   const [embeddedWallet, setEmbeddedWallet] = useState<EmbeddedWallet | null>(null);
-  const [currentChainId, setCurrentChainId] = useState<number>(CHAIN_ID);
+  const [currentChainId, setCurrentChainId] = useState<number>(DEFAULT_CHAIN_ID);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Find the embedded wallet when wallets are ready
@@ -55,7 +55,7 @@ export const EmbeddedWalletProvider = ({ children }: { children: ReactNode }) =>
   // Update chain ID and config when embedded wallet changes or its chain ID changes
   useEffect(() => {
     if (privyReady) {
-      setCurrentChainId(CHAIN_ID);
+      setCurrentChainId(DEFAULT_CHAIN_ID);
 
       setIsLoading(false);
     }
@@ -67,7 +67,7 @@ export const EmbeddedWalletProvider = ({ children }: { children: ReactNode }) =>
       try {
         setIsLoading(true);
         await embeddedWallet.switchChain(chainId);
-        setCurrentChainId(CHAIN_ID);
+        setCurrentChainId(DEFAULT_CHAIN_ID);
       } catch (error) {
         console.error('Error switching chain:', error);
       } finally {

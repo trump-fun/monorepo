@@ -6,15 +6,13 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { cn } from '@/lib/utils';
-import { POINTS_ADDRESS, TokenType } from '@trump-fun/common';
+import { TokenType } from '@trump-fun/common';
 
 export function TokenSwitch() {
   const { tokenType, setTokenType, tokenLogo } = useTokenContext();
 
   // For POINTS, always use the zero address
-  const { formattedBalance, symbol } = useTokenBalance(
-    tokenType === TokenType.Points ? POINTS_ADDRESS : undefined
-  );
+  const { formattedBalance, symbol } = useTokenBalance();
 
   const handleToggle = (checked: boolean) => {
     setTokenType(checked ? TokenType.Points : TokenType.Usdc);

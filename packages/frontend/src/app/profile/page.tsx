@@ -43,6 +43,7 @@ export default function ProfilePage() {
   const { address } = useWalletAddress();
   const { formattedBalance, tokenLogo } = useTokenBalance();
   const { networkInfo } = useNetwork();
+
   const tokenTypeC = tokenType === TokenType.Usdc ? 0 : 1;
   const { isPending, writeContract } = useWriteContract();
   const [withdrawAmount, setWithdrawAmount] = useState(0);

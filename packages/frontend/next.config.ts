@@ -1,4 +1,4 @@
-import { NextConfig } from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
@@ -9,11 +9,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins: [''],
-    },
-  },
+  // experimental: {
+  //   serverActions: {
+  //     allowedOrigins: [''],
+  //   },
+  // },
   transpilePackages: ['geist'],
 };
 

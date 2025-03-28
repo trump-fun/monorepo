@@ -1,4 +1,4 @@
-import { CHAIN_ID, Pool, PoolStatus } from '@trump-fun/common';
+import { DEFAULT_CHAIN_ID, Pool, PoolStatus } from '@trump-fun/common';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 export const USDC_DECIMALS = 6;
@@ -83,7 +83,7 @@ export const parseChainId = (chainId: number | string): string => {
   }
 
   // TODO bleh
-  parsedChainId = CHAIN_ID;
+  parsedChainId = DEFAULT_CHAIN_ID;
 
   return String(parsedChainId);
 };
