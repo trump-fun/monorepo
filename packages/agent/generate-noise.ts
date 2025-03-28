@@ -1,4 +1,4 @@
-import { bettingContractAbi, erc20Abi } from '@trump-fun/common/abi/contract.types';
+import { bettingContractAbi, erc20Abi } from '@trump-fun/common';
 import dotenv from 'dotenv';
 import 'dotenv/config';
 import { GraphQLClient, gql } from 'graphql-request';
