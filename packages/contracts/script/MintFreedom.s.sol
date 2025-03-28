@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
-import {PointsToken} from "../src/PointsToken.sol";
+import {Freedom} from "../src/Freedom.sol";
 
-contract MintPointsScript is Script {
+contract MintFreedomScript is Script {
   function run(address recipient, uint256 amount, address pointsTokenAddress) public {
     if (recipient == address(0)) {
       console.log("Error: Recipient address cannot be zero address");
@@ -23,7 +23,7 @@ contract MintPointsScript is Script {
 
     // Get private key from environment variables for contract owner
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    PointsToken pointsToken = PointsToken(pointsTokenAddress);
+    Freedom pointsToken = Freedom(pointsTokenAddress);
 
     console.log("Minting tokens:");
     console.log("  Recipient:", recipient);

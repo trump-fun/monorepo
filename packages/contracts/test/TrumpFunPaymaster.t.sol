@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 import "../src/TrumpFunPaymaster.sol";
-import "../src/PointsToken.sol";
+import "../src/Freedom.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import {console} from "forge-std/console.sol";
@@ -127,7 +127,7 @@ contract TrumpFunPaymasterTest is Test {
 
   TrumpFunPaymaster public paymaster;
   MockEntryPoint public entryPoint;
-  PointsToken public pointsToken;
+  Freedom public pointsToken;
   MockUSDC public usdc;
 
   address public owner;
@@ -142,7 +142,7 @@ contract TrumpFunPaymasterTest is Test {
 
     // Deploy mock contracts
     entryPoint = new MockEntryPoint();
-    pointsToken = new PointsToken("PointsToken", "POINTS", 6, 1_000_000 * 10 ** 6);
+    pointsToken = new Freedom("Freedom", "FREEDOM", 6, 1_000_000 * 10 ** 6);
     usdc = new MockUSDC();
 
     // Deploy paymaster
