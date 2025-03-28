@@ -96,7 +96,7 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
       }
 
       // Handle different options formats safely
-      let poolOptions = pendingPool.pool.options;
+      const poolOptions = pendingPool.pool.options;
 
       //TODO One of the few places where we have a limit to number of options hardcoded in a prompt
       const gradingUserMsg = new HumanMessage(

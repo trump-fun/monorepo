@@ -3,12 +3,17 @@
 import { GET_POOLS } from '@/app/queries';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProgressBar } from '@/components/ui/progress-bar';
-import { POLLING_INTERVALS } from '@/consts';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { calculateRelativeVolumePercentages } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import { useQueries } from '@tanstack/react-query';
-import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
+import {
+  OrderDirection,
+  POLLING_INTERVALS,
+  Pool_OrderBy,
+  PoolStatus,
+  TokenType,
+} from '@trump-fun/common';
 import { TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -92,7 +97,7 @@ export function HighestVolume() {
         {loading && !previousData ? (
           // Initial loading state
           <div className='space-y-4'>
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <div key={i} className='animate-pulse'>
                 <div className='flex gap-3'>
                   <div className='h-8 w-8 rounded-full bg-gray-700'></div>

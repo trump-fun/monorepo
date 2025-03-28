@@ -1,7 +1,6 @@
+import { APP_ADDRESS, bettingContractAbi, POINTS_ADDRESS, USDC_ADDRESS } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import type { Context } from 'grammy';
-import betAbi from '../abi/bet.json';
-import { APP_ADDRESS, POINTS_ADDRESS, USDC_ADDRESS } from '../consts/addresses';
 import { privy } from '../lib/privy';
 import { getWallet } from '../utils/getWallet';
 
@@ -129,7 +128,7 @@ export const withdrawCommand = async (ctx: Context) => {
     const tokenAmount = ethers.parseUnits(withdrawAmount.toString(), tokenDecimals);
 
     // Encode function call
-    const bettingInterface = new ethers.Interface(betAbi);
+    const bettingInterface = new ethers.Interface(bettingContractAbi);
     const data = bettingInterface.encodeFunctionData('withdraw', [
       BigInt(tokenType),
       tokenAmount.toString(),
@@ -274,7 +273,7 @@ async function getUserBalance(
   tokenType: TokenType
 ): Promise<number> {
   try {
-    const contractInterface = new ethers.Interface(betAbi);
+    const contractInterface = new ethers.Interface(bettingContractAbi);
     const contract = new ethers.Contract(APP_ADDRESS, contractInterface, provider);
 
     if (!contract || !contract.userBalances) {

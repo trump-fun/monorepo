@@ -1,6 +1,5 @@
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@/consts';
 import { TOKEN_SYMBOLS } from '@/hooks/useTokenContext';
-import { GetPoolQuery, GetPoolsQuery, TokenType } from '@trump-fun/common';
+import { POINTS_DECIMALS, Pool, TokenType, USDC_DECIMALS } from '@trump-fun/common';
 import React from 'react';
 
 // Helper function to safely convert token amounts
@@ -13,11 +12,7 @@ const formatTokenAmount = (
   const value = amount / Math.pow(10, decimals);
   return floor ? Math.floor(value) : value;
 };
-export const getVolumeForTokenType = (
-  pool: GetPoolsQuery['pools'][number] | GetPoolQuery['pool'],
-  tokenType: TokenType,
-  raw = false
-) => {
+export const getVolumeForTokenType = (pool: Pool, tokenType: TokenType, raw = false) => {
   if (!pool) return tokenType === TokenType.Usdc ? '0' : '0';
 
   const rawValue = tokenType === TokenType.Usdc ? pool.usdcVolume : pool.pointsVolume;
@@ -32,19 +27,12 @@ export const getVolumeForTokenType = (
   return Math.ceil(value);
 };
 
-export const getFormattedVolumeForTokenType = (
-  pool: GetPoolsQuery['pools'][number] | GetPoolQuery['pool'],
-  tokenType: TokenType,
-  raw = false
-) => {
+export const getFormattedVolumeForTokenType = (pool: Pool, tokenType: TokenType, raw = false) => {
   const volume = getVolumeForTokenType(pool, tokenType, raw);
   return Number(volume).toLocaleString();
 };
 
-export const calculateVolume = (
-  pool: GetPoolsQuery['pools'][number] | GetPoolQuery['pool'],
-  tokenType: TokenType
-): React.ReactNode => {
+export const calculateVolume = (pool: Pool, tokenType: TokenType): React.ReactNode => {
   if (!pool) return tokenType === TokenType.Usdc ? '0' : '0';
 
   try {
@@ -66,7 +54,7 @@ export const calculateVolume = (
 };
 
 export const getBetTotals = (
-  pool: GetPoolsQuery['pools'][number] | GetPoolQuery['pool'],
+  pool: Pool,
   tokenType: TokenType | string,
   optionIndex: number
 ): string => {
@@ -90,10 +78,7 @@ export const getBetTotals = (
 /**
  * Calculate percentages for each option in a pool
  */
-export const calculateOptionPercentages = (
-  pool: GetPoolsQuery['pools'][number] | GetPoolQuery['pool'],
-  tokenType?: TokenType
-): number[] => {
+export const calculateOptionPercentages = (pool: Pool, tokenType?: TokenType): number[] => {
   if (!pool) return [];
 
   const totalPoints = pool.pointsBetTotals.reduce(
@@ -104,14 +89,14 @@ export const calculateOptionPercentages = (
 
   const pointsPercentages =
     totalPoints > BigInt(0)
-      ? pool.pointsBetTotals.map((points) =>
+      ? pool.pointsBetTotals.map(points =>
           Number((BigInt(points || '0') * BigInt(100)) / totalPoints)
         )
       : pool.options.map(() => 0);
 
   const usdcPercentages =
     totalUsdc > BigInt(0)
-      ? pool.usdcBetTotals.map((usdc) => Number((BigInt(usdc || '0') * BigInt(100)) / totalUsdc))
+      ? pool.usdcBetTotals.map(usdc => Number((BigInt(usdc || '0') * BigInt(100)) / totalUsdc))
       : pool.options.map(() => 0);
 
   return pool.options.map((_, index) => {
@@ -135,11 +120,11 @@ export const calculateOptionPercentages = (
  * Calculate relative volume percentages for multiple pools
  */
 export const calculateRelativeVolumePercentages = (
-  pools: (GetPoolsQuery['pools'][number] | GetPoolQuery['pool'])[],
+  pools: Pool[],
   tokenType: TokenType,
   minPercentage = 5
 ): {
-  pool: GetPoolsQuery['pools'][number] | GetPoolQuery['pool'];
+  pool: Pool;
   percentage: number;
   displayVolume: number | string;
 }[] => {
@@ -148,7 +133,7 @@ export const calculateRelativeVolumePercentages = (
   }
 
   // Calculate raw volume values for each pool
-  const volumeValues = pools.map((pool) => {
+  const volumeValues = pools.map(pool => {
     if (!pool) return { pool, rawVolume: 0 };
 
     const rawVolume =
@@ -159,7 +144,7 @@ export const calculateRelativeVolumePercentages = (
   });
 
   // Find max volume to calculate relative percentages
-  const maxVolume = Math.max(...volumeValues.map((v) => v.rawVolume), 1);
+  const maxVolume = Math.max(...volumeValues.map(v => v.rawVolume), 1);
 
   // Prepare display data
   return volumeValues.map(({ pool, rawVolume }) => ({

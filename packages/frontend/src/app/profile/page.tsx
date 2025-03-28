@@ -8,25 +8,27 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserBettingPost } from '@/components/user-betting-post';
-import { POINTS_DECIMALS, POLLING_INTERVALS, USDC_DECIMALS } from '@/consts';
-import { APP_ADDRESS } from '@/consts/addresses';
 import { useNetwork } from '@/hooks/useNetwork';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
-import { bettingContractAbi } from '@/lib/contract.types';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import {
+  APP_ADDRESS,
   Bet,
   Bet_Filter,
   Bet_OrderBy,
+  bettingContractAbi,
   BetWithdrawal,
   BetWithdrawal_OrderBy,
   OrderDirection,
   PayoutClaimed,
   PayoutClaimed_OrderBy,
+  POINTS_DECIMALS,
+  POLLING_INTERVALS,
   TokenType,
+  USDC_DECIMALS,
 } from '@trump-fun/common';
 import { ArrowUpFromLine, History, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -158,7 +160,7 @@ export default function ProfilePage() {
       if (!searchQuery.trim()) return payoutClaimeds.payoutClaimeds;
       const query = searchQuery.toLowerCase().trim();
       return payoutClaimeds.payoutClaimeds.filter(
-        (payout) =>
+        payout =>
           payout.bet?.pool?.question.toLowerCase().includes(query) ||
           payout.pool?.question.toLowerCase().includes(query)
       );
@@ -168,7 +170,7 @@ export default function ProfilePage() {
     if (!searchQuery.trim()) return userBets.bets;
 
     const query = searchQuery.toLowerCase().trim();
-    return userBets.bets.filter((bet) => bet.pool.question.toLowerCase().includes(query));
+    return userBets.bets.filter(bet => bet.pool.question.toLowerCase().includes(query));
   }, [userBets?.bets, payoutClaimeds?.payoutClaimeds, searchQuery, activeFilter]);
 
   const renderFilterButton = (value: string, label: string, icon: React.ReactNode) => (
@@ -227,14 +229,12 @@ export default function ProfilePage() {
     const allBets = userBets?.bets || [];
     const totalBets = allBets.length;
     const wonBets = payoutClaimeds?.payoutClaimeds?.length || 0;
-    const lostBets = allBets.filter(
-      (bet) => bet.pool.status === 'GRADED' && !bet.isWithdrawn
-    ).length;
-    const pendingBets = allBets.filter((bet) => bet.pool.status === 'PENDING').length;
+    const lostBets = allBets.filter(bet => bet.pool.status === 'GRADED' && !bet.isWithdrawn).length;
+    const pendingBets = allBets.filter(bet => bet.pool.status === 'PENDING').length;
 
     // Improved volume calculation that includes all bets regardless of status
     let totalVolume = 0;
-    allBets.forEach((bet) => {
+    allBets.forEach(bet => {
       try {
         const betAmount = parseFloat(bet.amount);
         if (!isNaN(betAmount)) {
@@ -249,8 +249,8 @@ export default function ProfilePage() {
     // Calculate active volume as well (bets that are still pending)
     let activeVolume = 0;
     allBets
-      .filter((bet) => bet.pool.status === 'PENDING')
-      .forEach((bet) => {
+      .filter(bet => bet.pool.status === 'PENDING')
+      .forEach(bet => {
         try {
           const betAmount = parseFloat(bet.amount);
           if (!isNaN(betAmount)) {
@@ -358,7 +358,7 @@ export default function ProfilePage() {
                 placeholder='Enter amount'
                 className='w-full border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800'
                 value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+                onChange={e => setWithdrawAmount(Number(e.target.value))}
               />
             </div>
             <div className='flex w-full'>
@@ -519,7 +519,7 @@ export default function ProfilePage() {
                         placeholder='Enter amount'
                         className='w-full border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800'
                         value={withdrawAmount}
-                        onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+                        onChange={e => setWithdrawAmount(Number(e.target.value))}
                       />
                     </div>
                     <div className='flex'>
@@ -592,7 +592,7 @@ export default function ProfilePage() {
 
               {/* Betting Posts */}
               <div className='flex-1 space-y-4'>
-                {filteredPools.map((item) => {
+                {filteredPools.map(item => {
                   const bet = activeFilter === 'won' ? (item as PayoutClaimed).bet : (item as Bet);
                   const pool =
                     activeFilter === 'won'

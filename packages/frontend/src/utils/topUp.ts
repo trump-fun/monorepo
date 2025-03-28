@@ -1,6 +1,6 @@
-import { USDC_DECIMALS } from '@/consts';
-import { showSuccessToast } from './toast';
 import { TopUpBalanceParams, TopUpBalanceResponse } from '@/app/api/mint/route';
+import { USDC_DECIMALS } from '@trump-fun/common';
+import { showSuccessToast } from './toast';
 
 export const topUpBalance = async (params: TopUpBalanceParams): Promise<TopUpBalanceResponse> => {
   const response = await fetch('/api/mint', {

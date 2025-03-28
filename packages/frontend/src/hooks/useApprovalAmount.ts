@@ -1,5 +1,5 @@
-import { APP_ADDRESS } from '@/consts/addresses';
 import { pointsTokenAbi } from '@/lib/contract.types';
+import { APP_ADDRESS } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import { useAccount, usePublicClient } from 'wagmi';
 

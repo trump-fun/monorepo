@@ -1,5 +1,4 @@
-import { CHAIN_ID } from '@/consts';
-import { Pool, PoolStatus } from '@trump-fun/common';
+import { CHAIN_ID, Pool, PoolStatus } from '@trump-fun/common';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 export const USDC_DECIMALS = 6;

@@ -1,7 +1,6 @@
+import { APP_ADDRESS, bettingContractAbi, POINTS_ADDRESS } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import type { Context } from 'grammy';
-import betAbi from '../abi/bet.json';
-import { APP_ADDRESS, POINTS_ADDRESS } from '../consts/addresses';
 import { privy } from '../lib/privy';
 import { getWallet } from '../utils/getWallet';
 
@@ -103,7 +102,7 @@ export const placeBetCommand = async (ctx: Context) => {
 
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    const bettingInterface = new ethers.Interface(betAbi);
+    const bettingInterface = new ethers.Interface(bettingContractAbi);
 
     const args = [
       BigInt(poolId || '0'),

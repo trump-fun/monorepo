@@ -1,7 +1,7 @@
 'use client';
 
-import { CHAIN_ID } from '@/consts';
 import { usePrivy, useWallets, WalletWithMetadata } from '@privy-io/react-auth';
+import { CHAIN_ID } from '@trump-fun/common';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 // Define EIP1193Provider type
@@ -44,7 +44,7 @@ export const EmbeddedWalletProvider = ({ children }: { children: ReactNode }) =>
   // Find the embedded wallet when wallets are ready
   useEffect(() => {
     if (readyWallets) {
-      const wallet = wallets.find((wallet) => wallet.walletClientType === 'privy') as
+      const wallet = wallets.find(wallet => wallet.walletClientType === 'privy') as
         | EmbeddedWallet
         | undefined;
 

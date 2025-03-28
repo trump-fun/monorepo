@@ -1,7 +1,6 @@
-import { POINTS_DECIMALS } from '@/consts';
-import { POINTS_ADDRESS } from '@/consts/addresses';
-import { pointsTokenAbi } from '@/lib/contract.types';
+import { POINTS_DECIMALS, pointsTokenAbi } from '@trump-fun/common';
 import { createClient } from '@/lib/supabase/server';
+import { POINTS_ADDRESS } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
 

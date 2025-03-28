@@ -1,11 +1,16 @@
 'use client';
 
 import { GET_POOLS } from '@/app/queries';
-import { POLLING_INTERVALS } from '@/consts';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
-import { OrderDirection, Pool, Pool_OrderBy, PoolStatus } from '@trump-fun/common';
+import {
+  OrderDirection,
+  POLLING_INTERVALS,
+  Pool,
+  Pool_OrderBy,
+  PoolStatus,
+} from '@trump-fun/common';
 import { Clock } from 'lucide-react';
 import { useMemo } from 'react';
 import { EndingSoonBet } from './ending-soon-bet';
@@ -63,7 +68,7 @@ export function EndingSoon() {
         {loading && !previousData ? (
           // Initial loading state
           <div className='space-y-4'>
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <div key={i} className='animate-pulse'>
                 <div className='flex gap-3'>
                   <div className='h-8 w-8 rounded-full bg-gray-700'></div>

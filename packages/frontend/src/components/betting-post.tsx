@@ -5,8 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import { USDC_DECIMALS } from '@/consts';
-import { APP_ADDRESS } from '@/consts/addresses';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
@@ -14,7 +12,7 @@ import { pointsTokenAbi } from '@/lib/contract.types';
 import { showSuccessToast } from '@/utils/toast';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
-import { PoolStatus } from '@trump-fun/common';
+import { APP_ADDRESS, PoolStatus, USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
@@ -169,14 +167,14 @@ export function BettingPost({
   const betData = useMemo(() => {
     // Parse all option bet amounts, removing any currency symbols and converting to numbers
     const betAmounts = optionBets.map(
-      (bet) => parseFloat(bet.replace(/[$£€]/g, '').replace(/\s+pts/g, '')) || 0
+      bet => parseFloat(bet.replace(/[$£€]/g, '').replace(/\s+pts/g, '')) || 0
     );
 
     // Calculate total volume
     const totalVolume = betAmounts.reduce((sum, amount) => sum + amount, 0);
 
     // Calculate exact percentages for each option
-    const percentages = betAmounts.map((amount) =>
+    const percentages = betAmounts.map(amount =>
       totalVolume > 0 ? (amount / totalVolume) * 100 : 0
     );
 
@@ -334,7 +332,7 @@ export function BettingPost({
       }
 
       // Simulate backend delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
     } catch (error) {
       // Only log non-user rejection errors
       if (
@@ -685,7 +683,7 @@ export function BettingPost({
 
             {/* Percentage Buttons */}
             <div className='mb-2 flex gap-1'>
-              {[25, 50, 75, 100].map((percent) => (
+              {[25, 50, 75, 100].map(percent => (
                 <Button
                   key={percent}
                   variant='outline'
@@ -704,7 +702,7 @@ export function BettingPost({
               max={100}
               step={1}
               value={sliderValue}
-              onValueChange={(newValue) => {
+              onValueChange={newValue => {
                 setUserEnteredValue('');
                 setSliderValue(newValue);
               }}
@@ -719,7 +717,7 @@ export function BettingPost({
                   placeholder='0'
                   className='h-10 pr-16'
                   value={betAmount}
-                  onChange={(e) => {
+                  onChange={e => {
                     const value = e.target.value;
 
                     setIsUserTyping(true);

@@ -5,8 +5,6 @@ SERVER="root@159.203.164.23"
 REMOTE_DIR="/root/trump-fun-agent"
 LOCAL_DIR="$(dirname "$0")"
 
-
-
 # No need to run a build step since Bun can run TypeScript files directly
 
 echo "Deploying to $SERVER:$REMOTE_DIR..."
@@ -24,7 +22,6 @@ echo "Files transferred successfully!"
 # SSH into the server and install dependencies
 echo "Installing dependencies on the server..."
 ssh $SERVER "cd $REMOTE_DIR && /root/.nvm/versions/node/v23.10.0/bin/bun install"
-
 
 # echo "Installing puppeteer dependencies..."
 
@@ -67,4 +64,4 @@ ssh $SERVER "cd $REMOTE_DIR && /root/.nvm/versions/node/v23.10.0/bin/bun install
 #     wget \
 #     xdg-utils
 
-echo "Deployment completed successfully!" 
+echo "Deployment completed successfully!"

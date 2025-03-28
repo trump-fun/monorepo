@@ -18,9 +18,9 @@ export function createBetPlacedEvent(
   amount: BigInt,
   tokenType: i32
 ): BetPlaced {
-  let betPlacedEvent = changetype<BetPlaced>(newMockEvent());
+  const betPlacedEvent = changetype<BetPlaced>(newMockEvent());
 
-  betPlacedEvent.parameters = new Array();
+  betPlacedEvent.parameters = [];
 
   betPlacedEvent.parameters.push(
     new ethereum.EventParam('betId', ethereum.Value.fromUnsignedBigInt(betId))
@@ -51,9 +51,9 @@ export function createBetWithdrawalEvent(
   amount: BigInt,
   tokenType: i32
 ): BetWithdrawal {
-  let betWithdrawalEvent = changetype<BetWithdrawal>(newMockEvent());
+  const betWithdrawalEvent = changetype<BetWithdrawal>(newMockEvent());
 
-  betWithdrawalEvent.parameters = new Array();
+  betWithdrawalEvent.parameters = [];
 
   betWithdrawalEvent.parameters.push(
     new ethereum.EventParam('user', ethereum.Value.fromAddress(user))
@@ -78,9 +78,9 @@ export function createOwnershipTransferredEvent(
   previousOwner: Address,
   newOwner: Address
 ): OwnershipTransferred {
-  let ownershipTransferredEvent = changetype<OwnershipTransferred>(newMockEvent());
+  const ownershipTransferredEvent = changetype<OwnershipTransferred>(newMockEvent());
 
-  ownershipTransferredEvent.parameters = new Array();
+  ownershipTransferredEvent.parameters = [];
 
   ownershipTransferredEvent.parameters.push(
     new ethereum.EventParam('previousOwner', ethereum.Value.fromAddress(previousOwner))
@@ -99,9 +99,9 @@ export function createPayoutClaimedEvent(
   amount: BigInt,
   tokenType: i32
 ): PayoutClaimed {
-  let payoutClaimedEvent = changetype<PayoutClaimed>(newMockEvent());
+  const payoutClaimedEvent = changetype<PayoutClaimed>(newMockEvent());
 
-  payoutClaimedEvent.parameters = new Array();
+  payoutClaimedEvent.parameters = [];
 
   payoutClaimedEvent.parameters.push(
     new ethereum.EventParam('betId', ethereum.Value.fromUnsignedBigInt(betId))
@@ -126,9 +126,9 @@ export function createPayoutClaimedEvent(
 }
 
 export function createPoolClosedEvent(poolId: BigInt, selectedOption: BigInt): PoolClosed {
-  let poolClosedEvent = changetype<PoolClosed>(newMockEvent());
+  const poolClosedEvent = changetype<PoolClosed>(newMockEvent());
 
-  poolClosedEvent.parameters = new Array();
+  poolClosedEvent.parameters = [];
 
   poolClosedEvent.parameters.push(
     new ethereum.EventParam('poolId', ethereum.Value.fromUnsignedBigInt(poolId))
@@ -141,9 +141,9 @@ export function createPoolClosedEvent(poolId: BigInt, selectedOption: BigInt): P
 }
 
 export function createPoolCreatedEvent(poolId: BigInt, params: ethereum.Tuple): PoolCreated {
-  let poolCreatedEvent = changetype<PoolCreated>(newMockEvent());
+  const poolCreatedEvent = changetype<PoolCreated>(newMockEvent());
 
-  poolCreatedEvent.parameters = new Array();
+  poolCreatedEvent.parameters = [];
 
   poolCreatedEvent.parameters.push(
     new ethereum.EventParam('poolId', ethereum.Value.fromUnsignedBigInt(poolId))
@@ -156,9 +156,9 @@ export function createPoolCreatedEvent(poolId: BigInt, params: ethereum.Tuple): 
 }
 
 export function createWithdrawalEvent(user: Address, amount: BigInt, tokenType: i32): Withdrawal {
-  let withdrawalEvent = changetype<Withdrawal>(newMockEvent());
+  const withdrawalEvent = changetype<Withdrawal>(newMockEvent());
 
-  withdrawalEvent.parameters = new Array();
+  withdrawalEvent.parameters = [];
 
   withdrawalEvent.parameters.push(
     new ethereum.EventParam('user', ethereum.Value.fromAddress(user))

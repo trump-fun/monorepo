@@ -1,7 +1,13 @@
 import { GET_POOLS } from '@/app/queries';
-import { POLLING_INTERVALS } from '@/consts';
 import { useQuery } from '@apollo/client';
-import { OrderDirection, Pool, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
+import {
+  OrderDirection,
+  POLLING_INTERVALS,
+  Pool,
+  Pool_OrderBy,
+  PoolStatus,
+  TokenType,
+} from '@trump-fun/common';
 import { useMemo, useState } from 'react';
 
 export type FilterType = 'newest' | 'highest' | 'ending_soon' | 'ended' | 'recently_closed';

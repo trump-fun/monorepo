@@ -1,8 +1,6 @@
 'use client';
 
-import { USDC_DECIMALS } from '@/consts';
-import { POINTS_ADDRESS } from '@/consts/addresses';
-import { TokenType } from '@trump-fun/common';
+import { POINTS_ADDRESS, TokenType, USDC_DECIMALS } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import { type Address } from 'viem';
 import { useBalance } from 'wagmi';

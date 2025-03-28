@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if wagmi CLI is installed globally
-if ! command -v wagmi &> /dev/null; then
+if ! command -v wagmi &>/dev/null; then
     echo "wagmi CLI not found, installing..."
     bun install --global @wagmi/cli
 fi
@@ -17,9 +17,11 @@ mkdir -p types
 echo "Generating types..."
 wagmi generate
 
-# Copy generated types to frontend and backend
-echo "Copying types to frontend and backend..."
-cp types/generated.ts ../trump-fun-frontend/src/lib/contract.types.ts
-cp types/generated.ts ../trump-fun-agent/src/types/contract.types.ts 
+# Make sure the common/abi directory exists
+mkdir -p ../common/abi
 
-echo "✨ Types generated and copied successfully!" 
+# Copy generated types to frontend, backend, and common
+echo "Copying types to frontend, backend, and common directory..."
+cp types/generated.ts ../common/abi/contract.types.ts
+
+echo "✨ Types generated and copied successfully!"

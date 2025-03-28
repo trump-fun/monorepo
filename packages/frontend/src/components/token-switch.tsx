@@ -3,11 +3,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
-import { POINTS_ADDRESS } from '@/consts/addresses';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { cn } from '@/lib/utils';
-import { TokenType } from '@trump-fun/common';
+import { POINTS_ADDRESS, TokenType } from '@trump-fun/common';
 
 export function TokenSwitch() {
   const { tokenType, setTokenType, tokenLogo } = useTokenContext();

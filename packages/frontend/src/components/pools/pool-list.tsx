@@ -1,11 +1,11 @@
 'use client';
 
 import { GET_POOLS } from '@/app/queries';
-import { POLLING_INTERVALS } from '@/consts';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { NetworkStatus, useQuery } from '@apollo/client';
 import {
   OrderDirection,
+  POLLING_INTERVALS,
   Pool,
   Pool_OrderBy,
   PoolStatus,

@@ -1,9 +1,9 @@
 'use client';
 
-import { Bet_OrderBy, Pool, PoolStatus } from '@trump-fun/common';
 import { useQuery as useQueryA } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
+import { Bet_OrderBy, Pool, PoolStatus } from '@trump-fun/common';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,12 +14,12 @@ import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteCont
 import { GET_BETS, GET_POOL } from '@/app/queries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { POLLING_INTERVALS, USDC_DECIMALS } from '@/consts';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
+import { POLLING_INTERVALS, USDC_DECIMALS } from '@trump-fun/common';
 
 // Import custom hooks
 import { useBettingForm } from '@/hooks/useBettingForm';

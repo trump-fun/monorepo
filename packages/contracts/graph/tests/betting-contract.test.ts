@@ -7,8 +7,6 @@ import {
   afterAll,
 } from 'matchstick-as/assembly/index';
 import { BigInt, Address } from '@graphprotocol/graph-ts';
-import { BetPlaced } from '../generated/schema';
-import { BetPlaced as BetPlacedEvent } from '../generated/BettingContract/BettingContract';
 import { handleBetPlaced } from '../src/betting-contract';
 import { createBetPlacedEvent } from './betting-contract-utils';
 
@@ -17,13 +15,13 @@ import { createBetPlacedEvent } from './betting-contract-utils';
 
 describe('Describe entity assertions', () => {
   beforeAll(() => {
-    let betId = BigInt.fromI32(234);
-    let poolId = BigInt.fromI32(234);
-    let user = Address.fromString('0x0000000000000000000000000000000000000001');
-    let optionIndex = BigInt.fromI32(234);
-    let amount = BigInt.fromI32(234);
-    let tokenType = 123;
-    let newBetPlacedEvent = createBetPlacedEvent(
+    const betId = BigInt.fromI32(234);
+    const poolId = BigInt.fromI32(234);
+    const user = Address.fromString('0x0000000000000000000000000000000000000001');
+    const optionIndex = BigInt.fromI32(234);
+    const amount = BigInt.fromI32(234);
+    const tokenType = 123;
+    const newBetPlacedEvent = createBetPlacedEvent(
       betId,
       poolId,
       user,

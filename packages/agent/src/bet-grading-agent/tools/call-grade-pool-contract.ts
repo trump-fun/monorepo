@@ -1,6 +1,6 @@
+import { bettingContractAbi } from '@trump-fun/common/abi/contract.types';
 import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { bettingContractAbi } from '../../types/contract.types';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 
 /**

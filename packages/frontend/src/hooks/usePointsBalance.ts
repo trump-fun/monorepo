@@ -1,10 +1,9 @@
-import { POINTS_DECIMALS } from '@/consts';
-import { POINTS_ADDRESS } from '@/consts/addresses';
+import { pointsTokenAbi } from '@/lib/contract.types';
 import { useWallets } from '@privy-io/react-auth';
+import { POINTS_ADDRESS, POINTS_DECIMALS } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { useCallback, useEffect, useState } from 'react';
 import { useEmbeddedWallet } from '../components/EmbeddedWalletProvider';
-import { pointsTokenAbi } from '@/lib/contract.types';
 
 export const useBalance = () => {
   const [usdcBalance, setUsdcBalance] = useState<string | null>(null);

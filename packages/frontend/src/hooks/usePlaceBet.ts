@@ -1,8 +1,11 @@
-import { USDC_DECIMALS } from '@/consts';
-import { APP_ADDRESS } from '@/consts/addresses';
-import { bettingContractAbi, pointsTokenAbi } from '@/lib/contract.types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
-import { TokenType } from '@trump-fun/common';
+import {
+  APP_ADDRESS,
+  bettingContractAbi,
+  pointsTokenAbi,
+  TokenType,
+  USDC_DECIMALS,
+} from '@trump-fun/common';
 import { Address, PublicClient } from 'viem';
 
 interface UsePlaceBetProps {

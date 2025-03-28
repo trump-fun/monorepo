@@ -1,7 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@/consts';
 import { useQuery } from '@tanstack/react-query';
-import { PoolStatus, TokenType } from '@trump-fun/common';
+import { POINTS_DECIMALS, PoolStatus, TokenType, USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
 import Link from 'next/link';

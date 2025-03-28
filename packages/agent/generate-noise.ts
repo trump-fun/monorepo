@@ -1,3 +1,4 @@
+import { bettingContractAbi, erc20Abi } from '@trump-fun/common/abi/contract.types';
 import dotenv from 'dotenv';
 import 'dotenv/config';
 import { GraphQLClient, gql } from 'graphql-request';
@@ -6,7 +7,6 @@ import { setTimeout } from 'timers/promises';
 import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { baseSepolia } from 'viem/chains';
-import { bettingContractAbi, erc20Abi } from './src/types/contract.types';
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 console.log(path.join(__dirname, '.env'));

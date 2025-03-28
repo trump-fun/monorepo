@@ -1,7 +1,6 @@
 'use client';
 
-import { POINTS_ADDRESS, USDC_ADDRESS } from '@/consts/addresses';
-import { TokenType } from '@trump-fun/common';
+import { POINTS_ADDRESS, TokenType, USDC_ADDRESS } from '@trump-fun/common';
 import Image from 'next/image';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Address } from 'viem';
