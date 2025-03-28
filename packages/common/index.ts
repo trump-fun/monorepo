@@ -5,3 +5,4 @@ export * from './src/types/__generated__/fragment-masking';
 export * from './database.types';
 export * from './abi/contract.types';
 export * from './consts';
+export * from './types';

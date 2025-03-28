@@ -8,11 +8,9 @@ import { Slider } from '@/components/ui/slider';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { pointsTokenAbi } from '@/lib/contract.types';
-import { showSuccessToast } from '@/utils/toast';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
-import { APP_ADDRESS, PoolStatus, USDC_DECIMALS } from '@trump-fun/common';
+import { APP_ADDRESS, erc20Abi, PoolStatus } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
@@ -23,6 +21,8 @@ import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteCont
 import TruthSocial from './common/truth-social';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
+import { showSuccessToast } from '@/utils/toast';
+import { USDC_DECIMALS } from '@/utils/utils';
 
 interface BettingPostProps {
   id: string;
@@ -250,7 +250,7 @@ export function BettingPost({
 
       try {
         const allowance = await publicClient.readContract({
-          abi: pointsTokenAbi,
+          abi: erc20Abi,
           address: getTokenAddress() as `0x${string}`,
           functionName: 'allowance',
           args: [account.address, APP_ADDRESS],
@@ -479,7 +479,7 @@ export function BettingPost({
 
       try {
         const allowance = await publicClient.readContract({
-          abi: pointsTokenAbi,
+          abi: erc20Abi,
           address: getTokenAddress() as `0x${string}`,
           functionName: 'allowance',
           args: [account.address, APP_ADDRESS],

@@ -1,5 +1,4 @@
-import { pointsTokenAbi } from '@/lib/contract.types';
-import { APP_ADDRESS } from '@trump-fun/common';
+import { APP_ADDRESS, erc20Abi } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import { useAccount, usePublicClient } from 'wagmi';
 
@@ -21,7 +20,7 @@ export function useApprovalAmount(
 
         const tokenAddressHex = tokenAddress as `0x${string}`;
         const allowance = await publicClient.readContract({
-          abi: pointsTokenAbi,
+          abi: erc20Abi,
           address: tokenAddressHex,
           functionName: 'allowance',
           args: [account.address as `0x${string}`, APP_ADDRESS],

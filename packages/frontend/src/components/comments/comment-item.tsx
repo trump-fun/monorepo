@@ -3,9 +3,9 @@
 import { toggleLike } from '@/app/actions/like-actions';
 import { isCommentLiked, saveCommentLike } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
-import { Comment } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { Comment } from '@trump-fun/common';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { RandomAvatar } from 'react-random-avatars';
@@ -51,7 +51,7 @@ const CommentItem = ({ comment }: CommentItemProps) => {
           );
         } else if (Array.isArray(data)) {
           trumpReplies = data.filter(
-            (reply) =>
+            reply =>
               reply.user_address === '0xRealDonaldTrump2025' &&
               (reply.commentID === comment.id || reply.parent_id === comment.id)
           );
@@ -249,7 +249,7 @@ const CommentItem = ({ comment }: CommentItemProps) => {
                   <h4 className='mb-2 text-sm font-semibold text-gray-700'>
                     Trump Responses ({replies.length})
                   </h4>
-                  {replies.map((reply) => (
+                  {replies.map(reply => (
                     <div key={reply.id} className='mb-3 border-t border-gray-100 pt-2'>
                       <div className='mb-1 flex items-center gap-2'>
                         <div className='flex items-center'>

@@ -2,7 +2,7 @@ import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import {
   APP_ADDRESS,
   bettingContractAbi,
-  pointsTokenAbi,
+  erc20Abi,
   TokenType,
   USDC_DECIMALS,
 } from '@trump-fun/common';
@@ -63,7 +63,7 @@ export function usePlaceBet({
       if (needsApproval && !isConfirmed) {
         const tokenAddress = getTokenAddress() as `0x${string}`;
         const { request: approveRequest } = await publicClient.simulateContract({
-          abi: pointsTokenAbi,
+          abi: erc20Abi,
           address: tokenAddress,
           functionName: 'approve',
           account: accountAddress as `0x${string}`,

@@ -7,18 +7,9 @@ import { Toaster } from '@/components/ui/sonner';
 import { TokenProvider } from '@/hooks/useTokenContext';
 import { Analytics } from '@vercel/analytics/react';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 
 export const metadata: Metadata = {
   title: "Trump.fun - Predict The Donald's Next Move",
@@ -36,8 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html
+      lang='en'
+      suppressHydrationWarning
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+    >
+      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <PrivyAuthProvider>
           <ThemeProvider
             attribute='class'

@@ -10,7 +10,7 @@ import { addComment } from '@/app/actions/comment-actions';
 
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 
-import { Comment } from '@/types';
+import { Comment } from '@trump-fun/common';
 
 interface CommentSectionProps {
   poolId: string;

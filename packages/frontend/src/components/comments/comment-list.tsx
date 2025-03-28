@@ -1,6 +1,6 @@
 'use client';
 
-import { Comment } from '@/types';
+import { Comment } from '@trump-fun/common';
 import CommentItem from './comment-item';
 
 interface CommentListProps {
@@ -14,7 +14,7 @@ const CommentList = ({ comments }: CommentListProps) => {
   return (
     <div className='space-y-6'>
       {validComments.length > 0 ? (
-        validComments.map((comment) => <CommentItem key={comment.id} comment={comment} />)
+        validComments.map(comment => <CommentItem key={comment.id} comment={comment} />)
       ) : (
         <div className='py-8 text-center text-gray-500'>
           No comments yet. Be the first to comment!

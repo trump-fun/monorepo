@@ -1,6 +1,5 @@
-import { pointsTokenAbi } from '@/lib/contract.types';
 import { useWallets } from '@privy-io/react-auth';
-import { POINTS_ADDRESS, POINTS_DECIMALS } from '@trump-fun/common';
+import { POINTS_ADDRESS, POINTS_DECIMALS, erc20Abi } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { useCallback, useEffect, useState } from 'react';
 import { useEmbeddedWallet } from '../components/EmbeddedWalletProvider';
@@ -40,7 +39,7 @@ export const useBalance = () => {
       const ethersProvider = new ethers.BrowserProvider(provider);
 
       // Create contract instance
-      const usdcContract = new ethers.Contract(POINTS_ADDRESS, pointsTokenAbi, ethersProvider);
+      const usdcContract = new ethers.Contract(POINTS_ADDRESS, erc20Abi, ethersProvider);
 
       try {
         // Get balance

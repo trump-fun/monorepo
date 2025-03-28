@@ -1,33 +1,36 @@
-import { request } from 'graphql-request';
-import { gql } from '../../types/__generated__';
+import { gql, request } from 'graphql-request';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
+import type { Pool } from '@trump-fun/common';
 /**
  * Fetches pools with "PENDING" status from the GraphQL endpoint
  */
-const fetchPendingPoolsQuery = gql(`
-    query fetchPendingPools {
-      pools(where: {status: PENDING}) {
-        id
-        status
-        question
-        options
-        betsCloseAt
-        closureCriteria
-        closureInstructions
-        usdcBetTotals
-        pointsBetTotals
-        originalTruthSocialPostId
-      }
+const fetchPendingPoolsQuery = gql`
+  query fetchPendingPools {
+    pools(where: { status: PENDING }) {
+      id
+      status
+      question
+      options
+      betsCloseAt
+      closureCriteria
+      closureInstructions
+      usdcBetTotals
+      pointsBetTotals
+      originalTruthSocialPostId
     }
-  `);
+  }
+`;
 export async function fetchPendingPools(state: GraderState): Promise<Partial<GraderState>> {
   console.log('Fetching pending pools...');
 
   const chainConfig = state.chainConfig;
 
   try {
-    // Send the GraphQL request using graphql-request
-    const response = await request({
+    interface FetchPendingPoolsResponse {
+      pools: Pool[];
+    }
+
+    const response = await request<FetchPendingPoolsResponse>({
       url: chainConfig.subgraphUrl,
       document: fetchPendingPoolsQuery,
       requestHeaders: {
@@ -35,22 +38,21 @@ export async function fetchPendingPools(state: GraderState): Promise<Partial<Gra
       },
     });
 
-    // Extract the pools from the response
     const pools = response.pools;
     console.log(`Found ${pools.length} pending pools`);
 
     return {
-      pendingPools: pools.slice(0, 1).reduce(
-        (acc, pool) => {
+      pendingPools: pools.slice(0, 1).reduce<Record<string, PendingPool>>(
+        (acc: Record<string, PendingPool>, pool: Pool) => {
           acc[pool.id] = {
             pool,
-            evidenceSearchQueries: [],
-            evidence: [],
+            evidenceSearchQueries: [] as string[],
+            evidence: [] as any[],
             gradingResult: {
               result: '',
               result_code: 0,
-              probabilities: {},
-              sources: [],
+              probabilities: {} as Record<string, number>,
+              sources: [] as string[],
               explanation: '',
             },
             contractUpdated: false,

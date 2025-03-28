@@ -1,6 +1,6 @@
 'use client';
 
-import { Comment } from '@/types';
+import { Comment } from '@trump-fun/common';
 import CommentSection from './comment-section';
 
 interface CommentSectionWrapperProps {

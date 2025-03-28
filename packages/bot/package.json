@@ -1,16 +1,16 @@
 {
   "name": "@trump-fun/bot",
   "version": "1.0.0",
-  "module": "index.ts",
+  "module": "bot.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch index.ts",
-    "build": "bun build --target=bun",
-    "start": "bun index.ts",
+    "dev": "bun --watch bot.ts",
+    "build": "bun build bot.ts --target=bun",
+    "start": "bun bot.ts",
     "deploy": "sh deploy.sh",
     "start:prod": "bun run start:prod --env=production",
-    "start:dev": "bun run index.ts --env=development"
+    "start:dev": "bun run bot.ts --env=development"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
