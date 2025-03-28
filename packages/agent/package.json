@@ -22,20 +22,20 @@
     "@graphql-typed-document-node/core": "^3.2.0",
     "@types/bun": "latest",
     "eslint": "^9",
-    "eslint-config-next": "15.2.3",
-    "typescript": "^5.3.3"
+    "eslint-config-next": "15.2.4",
+    "typescript": "^5.8.2"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "@langchain/anthropic": "^0.3.15",
-    "@langchain/community": "^0.3.36",
-    "@langchain/core": "^0.3.42",
-    "@langchain/langgraph": "^0.2.57",
-    "@langchain/openai": "^0.4.5",
-    "@supabase/supabase-js": "^2.0.0",
-    "@tavily/core": "^0.3.3",
+    "@langchain/community": "^0.3.37",
+    "@langchain/core": "^0.3.43",
+    "@langchain/langgraph": "^0.2.60",
+    "@langchain/openai": "^0.5.0",
+    "@supabase/supabase-js": "^2.49.3",
+    "@tavily/core": "^0.3.4",
     "@types/uuid": "^10.0.0",
     "@wagmi/chains": "^1.8.0",
     "axios": "^1.8.4",
@@ -48,9 +48,9 @@
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "socks-proxy-agent": "^8.0.5",
-    "undici": "^7.5.0",
+    "undici": "^7.6.0",
     "uuid": "^11.1.0",
-    "viem": "^2.23.13",
+    "viem": "^2.24.1",
     "@trump-fun/common": "workspace:*"
   }
 }

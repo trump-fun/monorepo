@@ -13,7 +13,7 @@
     "start:dev": "bun run bot.ts --env=development"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.2",
     "@types/bun": "latest"
   },
   "peerDependencies": {
@@ -21,17 +21,17 @@
   },
   "dependencies": {
     "@trump-fun/common": "workspace:*",
-    "telegraf": "^4.0.0",
+    "telegraf": "^4.16.3",
     "@apollo/client": "^3.13.5",
     "@apollo/server": "^4.11.3",
-    "@privy-io/server-auth": "^1.19.0",
-    "@supabase/supabase-js": "^2.49.1",
+    "@privy-io/server-auth": "^1.19.1",
+    "@supabase/supabase-js": "^2.49.3",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
-    "grammy": "^1.35.0",
+    "grammy": "^1.35.1",
     "graphql": "^16.10.0",
-    "react": "^18.2.0",
-    "supabase": "^2.19.7",
-    "viem": "^2.23.14"
+    "react": "^19.0.0",
+    "supabase": "^2.20.5",
+    "viem": "^2.24.1"
   }
 }
