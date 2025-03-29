@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { CHAIN_CONFIG, POINTS_DECIMALS, SupportedChainIds, erc20Abi } from '@trump-fun/common';
+import { CHAIN_CONFIG, POINTS_DECIMALS, SupportedChainIds, freedomAbi } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
 
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
     const pointsAddress = CHAIN_CONFIG[chainId].freedomAddress;
 
     const wallet = new ethers.Wallet(privateKey, provider);
-    const pointsContract = new ethers.Contract(pointsAddress, erc20Abi, wallet);
+    const pointsContract = new ethers.Contract(pointsAddress, freedomAbi, wallet);
     const balance = await pointsContract.balanceOf(walletAddress);
 
     const userIsNew = await isNewUser(walletAddress);

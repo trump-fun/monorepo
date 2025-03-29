@@ -32,7 +32,7 @@ export const useNetwork = () => {
   // Check if the current chainId is a supported chain ID
   const isSupportedChain = Object.keys(CHAIN_CONFIG).includes(chainId.toString());
   if (!isSupportedChain) {
-    console.log(
+    console.error(
       `User is on an unsupported chain (${chainId.toString()}), using the default network: `,
       DEFAULT_CHAIN_ID
     );
@@ -109,7 +109,6 @@ export const useNetwork = () => {
   const handleSwitchNetwork = useCallback(
     (targetChainId: number) => {
       try {
-        console.log(`Switching to network: ${targetChainId}`);
         switchChain({ chainId: targetChainId });
       } catch (error) {
         console.error('Error switching network:', error);
@@ -120,8 +119,6 @@ export const useNetwork = () => {
 
   // Check if current network is supported
   const isNetworkSupported = networkInfo.isSupported;
-
-  console.log('Current chainId:', chainId, 'networkInfo:', networkInfo);
 
   return {
     chainId,

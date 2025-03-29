@@ -5,7 +5,7 @@ import {
   TRUMP_FUN_TG_URL,
   TRUMP_FUN_TWITTER_URL,
   TRUMP_FUN_TWITTER_USERNAME,
-} from '@/utils/config';
+} from '@trump-fun/common';
 import Link from 'next/link';
 import { FaTelegramPlane } from 'react-icons/fa';
 

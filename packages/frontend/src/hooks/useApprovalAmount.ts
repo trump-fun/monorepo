@@ -1,8 +1,8 @@
-import { erc20Abi } from '@trump-fun/common';
+import { freedomAbi } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
+import { Address } from 'viem';
 import { useAccount, usePublicClient } from 'wagmi';
 import { useNetwork } from './useNetwork';
-import { Address } from 'viem';
 
 export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
   const { appAddress } = useNetwork();
@@ -19,7 +19,7 @@ export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
 
         const tokenAddressHex = tokenAddress as `0x${string}`;
         const allowance = await publicClient.readContract({
-          abi: erc20Abi,
+          abi: freedomAbi,
           address: tokenAddressHex,
           functionName: 'allowance',
           args: [account.address as `0x${string}`, appAddress],

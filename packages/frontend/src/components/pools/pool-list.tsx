@@ -76,12 +76,6 @@ export function PoolList() {
     );
   }
 
-  // Only log on non-undefined values to reduce console spam
-  if (pools?.pools) {
-    console.log('pools length', pools.pools.length);
-  }
-
-  // Only show error if we have no previous valid data to display
   if (error && !currentPools) {
     return <div>Error fetching pools: {error?.message}</div>;
   }

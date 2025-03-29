@@ -3,6 +3,7 @@
 import { PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider, createConfig } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SUPABASE_BUCKET } from '@trump-fun/common';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { arbitrumSepolia, baseSepolia } from 'viem/chains';
@@ -23,14 +24,11 @@ const queryClient = new QueryClient();
 
 export function PrivyAuthProvider({ children }: { children: React.ReactNode }) {
   // Use resolvedTheme for more consistent theme detection
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
   const [privyTheme, setPrivyTheme] = useState<'light' | 'dark'>('light');
 
   // Set up proper theme detection
   useEffect(() => {
-    setMounted(true);
-
     // Use system preference initially
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setPrivyTheme(prefersDark ? 'dark' : 'light');
@@ -73,7 +71,7 @@ export function PrivyAuthProvider({ children }: { children: React.ReactNode }) {
         appearance: {
           theme: privyTheme, // Use our tracked theme state
           accentColor: '#ff6d00',
-          logo: 'https://fxewzungnacaxpsnowcu.supabase.co/storage/v1/object/public/trump-fun/logo/trump.svg',
+          logo: `${SUPABASE_BUCKET}/logo/trump.svg`,
           walletList: ['metamask', 'coinbase_wallet', 'rainbow', 'wallet_connect'],
           walletChainType: 'ethereum-only',
           showWalletLoginFirst: true,

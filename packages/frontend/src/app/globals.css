@@ -45,8 +45,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Base Theme Variables */
 :root {
   --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Light Theme Colors */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -65,11 +72,15 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+
+  /* Chart Colors */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Sidebar Colors */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -78,8 +89,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Orange Theme Colors */
+  --orange-primary: #ff6d00;
+  --orange-light: #ff9d4d;
+  --orange-dark: #e65100;
 }
 
+/* Dark Theme */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -99,11 +116,15 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+
+  /* Chart Colors - Dark Mode */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+
+  /* Sidebar Colors - Dark Mode */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -114,137 +135,116 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Base Styles */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-geist-sans);
+  }
+  code,
+  pre {
+    font-family: var(--font-geist-mono);
   }
 }
 
+/* Scrollbar Utilities */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-
 .scroll-hide {
   scrollbar-width: none;
 }
 
-/* Privy UI overrides - Simplified with orange accent */
+/* Privy UI Overrides - Consolidated */
 body {
-  /* Button and action colors - just a hint of orange */
-  --privy-color-accent: #ff6d00;
-  --privy-color-accent-light: #ff6d00;
-
-  /* Input styling kept simple */
+  --privy-color-accent: var(--orange-primary);
+  --privy-color-accent-light: var(--orange-primary);
   --privy-color-input-text: currentColor;
 }
 
-/* Force dark theme for Privy dialog when in dark mode */
-.dark {
-  --privy-color-background: #1f1f1f !important;
-  --privy-color-background-2: #2f2f2f !important;
-  --privy-color-background-3: #3f3f3f !important;
-  --privy-color-foreground: #ffffff !important;
-  --privy-color-foreground-2: #eeeeee !important;
-  --privy-color-foreground-3: #dddddd !important;
-  --privy-color-foreground-4: #cccccc !important;
-  --privy-color-foreground-accent: #ffffff !important;
-  --privy-color-input: #3f3f3f !important;
-  --privy-color-input-text: #ffffff !important;
-}
-
-/* Force light theme for Privy dialog when in light mode */
+/* Light Mode Privy */
 :root:not(.dark) {
-  --privy-color-background: #ffffff !important;
-  --privy-color-background-2: #f8f8f8 !important;
-  --privy-color-background-3: #f0f0f0 !important;
-  --privy-color-foreground: #000000 !important;
-  --privy-color-foreground-2: #222222 !important;
-  --privy-color-foreground-3: #444444 !important;
-  --privy-color-foreground-4: #666666 !important;
-  --privy-color-foreground-accent: #000000 !important;
-  --privy-color-input: #f0f0f0 !important;
-  --privy-color-input-text: #000000 !important;
+  --privy-color-background: #ffffff;
+  --privy-color-background-2: #f8f8f8;
+  --privy-color-background-3: #f0f0f0;
+  --privy-color-foreground: #000000;
+  --privy-color-foreground-2: #222222;
+  --privy-color-foreground-3: #444444;
+  --privy-color-foreground-4: #666666;
+  --privy-color-foreground-accent: #000000;
+  --privy-color-input: #f0f0f0;
+  --privy-color-input-text: #000000;
 }
 
-/* Fix for dark mode class added by our script */
+/* Dark Mode Privy */
+.dark,
 .dark-privy {
-  --privy-color-background: #1f1f1f !important;
-  --privy-color-background-2: #2f2f2f !important;
-  --privy-color-background-3: #3f3f3f !important;
-  --privy-color-foreground: #ffffff !important;
-  --privy-color-foreground-2: #eeeeee !important;
-  --privy-color-foreground-3: #dddddd !important;
-  --privy-color-foreground-4: #cccccc !important;
+  --privy-color-background: #1f1f1f;
+  --privy-color-background-2: #2f2f2f;
+  --privy-color-background-3: #3f3f3f;
+  --privy-color-foreground: #ffffff;
+  --privy-color-foreground-2: #eeeeee;
+  --privy-color-foreground-3: #dddddd;
+  --privy-color-foreground-4: #cccccc;
+  --privy-color-foreground-accent: #ffffff;
+  --privy-color-input: #3f3f3f;
+  --privy-color-input-text: #ffffff;
 }
 
-/* Add extra space at the bottom of Privy dialog for passkey link */
+/* Privy Dialog Styling */
 .privy-dialog,
 .privy-dialog__container {
-  padding-bottom: 60px !important;
+  padding-bottom: 60px;
 }
 
-/* Ensure passkey link is visible in any theme */
-a[data-testid='passkey-link'],
-div[class*='passkey-link'],
-button[data-testid='passkey-button'],
-a[href*='passkey'],
-.privy-dialog-footer a,
-.privy-dialog__footer a,
-.privy-dialog__footer div,
+/* Passkey Link Styling */
+[data-testid='passkey-link'],
+[data-testid='passkey-button'],
+[class*='passkey-link'],
 [data-testid*='passkey'],
-[class*='passkey'],
+.privy-dialog__footer a,
 .privy-dialog__footer *:last-child {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  margin-top: 15px !important;
-  text-align: center !important;
-  color: #ff6d00 !important; /* Orange is visible on both light and dark */
-  font-weight: bold !important;
-  text-decoration: underline !important;
-  font-size: 14px !important;
-  background-color: transparent !important;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  margin-top: 15px;
+  text-align: center;
+  color: var(--orange-primary);
+  font-weight: bold;
+  text-decoration: underline;
+  font-size: 14px;
+  background-color: transparent;
 }
 
-/* Apply theme-specific CSS for better contrast */
-.dark a[data-testid='passkey-link'],
-.dark div[class*='passkey-link'],
-.dark button[data-testid='passkey-button'],
-.dark a[href*='passkey'],
-.dark .privy-dialog-footer a,
-.dark .privy-dialog__footer a,
-.dark .privy-dialog__footer div,
-.dark [data-testid*='passkey'],
-.dark [class*='passkey'],
-.dark .privy-dialog__footer *:last-child,
+/* Dark Mode Passkey Link */
+.dark [data-testid='passkey-link'],
+.dark [data-testid='passkey-button'],
+.dark [class*='passkey-link'],
 .dark-privy .privy-dialog a,
 .dark-privy .privy-dialog button {
-  color: #ff9d4d !important; /* Lighter orange for dark mode */
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5) !important;
+  color: var(--orange-light);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Dark mode compatible toast */
+/* Toast Styling */
 .dark-mode-toast {
-  border-left: 4px solid #ff6d00 !important;
+  border-left: 4px solid var(--orange-primary);
 }
 
 .dark .dark-mode-toast {
-  --toast-background: #1f1f1f;
-  --toast-foreground: #ffffff;
-  background-color: var(--toast-background) !important;
-  color: var(--toast-foreground) !important;
+  background-color: #1f1f1f;
+  color: #ffffff;
 }
 
 .light .dark-mode-toast {
-  --toast-background: #ffffff;
-  --toast-foreground: #0f0f0f;
-  background-color: var(--toast-background) !important;
-  color: var(--toast-foreground) !important;
+  background-color: #ffffff;
+  color: #0f0f0f;
 }
 
+/* Link Override */
 .StyledLink-sc-1c6127e5-0,
 .gCJte,
 .gCJte.gCJte {

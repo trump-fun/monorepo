@@ -13,7 +13,7 @@ import { showSuccessToast } from '@/utils/toast';
 import { USDC_DECIMALS } from '@/utils/utils';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
-import { erc20Abi, PoolStatus } from '@trump-fun/common';
+import { freedomAbi, PoolStatus } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
@@ -252,7 +252,7 @@ export function BettingPost({
 
       try {
         const allowance = await publicClient.readContract({
-          abi: erc20Abi,
+          abi: freedomAbi,
           address: tokenAddress,
           functionName: 'allowance',
           args: [account.address, appAddress],
@@ -481,7 +481,7 @@ export function BettingPost({
 
       try {
         const allowance = await publicClient.readContract({
-          abi: erc20Abi,
+          abi: freedomAbi,
           address: tokenAddress,
           functionName: 'allowance',
           args: [account.address, appAddress],

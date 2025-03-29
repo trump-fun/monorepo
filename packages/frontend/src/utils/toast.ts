@@ -27,8 +27,6 @@ export const showBetSuccessToast = (title: string, description?: string) => {
     .replace(/win/gi, 'WIN')
     .replace(/big/gi, 'BIG');
 
-  console.log('SHOWING BET SUCCESS TOAST:', trumpStyle);
-
   // Use a custom class that properly handles both light and dark mode
   toast(trumpStyle, {
     icon: '💰',

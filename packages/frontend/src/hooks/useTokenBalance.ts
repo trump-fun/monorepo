@@ -1,6 +1,6 @@
 'use client';
 
-import { erc20Abi } from '@trump-fun/common';
+import { freedomAbi } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import { type Address } from 'viem';
 import { usePublicClient } from 'wagmi';
@@ -49,7 +49,7 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
       try {
         const tokenAddressHex = tokenAddress as Address;
         const balanceResult = await publicClient.readContract({
-          abi: erc20Abi,
+          abi: freedomAbi,
           address: tokenAddressHex,
           functionName: 'balanceOf',
           args: [address],
@@ -58,7 +58,6 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
         // Store result
         const balanceValue = balanceResult as bigint;
 
-        console.log('balanceValue useEffect', balanceValue);
         setBalance({
           value: balanceValue,
           decimals: tokenDecimals,
@@ -104,7 +103,7 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
     try {
       const tokenAddressHex = tokenAddress as Address;
       const balanceResult = await publicClient.readContract({
-        abi: erc20Abi,
+        abi: freedomAbi,
         address: tokenAddressHex,
         functionName: 'balanceOf',
         args: [address],
@@ -113,7 +112,6 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
       // Store result
       const balanceValue = balanceResult as bigint;
 
-      console.log('balanceValue', balanceValue);
       setBalance({
         value: balanceValue,
         decimals: tokenDecimals,

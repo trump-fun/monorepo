@@ -10,6 +10,7 @@ import { NetworkIndicator } from '../network-indicator';
 import { ThemeToggle } from '../theme-toggle';
 import { TokenSwitch } from '../token-switch';
 import { TrumpUserPill } from '../user-pill';
+import { SUPABASE_BUCKET } from '@trump-fun/common';
 
 export default function Nav() {
   const { formattedBalance, tokenLogo } = useTokenBalance();
@@ -33,7 +34,7 @@ export default function Nav() {
           <div className='text-2xl font-bold text-orange-500'>
             <Link href='/explore' className='flex items-center gap-2'>
               <Image
-                src='https://fxewzungnacaxpsnowcu.supabase.co/storage/v1/object/public/trump-fun/logo/trump.svg'
+                src={`${SUPABASE_BUCKET}/logo/trump.svg`}
                 alt='Trump.fun'
                 width={40}
                 height={40}
@@ -45,7 +46,7 @@ export default function Nav() {
             {/* Desktop navigation */}
             <div className='hidden items-center gap-4 md:flex'>
               <NetworkIndicator />
-              {navItems.map((item) => (
+              {navItems.map(item => (
                 <Button
                   key={item.href}
                   variant='outline'
@@ -81,7 +82,7 @@ export default function Nav() {
                 <SheetTitle className='text-center font-bold text-orange-500'>
                   <div className='flex flex-col items-center'>
                     <Image
-                      src='https://fxewzungnacaxpsnowcu.supabase.co/storage/v1/object/public/trump-fun/logo/trump.svg'
+                      src={`${SUPABASE_BUCKET}/logo/trump.svg`}
                       alt='Trump.fun'
                       width={100}
                       height={30}
@@ -101,7 +102,7 @@ export default function Nav() {
                   <TokenSwitch />
 
                   <div className='w-full space-y-4'>
-                    {navItems.map((item) => (
+                    {navItems.map(item => (
                       <Button
                         key={item.href}
                         variant='outline'

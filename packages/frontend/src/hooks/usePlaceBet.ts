@@ -1,5 +1,5 @@
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
-import { bettingContractAbi, erc20Abi, TokenType, USDC_DECIMALS } from '@trump-fun/common';
+import { bettingContractAbi, freedomAbi, TokenType, USDC_DECIMALS } from '@trump-fun/common';
 import { PublicClient } from 'viem';
 import { useNetwork } from './useNetwork';
 
@@ -58,7 +58,7 @@ export function usePlaceBet({
       const needsApproval = !approvedAmount || parseFloat(approvedAmount) < amount;
       if (needsApproval && !isConfirmed) {
         const { request: approveRequest } = await publicClient.simulateContract({
-          abi: erc20Abi,
+          abi: freedomAbi,
           address: tokenAddress,
           functionName: 'approve',
           account: accountAddress as `0x${string}`,

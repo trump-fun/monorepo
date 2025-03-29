@@ -1,4 +1,4 @@
-import { bettingContractAbi, erc20Abi } from '@trump-fun/common';
+import { bettingContractAbi, freedomAbi } from '@trump-fun/common';
 import dotenv from 'dotenv';
 import 'dotenv/config';
 import { GraphQLClient, gql } from 'graphql-request';
@@ -230,7 +230,7 @@ const approveTokenSpending = async (
     // Approve the betting contract to spend tokens
     const hash = await walletClient.writeContract({
       address: FREEDOM_TOKEN_ADDRESS,
-      abi: erc20Abi,
+      abi: freedomAbi,
       functionName: 'approve',
       args: [CONTRACT_ADDRESS, amount],
       nonce: Number(currentNonce),

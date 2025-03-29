@@ -15,6 +15,11 @@ export const POLLING_INTERVALS: Record<string, number> = {
   'user-profile': 2000,
   'user-bets': 10000,
 };
+export const TRUMP_FUN_TWITTER_USERNAME = 'realTrumpFun';
+export const TRUMP_FUN_TWITTER_URL = 'https://x.com/realTrumpFun';
+export const TRUMP_FUN_TRUTH_SOCIAL_URL = 'https://truthsocial.com/@realDonaldTrump';
+export const TRUMP_FUN_TG_URL = 'https://t.me/trump_fun_bot';
+export const SUPABASE_BUCKET = `https://${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID || process.env.SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/trump-fun/`;
 
 // This config contains information that isn't in the viem chain info
 // The viem chain info has the block explorer url, native currency, and other basic info if you need it.
