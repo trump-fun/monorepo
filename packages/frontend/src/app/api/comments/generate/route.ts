@@ -1,7 +1,6 @@
-import { OrderDirection, Pool, Pool_OrderBy } from '@trump-fun/common';
-import { apolloClient } from '@/lib/apollo/client';
 import { createClient } from '@/lib/supabase/server';
-import { GET_POOLS } from '@/server/queries';
+import { fetchPool } from '@/utils/fetchPool';
+import { Pool } from '@trump-fun/common';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
@@ -31,15 +30,6 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }
 
-    const indexerUrl = process.env.INDEXER_URL || process.env.NEXT_PUBLIC_INDEXER_URL;
-    const indexerApiKey = process.env.INDEXER_API_KEY || process.env.NEXT_PUBLIC_INDEXER_API_KEY;
-    if (!indexerUrl || !indexerApiKey) {
-      return NextResponse.json(
-        { error: 'Missing required environment variables' },
-        { status: 500 }
-      );
-    }
-
     const pool = await fetchPool(poolId);
 
     if (!pool) {
@@ -64,20 +54,6 @@ export const GET = async (request: NextRequest) => {
     );
   }
 };
-
-async function fetchPool(poolId: string): Promise<Pool | null> {
-  const { data } = await apolloClient.query({
-    query: GET_POOLS,
-    variables: {
-      filter: { poolId },
-      first: 1,
-      orderBy: Pool_OrderBy.CreatedAt,
-      orderDirection: OrderDirection.Desc,
-    },
-  });
-
-  return data?.pools?.length ? (data.pools[0] as Pool) : null;
-}
 
 async function generateComments(pool: Pool): Promise<string[]> {
   const prompt = `Generate 10 diverse, realistic comments for a prediction market about "${

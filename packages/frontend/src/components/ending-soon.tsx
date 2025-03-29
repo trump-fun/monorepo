@@ -1,61 +1,68 @@
 'use client';
 
-import { GET_POOLS } from '@/app/queries';
+import { GET_POOLS, GET_POOLS_SUBSCRIPTION } from '@/app/queries';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
-import { useQuery } from '@apollo/client';
-import {
-  OrderDirection,
-  POLLING_INTERVALS,
-  Pool,
-  Pool_OrderBy,
-  PoolStatus,
-} from '@trump-fun/common';
+import { useQuery, useSubscription } from '@apollo/client';
+import { OrderDirection, Pool, Pool_OrderBy, PoolStatus } from '@trump-fun/common';
 import { Clock } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EndingSoonBet } from './ending-soon-bet';
 
 export function EndingSoon() {
   const { tokenType } = useTokenContext();
+  const [pools, setPools] = useState<Pool[]>([]);
 
   const currentTimestamp = Math.floor(Date.now() / 1000);
-
   const oneDayFromNow = currentTimestamp + 86400;
 
+  const variables = {
+    filter: {
+      betsCloseAt_gt: currentTimestamp.toString(),
+      betsCloseAt_lt: oneDayFromNow.toString(),
+      status_in: [PoolStatus.Pending, PoolStatus.None],
+    },
+    orderBy: Pool_OrderBy.BetsCloseAt,
+    orderDirection: OrderDirection.Asc,
+    first: 3,
+  };
+
   const {
-    data: endingSoonPools,
+    data: initialData,
     loading,
     previousData,
   } = useQuery(GET_POOLS, {
-    variables: {
-      filter: {
-        betsCloseAt_gt: currentTimestamp.toString(),
-        betsCloseAt_lt: oneDayFromNow.toString(),
-        status_in: [PoolStatus.Pending, PoolStatus.None],
-      },
-      orderBy: Pool_OrderBy.BetsCloseAt,
-      orderDirection: OrderDirection.Asc,
-      first: 3,
-    },
+    variables,
     context: { name: 'endingSoonSearch' },
     notifyOnNetworkStatusChange: true,
-    pollInterval: POLLING_INTERVALS['ending-soon'],
+    fetchPolicy: 'network-only',
   });
 
-  // Use previous data during subsequent loading states to prevent flashing
+  useSubscription(GET_POOLS_SUBSCRIPTION, {
+    variables,
+    shouldResubscribe: true,
+    onData: ({ data }) => {
+      if (data?.data?.pools) {
+        setPools(data.data.pools);
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (initialData?.pools) {
+      setPools(initialData.pools);
+    }
+  }, [initialData?.pools]);
+
+  // Use previous data during loading states to prevent flashing
   const poolsToDisplay = useMemo(() => {
     // On initial load, show loading state
     if (loading && !previousData) {
-      return { pools: [] };
+      return [];
     }
-    // For subsequent loads, use previous data until new data is ready
-    return endingSoonPools || previousData || { pools: [] };
-  }, [endingSoonPools, loading, previousData]);
-
-  const filteredEndingSoonPools = useMemo(() => {
-    if (!poolsToDisplay?.pools) return [];
-    return poolsToDisplay.pools;
-  }, [poolsToDisplay?.pools]);
+    // Return current pools state (from either query or subscription)
+    return pools.length > 0 ? pools : previousData?.pools || [];
+  }, [pools, loading, previousData]);
 
   return (
     <div className='bg-background rounded-lg border border-gray-800 p-4 shadow-lg'>
@@ -84,8 +91,8 @@ export function EndingSoon() {
               </div>
             ))}
           </div>
-        ) : filteredEndingSoonPools.length > 0 ? (
-          filteredEndingSoonPools.map((pool: Pool) => {
+        ) : poolsToDisplay.length > 0 ? (
+          poolsToDisplay.map((pool: Pool) => {
             return (
               <EndingSoonBet
                 key={pool.id}

@@ -312,3 +312,37 @@ export const GET_POOL_SUBSCRIPTION = gql`
     }
   }
 `;
+
+export const GET_BET_WITHDRAWALS_SUBSCRIPTION = gql`
+  subscription GetBetWithdrawalsSubscription($where: BetWithdrawal_filter!) {
+    betWithdrawals(where: $where) {
+      id
+      betId
+      poolId
+      user
+      blockNumber
+      blockTimestamp
+      transactionHash
+      chainName
+      chainId
+    }
+  }
+`;
+
+export const GET_PAYOUT_CLAIMED_SUBSCRIPTION = gql`
+  subscription GetPayoutClaimedSubscription($where: PayoutClaimed_filter!) {
+    payoutClaimeds(where: $where) {
+      id
+      betId
+      poolId
+      user
+      amount
+      tokenType
+      blockNumber
+      blockTimestamp
+      transactionHash
+      chainName
+      chainId
+    }
+  }
+`;
