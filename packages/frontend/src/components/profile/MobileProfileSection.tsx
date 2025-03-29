@@ -6,6 +6,7 @@ import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { TokenType } from '@trump-fun/common';
 import { ArrowUpFromLine } from 'lucide-react';
 import { BettingStats } from './BettingStats';
+import { Dispatch, SetStateAction } from 'react';
 
 export function MobileProfileSection({
   address,
@@ -16,10 +17,10 @@ export function MobileProfileSection({
   address: string;
   userStats: any;
   withdrawalProps: {
-    formattedWithdrawableBalance: string;
+    formattedWithdrawableBalance: number;
     withdrawAmount: number;
-    setWithdrawAmount: (amount: number) => void;
-    handleWithdraw: () => void;
+    setWithdrawAmount: Dispatch<SetStateAction<number>>;
+    handleWithdraw: () => Promise<void>;
     isPending: boolean;
   };
   tokenType: TokenType;
