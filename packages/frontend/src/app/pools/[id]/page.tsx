@@ -38,6 +38,7 @@ import { useApprovalAmount } from '@/hooks/useApprovalAmount';
 
 export default function PoolDetailPage() {
   // Router and authentication
+  const { tokenType, tokenAddress } = useTokenContext();
   const { id } = useParams();
   const { isConnected, authenticated } = useWalletAddress();
   const { login } = usePrivy();
@@ -45,9 +46,6 @@ export default function PoolDetailPage() {
   const account = useAccount();
   const { ready } = usePrivy();
   const [selectedTab, setSelectedTab] = useState<string>('comments');
-
-  // Token context
-  const { tokenType, getTokenAddress } = useTokenContext();
 
   // Contract interaction
   const { data: hash, isPending, writeContract } = useWriteContract();
@@ -75,7 +73,7 @@ export default function PoolDetailPage() {
     handleFacts: handleFactsAction,
   } = usePoolFacts(id as string, authenticated);
 
-  const approvedAmount = useApprovalAmount(getTokenAddress, hash);
+  const approvedAmount = useApprovalAmount(tokenAddress, hash);
 
   // Post data fetching
   const { data: postData } = useQuery({
@@ -185,7 +183,7 @@ export default function PoolDetailPage() {
     ready,
     publicClient,
     accountAddress: account.address,
-    getTokenAddress,
+    tokenAddress,
     tokenType,
     approvedAmount,
     isConfirmed,

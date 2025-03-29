@@ -3,7 +3,8 @@
 import { AuthButton } from '@/components/auth-button';
 import { PoolList } from '@/components/pools/pool-list';
 import { Button } from '@/components/ui/button';
-import { useBalance } from '@/hooks/usePointsBalance';
+import { useNetwork } from '@/hooks/useNetwork';
+import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { TRUMP_FUN_TG_URL, TRUMP_FUN_TWITTER_URL } from '@/utils/config';
 import { topUpBalance } from '@/utils/topUp';
 import { usePrivy } from '@privy-io/react-auth';
@@ -15,7 +16,8 @@ import { useCallback, useEffect } from 'react';
 export default function Home() {
   //TODO We want to remove this when we can, have it here because the login button callback isn't getting called, probably because of a demount issue
   const { ready, authenticated, user } = usePrivy();
-  const { refetch: fetchBalance } = useBalance();
+  const { refetch: fetchBalance } = useTokenBalance();
+  const { chainId } = useNetwork();
 
   // Use useCallback to prevent the function from being recreated on every render
   const handleTopUp = useCallback(async () => {
@@ -26,6 +28,7 @@ export default function Home() {
     try {
       const result = await topUpBalance({
         walletAddress: user.wallet.address,
+        chainId,
       });
 
       if (!result.success) {
@@ -42,7 +45,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error in handleTopUp:', error);
     }
-  }, [ready, authenticated, user, fetchBalance]);
+  }, [ready, authenticated, user, fetchBalance, chainId]);
 
   useEffect(() => {
     if (ready && authenticated && user) {

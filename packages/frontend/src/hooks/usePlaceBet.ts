@@ -1,19 +1,14 @@
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
-import {
-  APP_ADDRESS,
-  bettingContractAbi,
-  erc20Abi,
-  TokenType,
-  USDC_DECIMALS,
-} from '@trump-fun/common';
-import { Address, PublicClient } from 'viem';
+import { bettingContractAbi, erc20Abi, TokenType, USDC_DECIMALS } from '@trump-fun/common';
+import { PublicClient } from 'viem';
+import { useNetwork } from './useNetwork';
 
 interface UsePlaceBetProps {
   writeContract: any;
   ready: boolean;
   publicClient: PublicClient | undefined;
   accountAddress: string | undefined;
-  getTokenAddress: () => Address | null;
+  tokenAddress: `0x${string}`;
   tokenType: TokenType;
   approvedAmount: string | undefined;
   isConfirmed: boolean;
@@ -33,13 +28,14 @@ export function usePlaceBet({
   ready,
   publicClient,
   accountAddress,
-  getTokenAddress,
+  tokenAddress,
   tokenType,
   approvedAmount,
   isConfirmed,
   resetBettingForm,
   symbol,
 }: UsePlaceBetProps) {
+  const { appAddress } = useNetwork();
   const tokenTypeC = tokenType === TokenType.Usdc ? 0 : 1;
 
   const placeBet = async ({ poolId, betAmount, selectedOption, options }: PlaceBetParams) => {
@@ -61,13 +57,12 @@ export function usePlaceBet({
 
       const needsApproval = !approvedAmount || parseFloat(approvedAmount) < amount;
       if (needsApproval && !isConfirmed) {
-        const tokenAddress = getTokenAddress() as `0x${string}`;
         const { request: approveRequest } = await publicClient.simulateContract({
           abi: erc20Abi,
           address: tokenAddress,
           functionName: 'approve',
           account: accountAddress as `0x${string}`,
-          args: [APP_ADDRESS, tokenAmount],
+          args: [appAddress, tokenAmount],
         });
 
         writeContract(approveRequest);
@@ -76,7 +71,7 @@ export function usePlaceBet({
 
       const { request } = await publicClient.simulateContract({
         abi: bettingContractAbi,
-        address: APP_ADDRESS,
+        address: appAddress,
         functionName: 'placeBet',
         account: accountAddress as `0x${string}`,
         args: [

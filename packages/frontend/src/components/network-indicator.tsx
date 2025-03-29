@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useNetwork } from '@/hooks/useNetwork';
 import { cn } from '@/lib/utils';
-import { CHAIN_CONFIG } from '@trump-fun/common/consts';
+import { CHAIN_CONFIG } from '@trump-fun/common/';
 
 export function NetworkIndicator() {
   const { networkInfo, switchNetwork } = useNetwork();

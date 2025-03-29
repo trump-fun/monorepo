@@ -1,12 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useNetwork } from '@/hooks/useNetwork';
 import { topUpBalance } from '@/utils/topUp';
-import { useLogin, usePrivy } from '@privy-io/react-auth';
+import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth';
 import { LogIn } from 'lucide-react';
 import { useEffect } from 'react';
-import { useBalance } from '../hooks/usePointsBalance';
-import { useEmbeddedWallet } from './EmbeddedWalletProvider';
+import { useTokenBalance } from '../hooks/useTokenBalance';
 
 export const PrivyLogoutButton = () => {
   const { logout } = usePrivy();
@@ -22,9 +22,11 @@ export function PrivyLoginButton({
   className = 'bg-orange-500 text-white hover:bg-orange-600',
   variant = 'contained',
 }: PrivyLoginButtonProps) {
-  const { ready, authenticated } = usePrivy();
-  const { embeddedWallet } = useEmbeddedWallet();
-  const { refetch: fetchBalance } = useBalance();
+  const { ready, authenticated, user } = usePrivy();
+  const { wallets } = useWallets();
+  const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
+  const { refetch: fetchBalance } = useTokenBalance();
+  const { chainId } = useNetwork();
 
   useEffect(() => {
     if (!ready || !authenticated || !embeddedWallet) {
@@ -36,6 +38,7 @@ export function PrivyLoginButton({
         console.log('Topping up balance');
         const result = await topUpBalance({
           walletAddress: embeddedWallet.address,
+          chainId,
         });
 
         if (!result.success) {
@@ -57,11 +60,11 @@ export function PrivyLoginButton({
     };
 
     makeCall();
-  }, [ready, authenticated, embeddedWallet, fetchBalance]);
+  }, [ready, authenticated, embeddedWallet, fetchBalance, chainId]);
 
   // For some reason the callback
   const { login } = useLogin({
-    onError: (error) => {
+    onError: error => {
       console.error('Login error:', error);
     },
 
@@ -69,6 +72,7 @@ export function PrivyLoginButton({
       console.log('Login complete:', user);
       const result = await topUpBalance({
         walletAddress: user.wallet?.address || '',
+        chainId,
       });
 
       if (!result.success) {
@@ -83,7 +87,7 @@ export function PrivyLoginButton({
         }
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       fetchBalance();
     },

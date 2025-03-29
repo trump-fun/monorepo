@@ -1,34 +1,38 @@
 'use client';
 
-import {
-  POINTS_ADDRESS,
-  POINTS_DECIMALS,
-  TokenType,
-  USDC_ADDRESS,
-  USDC_DECIMALS,
-} from '@trump-fun/common';
+import { CHAIN_CONFIG, DEFAULT_CHAIN_ID, TokenType, USDC_DECIMALS } from '@trump-fun/common';
 import Image from 'next/image';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Address } from 'viem';
+import { useNetwork } from './useNetwork';
 
 // Token logos/symbols
-export const TOKEN_SYMBOLS: Record<TokenType, { symbol: string; logo: React.ReactNode }> = {
+export const TOKEN_SYMBOLS: Record<
+  TokenType,
+  {
+    symbol: string;
+    logo: React.ReactNode;
+    decimals: number;
+  }
+> = {
   [TokenType.Usdc]: {
     symbol: 'USDC',
     logo: <Image src='/usdc.svg' alt='USD' width={16} height={16} style={{ display: 'inline' }} />,
+    decimals: 6, // Don't use USDC_DECIMALS, this "TOKEN_CONFIG" will eventually be our authority for token details
   },
   [TokenType.Points]: {
     symbol: 'FREEDOM',
     logo: (
       <Image src='/points2.png' alt='POINTS' width={16} height={16} style={{ display: 'inline' }} />
     ),
+    decimals: 6,
   },
 };
 
 interface TokenContextType {
   tokenType: TokenType;
   setTokenType: (type: TokenType) => void;
-  getTokenAddress: () => Address | null;
+  tokenAddress: Address;
   tokenSymbol: string;
   tokenLogo: React.ReactNode;
   tokenDecimals: number;
@@ -38,25 +42,24 @@ interface TokenContextType {
 const TokenContext = createContext<TokenContextType>({
   tokenType: TokenType.Usdc,
   setTokenType: () => {},
-  getTokenAddress: () => null,
+  tokenAddress: CHAIN_CONFIG[DEFAULT_CHAIN_ID].usdcAddress,
   tokenSymbol: TOKEN_SYMBOLS[TokenType.Usdc].symbol,
   tokenLogo: TOKEN_SYMBOLS[TokenType.Usdc].logo,
   tokenDecimals: USDC_DECIMALS,
 });
 
 export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
+  const { usdcAddress, pointsAddress } = useNetwork();
   const [tokenType, setTokenType] = useState<TokenType>(TokenType.Usdc);
 
   // Get token information
-  const tokenSymbol = TOKEN_SYMBOLS[tokenType].symbol;
-  const tokenLogo = TOKEN_SYMBOLS[tokenType].logo;
-  const tokenDecimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
+  const {
+    symbol: tokenSymbol,
+    logo: tokenLogo,
+    decimals: tokenDecimals,
+  } = TOKEN_SYMBOLS[tokenType];
 
-  // Function to get token address for current chain
-  const getTokenAddress = (): Address | null => {
-    const address = tokenType === TokenType.Usdc ? USDC_ADDRESS : POINTS_ADDRESS;
-    return address ? (address as Address) : null;
-  };
+  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : pointsAddress;
 
   // Load saved preference from localStorage
   useEffect(() => {
@@ -80,7 +83,7 @@ export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
   const value: TokenContextType = {
     tokenType,
     setTokenType,
-    getTokenAddress,
+    tokenAddress,
     tokenSymbol,
     tokenLogo,
     tokenDecimals,

@@ -5,13 +5,13 @@ import { isCommentLiked, saveCommentLike } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/formatDate';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
-import { Comment } from '@trump-fun/common';
+import { Tables } from '@trump-fun/common';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { RandomAvatar } from 'react-random-avatars';
 
 interface CommentItemProps {
-  comment: Comment;
+  comment: Tables<'comments'>;
 }
 
 const CommentItem = ({ comment }: CommentItemProps) => {

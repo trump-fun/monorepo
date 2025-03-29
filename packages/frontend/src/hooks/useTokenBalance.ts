@@ -1,10 +1,9 @@
 'use client';
 
-import { TokenType, erc20Abi } from '@trump-fun/common';
+import { erc20Abi } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import { type Address } from 'viem';
 import { usePublicClient } from 'wagmi';
-import { useNetwork } from './useNetwork';
 import { useTokenContext } from './useTokenContext';
 import { useWalletAddress } from './useWalletAddress';
 
@@ -24,9 +23,8 @@ interface TokenBalanceData {
  * A custom hook to fetch token balances directly using contract reads
  */
 export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
-  const { usdcAddress, pointsAddress } = useNetwork();
   const { address, isConnected, chainId } = useWalletAddress();
-  const { tokenType, tokenSymbol, tokenLogo, tokenDecimals } = useTokenContext();
+  const { tokenType, tokenSymbol, tokenLogo, tokenDecimals, tokenAddress } = useTokenContext();
   const publicClient = usePublicClient();
 
   // Balance state
@@ -36,9 +34,6 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
 
   // Only fetch if wallet is connected
   const shouldFetch = Boolean(isConnected && address && options.enabled !== false);
-
-  // Get token address based on current token type
-  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : pointsAddress;
 
   // Fetch balance from contract
   useEffect(() => {

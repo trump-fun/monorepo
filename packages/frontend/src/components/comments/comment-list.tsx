@@ -1,10 +1,10 @@
 'use client';
 
-import { Comment } from '@trump-fun/common';
+import { Tables } from '@trump-fun/common';
 import CommentItem from './comment-item';
 
 interface CommentListProps {
-  comments: Comment[];
+  comments: Tables<'comments'>[];
 }
 
 const CommentList = ({ comments }: CommentListProps) => {

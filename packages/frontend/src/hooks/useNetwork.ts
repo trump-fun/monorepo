@@ -1,6 +1,6 @@
 'use client';
 
-import { CHAIN_CONFIG, DEFAULT_CHAIN_ID, SupportedChainIds } from '@trump-fun/common/consts';
+import { CHAIN_CONFIG, DEFAULT_CHAIN_ID, SupportedChainIds } from '@trump-fun/common/';
 import { useCallback, useState } from 'react';
 import { arbitrumSepolia, base, baseSepolia, mainnet, sepolia } from 'viem/chains';
 import { useChainId, useSwitchChain } from 'wagmi';

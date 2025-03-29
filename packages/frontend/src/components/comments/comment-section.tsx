@@ -10,12 +10,12 @@ import { addComment } from '@/app/actions/comment-actions';
 
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 
-import { Comment } from '@trump-fun/common';
+import { Tables } from '@trump-fun/common';
 
 interface CommentSectionProps {
   poolId: string;
 
-  initialComments: Comment[];
+  initialComments: Tables<'comments'>[];
   isLoading: boolean;
   error: Error | null;
 }
@@ -39,7 +39,7 @@ export default function CommentSection({
   isLoading,
   error,
 }: CommentSectionProps) {
-  const [comments, setComments] = useState<Comment[]>(initialComments || []);
+  const [comments, setComments] = useState<Tables<'comments'>[]>(initialComments || []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -108,7 +108,7 @@ export default function CommentSection({
           }
         );
 
-        const tempComment: Comment = {
+        const tempComment: Tables<'comments'> = {
           body: content,
 
           pool_id: poolId,

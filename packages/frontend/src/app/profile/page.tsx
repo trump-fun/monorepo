@@ -15,7 +15,6 @@ import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import {
-  APP_ADDRESS,
   Bet,
   Bet_Filter,
   Bet_OrderBy,
@@ -37,6 +36,7 @@ import { usePublicClient, useReadContract, useWriteContract } from 'wagmi';
 import { GET_BET_WITHDRAWALS, GET_BETS, GET_PAYOUT_CLAIMED } from '../queries';
 
 export default function ProfilePage() {
+  const { appAddress } = useNetwork();
   const [activeFilter, setActiveFilter] = useState<string>('active');
   const [searchQuery, setSearchQuery] = useState('');
   const { tokenType } = useTokenContext();
@@ -49,7 +49,7 @@ export default function ProfilePage() {
   const [withdrawAmount, setWithdrawAmount] = useState(0);
 
   const { data: balance } = useReadContract({
-    address: APP_ADDRESS,
+    address: appAddress,
     abi: bettingContractAbi,
     functionName: 'userBalances',
     args: [address, tokenTypeC],
@@ -210,7 +210,7 @@ export default function ProfilePage() {
 
         const { request } = await publicClient.simulateContract({
           abi: bettingContractAbi,
-          address: APP_ADDRESS,
+          address: appAddress,
           functionName: 'withdraw',
           account: address as `0x${string}`,
           args: [tokenTypeC, tokenAmount],

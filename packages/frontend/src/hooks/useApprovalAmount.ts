@@ -1,11 +1,11 @@
-import { APP_ADDRESS, erc20Abi } from '@trump-fun/common';
+import { erc20Abi } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import { useAccount, usePublicClient } from 'wagmi';
+import { useNetwork } from './useNetwork';
+import { Address } from 'viem';
 
-export function useApprovalAmount(
-  getTokenAddress: () => string | `0x${string}` | null,
-  hash?: `0x${string}`
-) {
+export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
+  const { appAddress } = useNetwork();
   const [approvedAmount, setApprovedAmount] = useState<string>('0');
   const account = useAccount();
   const publicClient = usePublicClient();
@@ -15,7 +15,6 @@ export function useApprovalAmount(
       if (!account.address || !publicClient) return;
 
       try {
-        const tokenAddress = getTokenAddress();
         if (!tokenAddress) return;
 
         const tokenAddressHex = tokenAddress as `0x${string}`;
@@ -23,7 +22,7 @@ export function useApprovalAmount(
           abi: erc20Abi,
           address: tokenAddressHex,
           functionName: 'allowance',
-          args: [account.address as `0x${string}`, APP_ADDRESS],
+          args: [account.address as `0x${string}`, appAddress],
         });
 
         setApprovedAmount(allowance.toString());
@@ -33,7 +32,7 @@ export function useApprovalAmount(
     };
 
     fetchApprovedAmount();
-  }, [account.address, publicClient, getTokenAddress, hash]);
+  }, [account.address, publicClient, tokenAddress, hash, appAddress]);
 
   return approvedAmount;
 }

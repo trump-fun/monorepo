@@ -5,12 +5,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
+import { useNetwork } from '@/hooks/useNetwork';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
+import { showSuccessToast } from '@/utils/toast';
+import { USDC_DECIMALS } from '@/utils/utils';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
-import { APP_ADDRESS, erc20Abi, PoolStatus } from '@trump-fun/common';
+import { erc20Abi, PoolStatus } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
@@ -21,8 +24,6 @@ import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteCont
 import TruthSocial from './common/truth-social';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
-import { showSuccessToast } from '@/utils/toast';
-import { USDC_DECIMALS } from '@/utils/utils';
 
 interface BettingPostProps {
   id: string;
@@ -56,6 +57,8 @@ export function BettingPost({
   closesAt,
 }: BettingPostProps) {
   // Form state
+  const { appAddress } = useNetwork();
+  const { tokenType, tokenAddress } = useTokenContext(); //TODO deprecate
   const [betAmount, setBetAmount] = useState<string>('');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showBetForm, setShowBetForm] = useState(false);
@@ -100,7 +103,6 @@ export function BettingPost({
   const { authenticated, login } = usePrivy();
   const { wallets } = useWallets();
   const { signMessage } = useSignMessage();
-  const { tokenType, getTokenAddress } = useTokenContext();
   // Token balance
   const { balance, formattedBalance, symbol } = useTokenBalance();
 
@@ -116,7 +118,7 @@ export function BettingPost({
     ready: !!wallets?.length,
     publicClient,
     accountAddress: account.address,
-    getTokenAddress,
+    tokenAddress,
     tokenType,
     approvedAmount,
     isConfirmed,
@@ -251,9 +253,9 @@ export function BettingPost({
       try {
         const allowance = await publicClient.readContract({
           abi: erc20Abi,
-          address: getTokenAddress() as `0x${string}`,
+          address: tokenAddress,
           functionName: 'allowance',
-          args: [account.address, APP_ADDRESS],
+          args: [account.address, appAddress],
         });
 
         const formattedAllowance = Number(allowance) / 10 ** USDC_DECIMALS;
@@ -265,7 +267,7 @@ export function BettingPost({
     };
 
     fetchApprovedAmount();
-  }, [account.address, publicClient, hash, getTokenAddress]);
+  }, [account.address, publicClient, hash, appAddress, tokenAddress]);
 
   // Handle bet button click
   const handleBetClick = () => {
@@ -480,9 +482,9 @@ export function BettingPost({
       try {
         const allowance = await publicClient.readContract({
           abi: erc20Abi,
-          address: getTokenAddress() as `0x${string}`,
+          address: tokenAddress,
           functionName: 'allowance',
-          args: [account.address, APP_ADDRESS],
+          args: [account.address, appAddress],
         });
 
         // Format the allowance (divide by 10^TOKEN_DECIMALS for USDC)
@@ -495,7 +497,7 @@ export function BettingPost({
     };
 
     fetchApprovedAmount();
-  }, [account.address, publicClient, hash, getTokenAddress]);
+  }, [account.address, publicClient, hash, appAddress, tokenAddress]);
 
   // Remove the log for approved amount that's causing noise
   useEffect(() => {

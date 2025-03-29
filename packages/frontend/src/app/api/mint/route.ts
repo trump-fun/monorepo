@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
-import { POINTS_ADDRESS, POINTS_DECIMALS, erc20Abi } from '@trump-fun/common';
+import { CHAIN_CONFIG, POINTS_DECIMALS, SupportedChainIds, erc20Abi } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
 
 export type TopUpBalanceParams = {
   walletAddress: string;
+  chainId: number;
 };
 
 export type TopUpBalanceResponse = {
@@ -90,6 +91,19 @@ export async function POST(request: Request) {
   try {
     const body: TopUpBalanceParams = await request.json();
     const walletAddress = body.walletAddress;
+    const chainId = body.chainId as SupportedChainIds;
+
+    // Check if chainId is supported
+    if (!CHAIN_CONFIG[chainId]) {
+      return NextResponse.json<TopUpBalanceResponse>(
+        {
+          success: false,
+          amountMinted: '0',
+          error: `Unsupported chain ID: ${chainId}, supported chains are ${Object.keys(CHAIN_CONFIG).join(', ')}`,
+        },
+        { status: 400 }
+      );
+    }
 
     const isAllowed = await checkRateLimit(walletAddress);
     if (!isAllowed) {
@@ -111,8 +125,11 @@ export async function POST(request: Request) {
       throw new Error('Relayer private key not configured');
     }
 
+    // Get the points address from the chain config
+    const pointsAddress = CHAIN_CONFIG[chainId].freedomAddress;
+
     const wallet = new ethers.Wallet(privateKey, provider);
-    const pointsContract = new ethers.Contract(POINTS_ADDRESS, erc20Abi, wallet);
+    const pointsContract = new ethers.Contract(pointsAddress, erc20Abi, wallet);
     const balance = await pointsContract.balanceOf(walletAddress);
 
     const userIsNew = await isNewUser(walletAddress);
