@@ -49,6 +49,7 @@ export async function filterProcessedTruthSocialPosts(
 
       if (supabasePost) {
         // If post exists in Supabase and has a transaction hash, mark as should not process
+
         const hasTransactionHash =
           supabasePost.transaction_hash && supabasePost.transaction_hash.trim() !== '';
 

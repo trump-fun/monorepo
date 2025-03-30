@@ -49,9 +49,6 @@ export async function fetchWithPuppeteer(url: string) {
         if (response.status() === 200) {
           try {
             const data = await response.json();
-            // console.log("\nAPI Response Data from event:");
-            console.log(JSON.stringify(data, null, 2));
-            // Store response data
             responseData = data;
           } catch (e) {
             console.error('Error parsing response JSON from event:', e);

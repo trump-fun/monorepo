@@ -94,13 +94,10 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
         // const searchDocs =
         // await tavilySearch.invoke(query);
 
-        console.log('searchDocs', searchDocs);
-        console.log('searchDocs[0]', searchDocs[0]);
-        console.log(typeof searchDocs[0]);
         console.log(`Found ${searchDocs.length} search results`);
         for (const doc of searchDocs) {
           // Create structured LLM
-          const structuredLlm = config.large_llm.withStructuredOutput(evidenceSchema, {
+          const structuredLlm = config.cheap_large_llm.withStructuredOutput(evidenceSchema, {
             name: 'gatherEvidence',
           });
 

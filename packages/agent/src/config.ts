@@ -3,6 +3,7 @@
  */
 
 import { ChatAnthropic } from '@langchain/anthropic';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@trump-fun/common';
 import { baseSepolia, type Chain } from 'viem/chains';
@@ -25,6 +26,7 @@ export type AppConfig = {
   truthSocialApiUrl: string;
   trumpTruthSocialId: string;
   small_llm: ChatAnthropic;
+  cheap_large_llm: ChatGoogleGenerativeAI;
   large_llm: ChatAnthropic;
   fluxApiKey: string;
   maxImagesPerRun: number;
@@ -48,11 +50,21 @@ function requireEnv(name: string): string {
 // Required API keys
 const openaiApiKey = requireEnv('OPENAI_API_KEY');
 const anthropicApiKey = requireEnv('ANTHROPIC_API_KEY');
+const googleGenerativeAiApiKey = requireEnv('GOOGLE_GENERATIVE_AI_API_KEY');
 
 // Initialize models
-const small_llm = new ChatAnthropic({
-  modelName: 'claude-3-5-haiku-20241022',
-  anthropicApiKey: anthropicApiKey,
+// const small_llm = new ChatAnthropic({
+//   modelName: 'claude-3-5-haiku-20241022',
+//   anthropicApiKey: anthropicApiKey,
+// });
+const small_llm = new ChatGoogleGenerativeAI({
+  model: 'gemini-2.0-flash', //Can use gemini-2.0-flash-lite too
+  apiKey: googleGenerativeAiApiKey,
+});
+
+const cheap_large_llm = new ChatGoogleGenerativeAI({
+  model: 'gemini-2.5-pro-exp-03-25',
+  apiKey: googleGenerativeAiApiKey,
 });
 
 const large_llm = new ChatAnthropic({
@@ -88,6 +100,7 @@ export const config = {
   truthSocialApiUrl: process.env.TRUTH_SOCIAL_API_URL || 'https://truthsocial.com/api/v1',
   trumpTruthSocialId: process.env.TRUMP_TRUTH_SOCIAL_ID || '107780257626128497',
   small_llm,
+  cheap_large_llm,
   large_llm,
   fluxApiKey: requireEnv('BFL_API_KEY'),
   maxImagesPerRun: Number(process.env.MAX_IMAGES_PER_RUN || '3'),

@@ -66,7 +66,7 @@ export async function generateEvidenceQueries(state: GraderState): Promise<Parti
 
       try {
         // Create the structured LLM
-        const structuredLlm = config.large_llm.withStructuredOutput(evidenceQueriesSchema, {
+        const structuredLlm = config.cheap_large_llm.withStructuredOutput(evidenceQueriesSchema, {
           name: 'generateEvidenceQueries',
         });
 

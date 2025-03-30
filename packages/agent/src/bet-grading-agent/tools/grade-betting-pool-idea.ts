@@ -122,9 +122,12 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
 
       try {
         // Create the structured LLM
-        const structuredLlm = config.large_llm.withStructuredOutput(bettingPoolIdeaGraderSchema, {
-          name: 'gradeBettingPoolIdea',
-        });
+        const structuredLlm = config.cheap_large_llm.withStructuredOutput(
+          bettingPoolIdeaGraderSchema,
+          {
+            name: 'gradeBettingPoolIdea',
+          }
+        );
 
         // Call the LLM with the prompt
         const result = await structuredLlm.invoke([gradingSysMsg, gradingUserMsg]);
