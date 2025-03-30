@@ -18,8 +18,8 @@ import type { ResearchItem } from '../types/research-item';
 import { createBettingPool } from './tools/create-betting-pool';
 import { generateBettingPoolIdea } from './tools/generate-betting-pool-idea';
 import { generateImage } from './tools/generate-image';
-import { newsApiSearchFunctionSingle } from './tools/news-api-single';
-import { extractSearchQueryFunctionSingle } from './tools/search-query-single';
+import { newsApiSearchFunctionSingle } from './tools/news-api';
+import { extractSearchQueryFunctionSingle } from './tools/search-query';
 import { tavilySearchFunction } from './tools/tavily-search';
 
 export const SingleResearchItemAnnotation = Annotation.Root({

@@ -3,15 +3,10 @@ import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
 import type { BettingChainConfig } from '../config';
 import { DEFAULT_CHAIN_ID, config } from '../config';
 import type { ResearchItem } from '../types/research-item';
-import { createBettingPools } from './tools/create-betting-pools';
 import { filterProcessedTruthSocialPosts } from './tools/filter-processed-truth-social-posts';
-import { generateBettingPoolIdeas } from './tools/generate-betting-pool-ideas';
-import { generateImages } from './tools/generate-images';
 import { getLatestTruthSocialPosts } from './tools/get-latest-truth-social-posts';
-import { newsApiSearchFunction } from './tools/news-api';
+import { runBettingPoolSubgraphs } from './tools/run-betting-pool-subgraphs';
 import { setOriginalMessageFunction } from './tools/set-original-message';
-import { tavilySearchFunction } from './tools/tavily-search';
-import { upsertTruthSocialPosts } from './tools/upsert-truth-social-posts';
 
 const AgentStateAnnotation = Annotation.Root({
   originalMessage: Annotation<string>,
@@ -85,27 +80,15 @@ builder
   .addNode('set_original_message', setOriginalMessageFunction)
   .addNode('truth_social_posts', getLatestTruthSocialPosts)
   .addNode('filter_processed_posts', filterProcessedTruthSocialPosts)
-  .addNode('research_news', newsApiSearchFunction)
-  .addNode('research_web', tavilySearchFunction)
-  .addNode('generate_betting_pool_ideas', generateBettingPoolIdeas)
-  .addNode('generate_images', generateImages)
-  .addNode('create_betting_pools', createBettingPools)
-  .addNode('upsert_truth_social_posts', upsertTruthSocialPosts)
+  .addNode('generate_betting_pool_ideas', runBettingPoolSubgraphs)
   .addEdge(START, 'set_original_message')
   .addEdge('set_original_message', 'truth_social_posts')
   .addEdge('truth_social_posts', 'filter_processed_posts')
   .addConditionalEdges('filter_processed_posts', checkHasPosts, {
-    has_posts: 'research_news',
+    has_posts: 'generate_betting_pool_ideas',
     no_posts: END,
   })
-  .addEdge('research_news', 'research_web')
-  // .addEdge("research_news", "generate_betting_pool_ideas")
-  .addEdge('research_web', 'generate_betting_pool_ideas')
-  .addEdge('generate_betting_pool_ideas', 'generate_images')
-  // .addEdge("generate_betting_pool_ideas", "create_betting_pools")
-  .addEdge('generate_images', 'create_betting_pools')
-  .addEdge('create_betting_pools', 'upsert_truth_social_posts')
-  .addEdge('upsert_truth_social_posts', END);
+  .addEdge('generate_betting_pool_ideas', END);
 
 // Compile the graph
 export const bettingPoolGeneratorGraph = builder.compile();

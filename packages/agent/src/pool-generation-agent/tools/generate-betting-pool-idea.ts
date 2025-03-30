@@ -40,7 +40,6 @@ export async function generateBettingPoolIdea(
 
   try {
     console.log(`Generating betting idea for post: ${researchItem.truth_social_post.id}`);
-    const llm = config.large_llm;
 
     // Extract key content from the post
     const postContent = researchItem.truth_social_post.content.replace(/<\/?[^>]+(>|$)/g, ''); // Remove HTML tags
@@ -104,7 +103,7 @@ Create a Yes/No question in Trump's style that users can bet on. The question sh
 Format your answer as a single Yes/No question with no additional text.
 `;
 
-    const response = await llm.invoke(prompt);
+    const response = await config.large_llm.invoke(prompt);
 
     // Extract the betting pool idea from the response
     const responseContent =
