@@ -8,7 +8,7 @@ type Props = {
   params: Promise<{
     id: string;
   }>;
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<any>;
 };
 
 export const revalidate = 60;
