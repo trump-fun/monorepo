@@ -29,6 +29,14 @@ export const GET_POOLS = gql(`
         lastUpdatedTransactionHash
         gradedBlockNumber
         gradedBlockTimestamp
+       bets {
+        id
+        betId
+        user
+        option
+        amount
+        tokenType
+      }
         gradedTransactionHash
         betsCloseAt
         usdcBetTotals
@@ -71,6 +79,14 @@ export const GET_POOL = gql(`
         gradedBlockTimestamp
         gradedTransactionHash
         betsCloseAt
+       bets {
+        id
+        betId
+        user
+        option
+        amount
+        tokenType
+      }
         usdcBetTotals
         pointsBetTotals
         usdcVolume

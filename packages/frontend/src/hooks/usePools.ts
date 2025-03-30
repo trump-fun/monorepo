@@ -1,14 +1,13 @@
-import { GET_POOLS, GET_POOLS_SUBSCRIPTION } from '@/app/queries';
-import { useQuery, useSubscription } from '@apollo/client';
+import { GET_POOLS } from '@/app/queries';
+import { useQuery } from '@apollo/client';
 import { OrderDirection, Pool, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export type FilterType = 'newest' | 'highest' | 'ending_soon' | 'ended' | 'recently_closed';
 
 export function usePools(tokenType: TokenType) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('newest');
   const [searchQuery, setSearchQuery] = useState('');
-  const [pools, setPools] = useState<Pool[]>([]);
 
   const filterConfigs = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000).toString();
@@ -51,9 +50,8 @@ export function usePools(tokenType: TokenType) {
 
   const activeConfig = useMemo(() => filterConfigs[activeFilter], [activeFilter, filterConfigs]);
 
-  // Initial data load with useQuery
   const {
-    data: initialData,
+    data,
     loading: isLoading,
     refetch: refetchPools,
   } = useQuery(GET_POOLS, {
@@ -67,38 +65,16 @@ export function usePools(tokenType: TokenType) {
     fetchPolicy: 'network-only',
   });
 
-  // Subscribe to real-time updates
-  const { data: subscriptionData } = useSubscription(GET_POOLS_SUBSCRIPTION, {
-    variables: {
-      filter: activeConfig.filter,
-      orderBy: activeConfig.orderBy,
-      orderDirection: activeConfig.orderDirection,
-    },
-    shouldResubscribe: true,
-    onData: ({ data }) => {
-      if (data?.data?.pools) {
-        setPools(data.data.pools);
-      }
-    },
-  });
-
-  // Initialize pools state with query data
-  useEffect(() => {
-    if (initialData?.pools) {
-      setPools(initialData.pools);
-    }
-  }, [initialData?.pools]);
-
   const filteredPools = useMemo(() => {
+    const pools = data?.pools || [];
     if (!searchQuery.trim()) return pools;
 
     const query = searchQuery.toLowerCase().trim();
     return pools.filter((pool: Pool) => pool.question.toLowerCase().includes(query));
-  }, [pools, searchQuery]);
+  }, [data, searchQuery]);
 
   const handleFilterChange = (newFilter: FilterType) => {
     setActiveFilter(newFilter);
-    // Refetch initial data when filter changes
     refetchPools({
       filter: filterConfigs[newFilter].filter,
       orderBy: filterConfigs[newFilter].orderBy,
@@ -113,5 +89,6 @@ export function usePools(tokenType: TokenType) {
     searchQuery,
     setSearchQuery,
     handleFilterChange,
+    refetchPools,
   };
 }

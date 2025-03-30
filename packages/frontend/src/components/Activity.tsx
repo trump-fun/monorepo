@@ -1,7 +1,7 @@
 'use client';
 
-import { GET_BETS, GET_BETS_SUBSCRIPTION } from '@/app/queries';
-import { useQuery, useSubscription } from '@apollo/client';
+import { GET_BETS } from '@/app/queries';
+import { useQuery } from '@apollo/client';
 import { Bet, Bet_OrderBy, POINTS_DECIMALS, Pool } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowUpRight, Clock, Loader2 } from 'lucide-react';
@@ -38,39 +38,22 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
     fetchPolicy: 'network-only',
   });
 
-  useSubscription(GET_BETS_SUBSCRIPTION, {
-    variables: {
-      filter: {
-        poolId,
-      },
-      first: pageSize,
-      skip: 0,
-      orderBy: Bet_OrderBy.CreatedAt,
-      orderDirection: 'desc',
-    },
-    shouldResubscribe: true,
-    onData: ({ data: subscriptionData }) => {
-      if (subscriptionData?.data?.bets) {
-        setAllBets(prevBets => {
-          const newBets = subscriptionData.data.bets;
-          const existingIds = new Set(prevBets.map(bet => bet.id));
-          const uniqueNewBets = newBets.filter((bet: Bet) => !existingIds.has(bet.id));
-
-          if (uniqueNewBets.length === 0) return prevBets;
-
-          return [...uniqueNewBets, ...prevBets]
-            .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
-            .slice(0, page * pageSize);
-        });
-      }
-    },
-  });
-
   useEffect(() => {
     if (data?.bets) {
-      setAllBets(data.bets);
+      setAllBets(prevBets => {
+        if (prevBets.length === 0) return data.bets;
+
+        const existingIds = new Set(prevBets.map(bet => bet.id));
+        const uniqueNewBets = data.bets.filter(bet => !existingIds.has(bet.id));
+
+        if (uniqueNewBets.length === 0) return prevBets;
+
+        return [...uniqueNewBets, ...prevBets]
+          .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
+          .slice(0, page * pageSize);
+      });
     }
-  }, [data]);
+  }, [data, page, pageSize]);
 
   useEffect(() => {
     if (inView && !loading && data?.bets.length === page * pageSize) {

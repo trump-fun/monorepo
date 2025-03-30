@@ -1,9 +1,9 @@
 'use client';
 
-import { GET_POOLS, GET_POOLS_SUBSCRIPTION } from '@/app/queries';
+import { GET_POOLS } from '@/app/queries';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
-import { useQuery, useSubscription } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { OrderDirection, Pool, Pool_OrderBy, PoolStatus } from '@trump-fun/common';
 import { Clock } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -12,7 +12,6 @@ import { EndingSoonBet } from './ending-soon-bet';
 export function EndingSoon() {
   const { tokenType } = useTokenContext();
   const [pools, setPools] = useState<Pool[]>([]);
-
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const oneDayFromNow = currentTimestamp + 86400;
 
@@ -38,29 +37,16 @@ export function EndingSoon() {
     fetchPolicy: 'network-only',
   });
 
-  useSubscription(GET_POOLS_SUBSCRIPTION, {
-    variables,
-    shouldResubscribe: true,
-    onData: ({ data }) => {
-      if (data?.data?.pools) {
-        setPools(data.data.pools);
-      }
-    },
-  });
-
   useEffect(() => {
     if (initialData?.pools) {
       setPools(initialData.pools);
     }
   }, [initialData?.pools]);
 
-  // Use previous data during loading states to prevent flashing
   const poolsToDisplay = useMemo(() => {
-    // On initial load, show loading state
     if (loading && !previousData) {
       return [];
     }
-    // Return current pools state (from either query or subscription)
     return pools.length > 0 ? pools : previousData?.pools || [];
   }, [pools, loading, previousData]);
 
@@ -73,7 +59,6 @@ export function EndingSoon() {
 
       <div className='space-y-4'>
         {loading && !previousData ? (
-          // Initial loading state
           <div className='space-y-4'>
             {[1, 2, 3].map(i => (
               <div key={i} className='animate-pulse'>
@@ -105,7 +90,6 @@ export function EndingSoon() {
             );
           })
         ) : (
-          // Empty state when no pools are available
           <div className='py-4 text-center text-gray-400'>
             <p>No predictions ending soon</p>
           </div>

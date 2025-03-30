@@ -2,6 +2,7 @@ import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import { bettingContractAbi, freedomAbi, TokenType, USDC_DECIMALS } from '@trump-fun/common';
 import { PublicClient } from 'viem';
 import { useNetwork } from './useNetwork';
+import { useApprovalAmount } from './useApprovalAmount';
 
 interface UsePlaceBetProps {
   writeContract: any;
@@ -10,7 +11,6 @@ interface UsePlaceBetProps {
   accountAddress: string | undefined;
   tokenAddress: `0x${string}`;
   tokenType: TokenType;
-  approvedAmount: string | undefined;
   isConfirmed: boolean;
   resetBettingForm?: () => void;
   symbol: string;
@@ -30,13 +30,13 @@ export function usePlaceBet({
   accountAddress,
   tokenAddress,
   tokenType,
-  approvedAmount,
   isConfirmed,
   resetBettingForm,
   symbol,
 }: UsePlaceBetProps) {
   const { appAddress } = useNetwork();
   const tokenTypeC = tokenType === TokenType.Usdc ? 0 : 1;
+  const approvedAmount = useApprovalAmount(tokenAddress);
 
   const placeBet = async ({ poolId, betAmount, selectedOption, options }: PlaceBetParams) => {
     if (!writeContract || !ready || !publicClient || !accountAddress) {
@@ -53,7 +53,7 @@ export function usePlaceBet({
 
     try {
       const amount = parseInt(betAmount, 10);
-      const tokenAmount = BigInt(Math.floor(amount * 10 ** USDC_DECIMALS));
+      const tokenAmount = BigInt(amount) * BigInt(10 ** USDC_DECIMALS);
 
       const needsApproval = !approvedAmount || parseFloat(approvedAmount) < amount;
       if (needsApproval && !isConfirmed) {
@@ -63,24 +63,33 @@ export function usePlaceBet({
           functionName: 'approve',
           account: accountAddress as `0x${string}`,
           args: [appAddress, tokenAmount],
+          gas: BigInt(100000),
+          maxFeePerGas: BigInt(60000000000),
+          maxPriorityFeePerGas: BigInt(50000000000),
+          nonce: await publicClient.getTransactionCount({
+            address: accountAddress as `0x${string}`,
+          }),
         });
 
         writeContract(approveRequest);
+
         return showSuccessToast(`Approving ${betAmount} ${symbol}...`);
       }
+
+      const args = [
+        BigInt(poolId),
+        BigInt(selectedOption),
+        tokenAmount,
+        accountAddress as `0x${string}`,
+        tokenTypeC,
+      ] as const;
 
       const { request } = await publicClient.simulateContract({
         abi: bettingContractAbi,
         address: appAddress,
         functionName: 'placeBet',
         account: accountAddress as `0x${string}`,
-        args: [
-          BigInt(poolId),
-          BigInt(selectedOption),
-          tokenAmount,
-          accountAddress as `0x${string}`,
-          tokenTypeC,
-        ],
+        args,
       });
 
       writeContract(request);

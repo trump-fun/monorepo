@@ -5,18 +5,18 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{
+    id: string;
+  }>;
   searchParams?: { [key: string]: string | string[] | undefined };
 };
 
-// Cache data fetching to improve performance
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 60;
 
 async function getPoolData(poolId: string) {
   try {
     const supabase = await createClient();
 
-    // Execute queries in parallel for better performance
     const [pool, postResponse, commentsResponse] = await Promise.all([
       fetchPool(poolId),
       supabase.from('truth_social_posts').select('*').eq('pool_id', poolId).single(),
@@ -40,10 +40,11 @@ async function getPoolData(poolId: string) {
 }
 
 export async function generateMetadata(
-  { params }: any,
+  { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const { pool, postData } = await getPoolData(params.id);
+  const id = (await params).id;
+  const { pool, postData } = await getPoolData(id);
 
   if (!pool) {
     return { title: 'Pool Not Found' };
@@ -52,16 +53,16 @@ export async function generateMetadata(
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: pool.question || `Prediction Pool #${params.id}`,
+    title: pool.question || `Prediction Pool #${id}`,
     description: pool.question || 'Predict the outcome of this event',
     openGraph: {
       images: [postData?.image_url || '/default-pool-image.jpg', ...previousImages],
     },
   };
 }
-
-export default async function PoolDetailPage({ params }: any) {
-  const { pool, postData, comments } = await getPoolData(params.id);
+export default async function PoolDetailPage({ params }: Props) {
+  const id = (await params).id;
+  const { pool, postData, comments } = await getPoolData(id);
 
   if (!pool) {
     notFound();
@@ -69,10 +70,10 @@ export default async function PoolDetailPage({ params }: any) {
 
   return (
     <PoolDetailClient
-      id={params.id}
-      initialPool={pool}
+      id={id}
       initialPostData={postData}
       initialComments={comments}
+      initialPool={pool}
     />
   );
 }

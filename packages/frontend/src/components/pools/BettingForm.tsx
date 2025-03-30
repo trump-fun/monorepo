@@ -16,7 +16,6 @@ interface BettingFormProps {
   handleBet: () => void;
   authenticated: boolean;
   isPending: boolean;
-  approvedAmount: string;
   symbol: string;
   tokenLogo: ReactNode;
   balance: TokenBalance | null | undefined;
@@ -122,7 +121,7 @@ export const BettingForm = ({
 
         {/* Percentage Buttons */}
         <div className='mb-4 flex justify-between gap-2'>
-          {[0, 25, 50, 75, 100].map((percentage) => (
+          {[0, 25, 50, 75, 100].map(percentage => (
             <Button
               key={percentage}
               variant='outline'

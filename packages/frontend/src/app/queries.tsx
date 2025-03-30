@@ -16,6 +16,14 @@ export const GET_POOLS = gql`
       options
       status
       chainId
+      bets {
+        id
+        betId
+        user
+        option
+        amount
+        tokenType
+      }
       chainName
       createdAt
       createdBlockNumber
@@ -33,30 +41,6 @@ export const GET_POOLS = gql`
       usdcVolume
       pointsVolume
       originalTruthSocialPostId
-    }
-  }
-`;
-
-export const GET_POOLS_SUBSCRIPTION = gql`
-  subscription GetPoolsSubscription($filter: Pool_filter!) {
-    pools(where: $filter) {
-      id
-      poolId
-      question
-      options
-      status
-      chainId
-      chainName
-      createdAt
-      createdBlockNumber
-      createdBlockTimestamp
-      createdTransactionHash
-      lastUpdatedBlockNumber
-      lastUpdatedBlockTimestamp
-      lastUpdatedTransactionHash
-      gradedBlockNumber
-      gradedBlockTimestamp
-      gradedTransactionHash
     }
   }
 `;
@@ -118,31 +102,6 @@ export const GET_BETS = gql`
         originalTruthSocialPostId
         betsCloseAt
         status
-      }
-    }
-  }
-`;
-
-export const GET_BETS_SUBSCRIPTION = gql`
-  subscription GetBetsSubscription($filter: Bet_filter!) {
-    bets(where: $filter) {
-      id
-      betId
-      option
-      amount
-      poolId
-      blockNumber
-      blockTimestamp
-      transactionHash
-      pool {
-        id
-        poolId
-        question
-        options
-        status
-        chainId
-        chainName
-        createdAt
       }
     }
   }
@@ -288,61 +247,6 @@ export const GET_POOL = gql`
         amount
         tokenType
       }
-    }
-  }
-`;
-
-export const GET_POOL_SUBSCRIPTION = gql`
-  subscription GetPoolSubscription($poolId: ID!) {
-    pool(id: $poolId) {
-      id
-      poolId
-      question
-      options
-      status
-      chainId
-      chainName
-      createdAt
-      createdBlockNumber
-      createdBlockTimestamp
-      createdTransactionHash
-      gradedBlockNumber
-      gradedBlockTimestamp
-      gradedTransactionHash
-    }
-  }
-`;
-
-export const GET_BET_WITHDRAWALS_SUBSCRIPTION = gql`
-  subscription GetBetWithdrawalsSubscription($where: BetWithdrawal_filter!) {
-    betWithdrawals(where: $where) {
-      id
-      betId
-      poolId
-      user
-      blockNumber
-      blockTimestamp
-      transactionHash
-      chainName
-      chainId
-    }
-  }
-`;
-
-export const GET_PAYOUT_CLAIMED_SUBSCRIPTION = gql`
-  subscription GetPayoutClaimedSubscription($where: PayoutClaimed_filter!) {
-    payoutClaimeds(where: $where) {
-      id
-      betId
-      poolId
-      user
-      amount
-      tokenType
-      blockNumber
-      blockTimestamp
-      transactionHash
-      chainName
-      chainId
     }
   }
 `;

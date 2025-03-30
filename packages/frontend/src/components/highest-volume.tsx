@@ -7,13 +7,7 @@ import { useTokenContext } from '@/hooks/useTokenContext';
 import { calculateRelativeVolumePercentages } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import { useQueries } from '@tanstack/react-query';
-import {
-  OrderDirection,
-  POLLING_INTERVALS,
-  Pool_OrderBy,
-  PoolStatus,
-  TokenType,
-} from '@trump-fun/common';
+import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
 import { TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -45,7 +39,6 @@ export function HighestVolume() {
     },
     context: { name: 'volumeSearch' },
     notifyOnNetworkStatusChange: true,
-    pollInterval: POLLING_INTERVALS['highest-volume'],
   });
 
   // Use memoized data to prevent disappearing on refresh

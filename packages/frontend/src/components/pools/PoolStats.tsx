@@ -18,7 +18,7 @@ export const PoolStats = ({ pool, totalVolume }: PoolStatsProps) => {
 
       <div className='flex flex-col rounded-lg border p-3 shadow-sm'>
         <span className='text-muted-foreground mb-1 text-xs'>Total Bets</span>
-        <span className='font-semibold'>{pool.bets.length}</span>
+        <span className='font-semibold'>{pool?.bets?.length ? pool?.bets?.length : 0}</span>
       </div>
 
       <div className='flex flex-col rounded-lg border p-3 shadow-sm'>

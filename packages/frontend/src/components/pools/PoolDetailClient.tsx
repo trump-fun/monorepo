@@ -1,16 +1,15 @@
 'use client';
 
-import { useSubscription } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
-import { Bet_OrderBy, Pool, PoolStatus } from '@trump-fun/common';
+import { Pool, PoolStatus } from '@trump-fun/common';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
-import { GET_BETS_SUBSCRIPTION, GET_POOL_SUBSCRIPTION } from '@/app/queries';
+import { GET_BETS, GET_POOL } from '@/app/queries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
@@ -20,12 +19,10 @@ import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsI
 import { showSuccessToast } from '@/utils/toast';
 import { USDC_DECIMALS } from '@trump-fun/common';
 
-// Import custom hooks
 import { useBettingForm } from '@/hooks/useBettingForm';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { usePoolFacts } from '@/hooks/usePoolFacts';
 
-// Import components
 import { BettingForm } from '@/components/pools/BettingForm';
 import { BettingProgress } from '@/components/pools/BettingProgress';
 import { FactsButton } from '@/components/pools/FactsButton';
@@ -33,8 +30,8 @@ import { PoolHeader } from '@/components/pools/PoolHeader';
 import { PoolStats } from '@/components/pools/PoolStats';
 import { TabSwitcher } from '@/components/pools/TabSwitcher';
 import { UserBets } from '@/components/pools/UserBets';
-import { useApprovalAmount } from '@/hooks/useApprovalAmount';
 import { Comment } from '@/types/pool';
+import { useApolloClient } from '@apollo/client';
 
 type PoolDetailClientProps = {
   id: string;
@@ -49,7 +46,6 @@ export function PoolDetailClient({
   initialPostData,
   initialComments,
 }: PoolDetailClientProps) {
-  // Router and authentication
   const { tokenType, tokenAddress } = useTokenContext();
   const { isConnected, authenticated } = useWalletAddress();
   const { login } = usePrivy();
@@ -57,16 +53,14 @@ export function PoolDetailClient({
   const account = useAccount();
   const { ready } = usePrivy();
   const [selectedTab, setSelectedTab] = useState<string>('comments');
+  const apolloClient = useApolloClient();
 
-  // State management
   const [pool, setPool] = useState<Pool | null>(initialPool);
   const [placedBetsData, setPlacedBetsData] = useState<any>(null);
 
-  // Contract interaction
   const { data: hash, isPending, writeContract } = useWriteContract();
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  // Custom hooks
   const { balance, formattedBalance, symbol, tokenLogo } = useTokenBalance();
   const {
     betAmount,
@@ -86,38 +80,57 @@ export function PoolDetailClient({
     hasFactsed,
     isFactsProcessing,
     handleFacts: handleFactsAction,
-  } = usePoolFacts(id as string, authenticated);
+  } = usePoolFacts(id, authenticated);
 
-  const approvedAmount = useApprovalAmount(tokenAddress, hash);
-  const { data: poolSubData } = useSubscription(GET_POOL_SUBSCRIPTION, {
-    variables: { poolId: id },
-    shouldResubscribe: true,
-    onData: ({ data }) => {
-      if (data?.data?.pool) {
-        setPool(data.data.pool);
+  const fetchPoolData = useCallback(async () => {
+    try {
+      const { data } = await apolloClient.query({
+        query: GET_POOL,
+        variables: { poolId: id },
+        fetchPolicy: 'network-only',
+      });
+      if (data?.pool) {
+        setPool(data.pool);
       }
-    },
-  });
+    } catch (error) {
+      console.error('Error fetching pool data:', error);
+    }
+  }, [apolloClient, id]);
 
-  const { data: betsSubData } = useSubscription(GET_BETS_SUBSCRIPTION, {
-    variables: {
-      filter: {
-        user: account.address,
-        poolId: id,
-      },
-      orderBy: Bet_OrderBy.CreatedAt,
-      orderDirection: 'desc',
-    },
-    shouldResubscribe: true,
-    skip: !account.address,
-    onData: ({ data }) => {
-      if (data?.data) {
-        setPlacedBetsData(data.data);
+  const fetchUserBets = useCallback(async () => {
+    if (!account.address) return;
+
+    try {
+      const { data } = await apolloClient.query({
+        query: GET_BETS,
+        variables: {
+          filter: {
+            user: account.address.toLowerCase(),
+            poolId: id,
+          },
+        },
+        fetchPolicy: 'network-only',
+      });
+      if (data) {
+        setPlacedBetsData(data);
       }
-    },
-  });
+    } catch (error) {
+      console.error('Error fetching user bets:', error);
+    }
+  }, [apolloClient, account.address, id]);
 
-  // Post data fetching with initialData
+  useEffect(() => {
+    fetchPoolData();
+    fetchUserBets();
+
+    const refreshInterval = setInterval(() => {
+      fetchPoolData();
+      fetchUserBets();
+    }, 15000);
+
+    return () => clearInterval(refreshInterval);
+  }, [fetchPoolData, fetchUserBets]);
+
   const { data: postData } = useQuery({
     queryKey: ['post', id],
     queryFn: async () => {
@@ -131,11 +144,11 @@ export function PoolDetailClient({
     refetchOnWindowFocus: false,
   });
 
-  // Comments data fetching with initialData
   const {
     data: commentsData,
     isLoading: isCommentsLoading,
     error: commentsError,
+    refetch: refetchComments,
   } = useQuery({
     queryKey: ['comments', id],
     queryFn: async () => {
@@ -149,10 +162,8 @@ export function PoolDetailClient({
     refetchOnWindowFocus: false,
   });
 
-  // Safely extract comments from the response
   const comments = commentsData?.comments || [];
 
-  // Check URL parameters for bet information
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -163,7 +174,6 @@ export function PoolDetailClient({
         const amount = Number(amountParam);
         setBetAmount(amount.toString());
 
-        // Set slider value based on balance
         if (balance) {
           const maxAmount = Number(balance.value) / Math.pow(10, balance.decimals);
           const percentage = Math.min(100, (amount / maxAmount) * 100);
@@ -176,26 +186,25 @@ export function PoolDetailClient({
         setSelectedOption(optionValue);
       }
 
-      // Clear the URL parameters
       if (amountParam || optionParam) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   }, [balance, setBetAmount, setSelectedOption, setSliderValue]);
 
-  // Show success toasts
   useEffect(() => {
     if (isConfirmed) {
       showSuccessToast('Transaction confirmed!');
+      fetchPoolData();
+      fetchUserBets();
+      refetchComments();
     }
-  }, [isConfirmed]);
+  }, [fetchPoolData, fetchUserBets, isConfirmed, refetchComments]);
 
-  // Handle FACTS button click
   const handleFacts = () => {
     handleFactsAction(isConnected, login);
   };
 
-  // Use the placeBet hook
   const placeBet = usePlaceBet({
     writeContract,
     ready,
@@ -203,13 +212,11 @@ export function PoolDetailClient({
     accountAddress: account.address,
     tokenAddress,
     tokenType,
-    approvedAmount,
     isConfirmed,
     resetBettingForm,
     symbol,
   });
 
-  // Update the handleBet function to use the hook
   const handleBet = async () => {
     await placeBet({
       poolId: pool?.id,
@@ -219,7 +226,12 @@ export function PoolDetailClient({
     });
   };
 
-  // Loading state
+  const refreshData = () => {
+    fetchPoolData();
+    fetchUserBets();
+    refetchComments();
+  };
+
   if (!pool) {
     return (
       <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
@@ -234,38 +246,9 @@ export function PoolDetailClient({
     );
   }
 
-  // Error state
-  if (!pool) {
-    return (
-      <div className='container mx-auto max-w-4xl px-4 py-8'>
-        <Link href='/explore' className='text-muted-foreground mb-6 flex items-center'>
-          <ArrowLeft className='mr-2' size={16} />
-          Back to Predictions
-        </Link>
-        <Card>
-          <CardContent className='pt-6'>
-            <div className='py-12 text-center'>
-              <h2 className='mb-2 text-2xl font-bold'>Pool Not Found</h2>
-              <p className='text-muted-foreground'>
-                The prediction you&apos;re looking for doesn&apos;t exist or has been removed.
-              </p>
-              <Button className='mt-6' asChild>
-                <Link href='/explore'>View All Predictions</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const isActive = pool.status === PoolStatus.Pending || pool.status === PoolStatus.None;
   const totalVolume = getVolumeForTokenType(pool, tokenType);
-
-  // Calculate percentages
   const percentages = calculateOptionPercentages(pool);
-
-  // Use the data from subscriptions or initial values
   const placedBets = placedBetsData || { bets: [] };
 
   return (
@@ -289,13 +272,15 @@ export function PoolDetailClient({
             />
           )}
 
-          {/* Progress Bar */}
-          <BettingProgress percentages={percentages} pool={pool} totalVolume={totalVolume} />
+          <div className='mb-4 flex justify-end'>
+            <Button variant='outline' size='sm' onClick={refreshData} className='text-xs'>
+              Refresh Data
+            </Button>
+          </div>
 
-          {/* Stats */}
+          <BettingProgress percentages={percentages} pool={pool} totalVolume={totalVolume} />
           <PoolStats pool={pool} totalVolume={totalVolume} />
 
-          {/* Betting form and FACTS button */}
           {isActive && (
             <div className='flex flex-col space-y-4'>
               <BettingForm
@@ -310,7 +295,6 @@ export function PoolDetailClient({
                 handleBet={handleBet}
                 authenticated={authenticated}
                 isPending={isPending}
-                approvedAmount={approvedAmount}
                 symbol={symbol}
                 tokenLogo={tokenLogo}
                 balance={balance}
@@ -330,7 +314,6 @@ export function PoolDetailClient({
             </div>
           )}
 
-          {/* User's bets */}
           <UserBets
             placedBets={placedBets}
             pool={pool}
@@ -339,7 +322,6 @@ export function PoolDetailClient({
             symbol={symbol}
           />
 
-          {/* Tabs */}
           <TabSwitcher
             selectedTab={selectedTab}
             setSelectedTab={setSelectedTab}

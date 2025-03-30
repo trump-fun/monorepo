@@ -18,28 +18,17 @@ import { useState } from 'react';
 export function ProfileClient() {
   const [activeFilter, setActiveFilter] = useState<string>('active');
   const [searchQuery, setSearchQuery] = useState('');
-
   const { address } = useWalletAddress();
   const { tokenType } = useTokenContext();
-
-  // Get user's betting data with GraphQL subscriptions
   const { betsData, isLoading, isError } = useUserBetsData(activeFilter);
-
-  // Get withdrawal functionality
   const withdrawalProps = useWithdraw();
-
-  // Calculate user stats from bets data
   const userStats = useUserStats(betsData.bets, betsData.payoutClaimeds);
-
-  // Filter pools based on search query
   const filteredPools = useFilteredPools(
     activeFilter,
     searchQuery,
     betsData.bets,
     betsData.payoutClaimeds
   );
-
-  // Handle user interactions
   const handleFilterChange = (value: string) => setActiveFilter(value);
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value);
 
@@ -54,7 +43,6 @@ export function ProfileClient() {
   return (
     <div className='flex h-[calc(100vh-4rem)] flex-col'>
       <div className='flex flex-1 overflow-hidden'>
-        {/* Desktop Sidebar */}
         <ProfileSidebar
           address={address}
           activeFilter={activeFilter}
@@ -65,11 +53,9 @@ export function ProfileClient() {
           betWithdrawals={betsData.betWithdrawals}
         />
 
-        {/* Main Content */}
         <main className='flex flex-1 flex-col overflow-y-hidden md:flex-row'>
           <div className='scrollbar-hide flex flex-1 justify-center overflow-y-auto p-4'>
             <div className='w-full max-w-2xl'>
-              {/* Mobile Profile Section */}
               <MobileProfileSection
                 address={address}
                 userStats={userStats}
@@ -77,7 +63,6 @@ export function ProfileClient() {
                 tokenType={tokenType}
               />
 
-              {/* Mobile Search and Filters */}
               <div className='mb-4 md:hidden'>
                 <div className='mb-4'>
                   <SearchInput
@@ -91,13 +76,11 @@ export function ProfileClient() {
                 </div>
               </div>
 
-              {/* Betting Posts */}
               <BetsList pools={filteredPools} activeFilter={activeFilter} isLoading={isLoading} />
             </div>
           </div>
         </main>
 
-        {/* Right Sidebar with Search and Market Insights */}
         <RightSidebar searchQuery={searchQuery} handleSearch={handleSearch} />
       </div>
     </div>

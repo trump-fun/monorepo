@@ -24,6 +24,7 @@ import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteCont
 import TruthSocial from './common/truth-social';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
+import { CommentModal } from './dialogs/comment';
 
 interface BettingPostProps {
   id: string;
@@ -64,6 +65,7 @@ export function BettingPost({
   const [showBetForm, setShowBetForm] = useState(false);
   const [sliderValue, setSliderValue] = useState([0]);
   const [isUserTyping, setIsUserTyping] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [userEnteredValue, setUserEnteredValue] = useState<string>('');
 
   const { data: poolData } = useQuery({
@@ -120,7 +122,6 @@ export function BettingPost({
     accountAddress: account.address,
     tokenAddress,
     tokenType,
-    approvedAmount,
     isConfirmed,
     resetBettingForm: () => {
       setBetAmount('');
@@ -513,6 +514,13 @@ export function BettingPost({
 
   return (
     <div className='bg-background overflow-hidden rounded-lg border border-gray-200 transition-colors hover:border-gray-100 dark:border-gray-800 dark:hover:border-gray-700'>
+      <CommentModal
+        isOpen={modalOpen}
+        setIsOpen={setModalOpen}
+        poolId={id}
+        username={username}
+        avatar={avatar}
+      />
       <div className='p-4'>
         <div className='mb-2 flex items-center gap-2'>
           <Avatar className='h-10 w-10 overflow-hidden rounded-full'>
@@ -628,12 +636,10 @@ export function BettingPost({
               variant='ghost'
               size='sm'
               className='text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-              asChild
+              onClick={() => setModalOpen(true)}
             >
-              <Link href={`/pools/${id}`}>
-                <MessageCircle size={18} className='mr-1' />
-                {commentCount > 0 ? commentCount : 'Comment'}
-              </Link>
+              <MessageCircle size={18} className='mr-1' />
+              {commentCount > 0 ? commentCount : 'Comment'}
             </Button>
 
             <Button

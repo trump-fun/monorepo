@@ -36,34 +36,11 @@ export const GET_POOLS = gql(`
         usdcVolume
         pointsVolume
         originalTruthSocialPostId
-    }
-  }
-`);
-
-export const GET_POOLS_SUBSCRIPTION = gql(`
-  subscription GetPoolsSubscription(
-    $filter: Pool_filter!
-  ) {
-    pools(
-      where: $filter
-    ) {
-        id
-        poolId
-        question
-        options
-        status
-        chainId
-        chainName
-        createdAt
-        createdBlockNumber
-        createdBlockTimestamp
-        createdTransactionHash
-        lastUpdatedBlockNumber
-        lastUpdatedBlockTimestamp
-        lastUpdatedTransactionHash
-        gradedBlockNumber
-        gradedBlockTimestamp
-        gradedTransactionHash
+        bets {
+          id
+          amount
+          user
+        }
     }
   }
 `);
@@ -128,35 +105,6 @@ export const GET_BETS = gql(`
   }
 `);
 
-export const GET_BETS_SUBSCRIPTION = gql(`
-  subscription GetBetsSubscription(
-    $filter: Bet_filter!
-  ) {
-    bets(
-      where: $filter
-    ) {
-      id
-      betId
-      option
-      amount
-      poolId
-      blockNumber
-      blockTimestamp
-      transactionHash
-      pool {
-        id
-        poolId
-        question
-        options
-        status
-        chainId
-        chainName
-        createdAt
-      }
-    }
-  }
-`);
-
 export const GET_POOL = gql(`
   query GetPool($poolId: ID!) {
     pool(id: $poolId) {
@@ -180,27 +128,11 @@ export const GET_POOL = gql(`
       usdcVolume
       pointsVolume
       winningOption
-    }
-  }
-`);
-
-export const GET_POOL_SUBSCRIPTION = gql(`
-  subscription GetPoolSubscription($poolId: ID!) {
-    pool(id: $poolId) {
-      id
-      poolId
-      question
-      options
-      status
-      chainId
-      chainName
-      createdAt
-      createdBlockNumber
-      createdBlockTimestamp
-      createdTransactionHash
-      gradedBlockNumber
-      gradedBlockTimestamp
-      gradedTransactionHash
+      bets {
+          id
+          amount
+          user
+        }
     }
   }
 `);
