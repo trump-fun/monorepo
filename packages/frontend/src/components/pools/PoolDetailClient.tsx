@@ -2,7 +2,7 @@
 
 import { usePrivy } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
-import { Pool, PoolStatus } from '@trump-fun/common';
+import { bettingContractAbi, Pool, PoolStatus } from '@trump-fun/common';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -32,6 +32,7 @@ import { TabSwitcher } from '@/components/pools/TabSwitcher';
 import { UserBets } from '@/components/pools/UserBets';
 import { Comment } from '@/types/pool';
 import { useApolloClient } from '@apollo/client';
+import { useNetwork } from '@/hooks/useNetwork';
 
 type PoolDetailClientProps = {
   id: string;
@@ -54,6 +55,7 @@ export function PoolDetailClient({
   const { ready } = usePrivy();
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const apolloClient = useApolloClient();
+  const { appAddress } = useNetwork();
 
   const [pool, setPool] = useState<Pool | null>(initialPool);
   const [placedBetsData, setPlacedBetsData] = useState<any>(null);
@@ -122,14 +124,102 @@ export function PoolDetailClient({
   useEffect(() => {
     fetchPoolData();
     fetchUserBets();
-
-    const refreshInterval = setInterval(() => {
-      fetchPoolData();
-      fetchUserBets();
-    }, 15000);
-
-    return () => clearInterval(refreshInterval);
   }, [fetchPoolData, fetchUserBets]);
+
+  useEffect(() => {
+    if (!publicClient || !appAddress || !pool) return;
+
+    const unwatch = publicClient.watchContractEvent({
+      address: appAddress,
+      abi: bettingContractAbi,
+      eventName: 'BetPlaced',
+      args: {
+        poolId: BigInt(id),
+      },
+      onLogs: logs => {
+        logs.forEach(log => {
+          const { args } = log;
+
+          if (!args || !pool) return;
+
+          const { betId, poolId, user, optionIndex, amount, tokenType: betTokenType } = args;
+
+          setPool(currentPool => {
+            if (!currentPool) return currentPool;
+
+            const updatedPool = JSON.parse(JSON.stringify(currentPool));
+
+            if (betTokenType === 0) {
+              if (!updatedPool.usdcVolume) {
+                updatedPool.usdcVolume = ['0', '0'];
+              }
+              const index = Number(optionIndex) < 2 ? Number(optionIndex) : 0;
+              const currentAmount = updatedPool.usdcVolume[index] || '0';
+              updatedPool.usdcVolume[index] = (
+                BigInt(currentAmount) + BigInt(amount || 0)
+              ).toString();
+            } else {
+              if (!updatedPool.pointsVolume) {
+                updatedPool.pointsVolume = ['0', '0'];
+              }
+              const index = Number(optionIndex) < 2 ? Number(optionIndex) : 0;
+              const currentAmount = updatedPool.pointsVolume[index] || '0';
+              updatedPool.pointsVolume[index] = (
+                BigInt(currentAmount) + BigInt(amount || 0)
+              ).toString();
+            }
+
+            return updatedPool;
+          });
+
+          if (user?.toLowerCase() === account.address?.toLowerCase()) {
+            if (!betId || !poolId || !amount) return;
+
+            const newBet = {
+              id: betId.toString(),
+              user: {
+                id: user,
+              },
+              pool: {
+                id: poolId.toString(),
+              },
+              option: Number(optionIndex),
+              amount: amount.toString(),
+              createdAt: Math.floor(Date.now() / 1000).toString(),
+              tokenType: Number(betTokenType),
+            };
+
+            setPlacedBetsData(
+              (currentData: { bets: Array<{ id: string; [key: string]: any }> } | null) => {
+                if (!currentData) {
+                  return { bets: [newBet] };
+                }
+
+                const existingBetIndex = currentData.bets.findIndex(
+                  (bet: { id: string }) => bet.id === betId.toString()
+                );
+
+                if (existingBetIndex >= 0) {
+                  const updatedBets = [...currentData.bets];
+                  updatedBets[existingBetIndex] = newBet;
+                  return { ...currentData, bets: updatedBets };
+                } else {
+                  return {
+                    ...currentData,
+                    bets: [newBet, ...currentData.bets],
+                  };
+                }
+              }
+            );
+          }
+        });
+      },
+    });
+
+    return () => {
+      unwatch();
+    };
+  }, [publicClient, appAddress, id, account.address, pool]);
 
   const { data: postData } = useQuery({
     queryKey: ['post', id],
