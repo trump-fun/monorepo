@@ -1,5 +1,5 @@
-import { POINTS_DECIMALS, TokenType, USDC_DECIMALS } from '@trump-fun/common';
-
+import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { TokenType } from '@/types';
 export function BettingStats({
   userStats,
   tokenLogo,

@@ -2,14 +2,20 @@
 
 import { GET_POOLS } from '@/app/queries';
 import { useTokenContext } from '@/hooks/useTokenContext';
+import {
+  GetPoolsQuery,
+  OrderDirection,
+  Pool_OrderBy,
+  PoolStatus,
+  TokenType,
+} from '@/types/__generated__/graphql';
 import { NetworkStatus, useQuery } from '@apollo/client';
-import { OrderDirection, Pool, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PoolCard } from './pool-card';
 
 export function PoolList() {
   const { tokenType } = useTokenContext();
-  const [pools, setPools] = useState<Pool[] | null>(null);
+  const [pools, setPools] = useState<GetPoolsQuery['pools']>([]);
   const isFirstRenderRef = useRef(true);
 
   const volumeOrderBy =
@@ -34,7 +40,7 @@ export function PoolList() {
   });
 
   useEffect(() => {
-    if (data?.pools?.length > 0) {
+    if (data?.pools && data.pools.length > 0) {
       setPools(data.pools);
     }
   }, [data]);
@@ -50,7 +56,7 @@ export function PoolList() {
 
   const poolCards = useMemo(() => {
     if (!pools) return null;
-    return pools.map((pool: Pool) => <PoolCard key={pool.id} pool={pool} />);
+    return pools.map((pool) => <PoolCard key={pool.id} pool={pool} />);
   }, [pools]);
 
   if (isInitialLoading) {

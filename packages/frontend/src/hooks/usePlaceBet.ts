@@ -1,8 +1,9 @@
+import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
-import { bettingContractAbi, freedomAbi, TokenType, USDC_DECIMALS } from '@trump-fun/common';
+import { bettingContractAbi, freedomAbi, USDC_DECIMALS } from '@trump-fun/common';
 import { PublicClient } from 'viem';
-import { useNetwork } from './useNetwork';
 import { useApprovalAmount } from './useApprovalAmount';
+import { useNetwork } from './useNetwork';
 
 interface UsePlaceBetProps {
   writeContract: any;

@@ -2130,19 +2130,182 @@ export type GetPoolsQuery = {
     usdcVolume: any;
     pointsVolume: any;
     originalTruthSocialPostId: string;
+    bets: Array<{
+      __typename?: 'Bet';
+      id: string;
+      betId: any;
+      user: any;
+      option: any;
+      amount: any;
+      tokenType: TokenType;
+      updatedAt: any;
+    }>;
+  }>;
+};
+
+export type GetBetsQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
+  filter: Bet_Filter;
+  orderBy: Bet_OrderBy;
+  orderDirection: OrderDirection;
+}>;
+
+export type GetBetsQuery = {
+  __typename?: 'Query';
+  bets: Array<{
+    __typename?: 'Bet';
+    id: string;
+    betId: any;
+    option: any;
+    amount: any;
+    poolId: any;
+    blockNumber: any;
+    blockTimestamp: any;
+    transactionHash: any;
+    user: any;
+    tokenType: TokenType;
+    createdAt: any;
+    isWithdrawn: boolean;
+    chainName: string;
+    updatedAt: any;
+    pool: {
+      __typename?: 'Pool';
+      id: string;
+      poolId: any;
+      question: string;
+      options: Array<string>;
+      status: PoolStatus;
+      chainId: any;
+      chainName: string;
+      createdAt: any;
+      pointsVolume: any;
+      usdcVolume: any;
+      usdcBetTotals: Array<any>;
+      pointsBetTotals: Array<any>;
+      originalTruthSocialPostId: string;
+      betsCloseAt: any;
+    };
+  }>;
+};
+
+export type GetPayoutClaimedQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<PayoutClaimed_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<PayoutClaimed_Filter>;
+}>;
+
+export type GetPayoutClaimedQuery = {
+  __typename?: 'Query';
+  payoutClaimeds: Array<{
+    __typename?: 'PayoutClaimed';
+    id: any;
+    betId: any;
+    poolId: any;
+    user: any;
+    amount: any;
+    tokenType: number;
+    blockNumber: any;
+    blockTimestamp: any;
+    transactionHash: any;
+    chainName: string;
+    chainId: any;
+    bet: {
+      __typename?: 'Bet';
+      id: string;
+      amount: any;
+      option: any;
+      user: any;
+      createdAt: any;
+      isWithdrawn: boolean;
+      tokenType: TokenType;
+      pool: {
+        __typename?: 'Pool';
+        id: string;
+        question: string;
+        options: Array<string>;
+        status: PoolStatus;
+        winningOption: any;
+        isDraw: boolean;
+        betsCloseAt: any;
+        usdcVolume: any;
+        pointsVolume: any;
+        usdcBetTotals: Array<any>;
+        pointsBetTotals: Array<any>;
+      };
+    };
+    pool: {
+      __typename?: 'Pool';
+      id: string;
+      question: string;
+      options: Array<string>;
+      status: PoolStatus;
+      winningOption: any;
+      isDraw: boolean;
+      betsCloseAt: any;
+      usdcVolume: any;
+      pointsVolume: any;
+      usdcBetTotals: Array<any>;
+      pointsBetTotals: Array<any>;
+    };
+  }>;
+};
+
+export type GetBetWithdrawalsQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<BetWithdrawal_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<BetWithdrawal_Filter>;
+}>;
+
+export type GetBetWithdrawalsQuery = {
+  __typename?: 'Query';
+  betWithdrawals: Array<{
+    __typename?: 'BetWithdrawal';
+    id: any;
+    betId: any;
+    user: any;
+    blockNumber: any;
+    blockTimestamp: any;
+    transactionHash: any;
+    chainName: string;
+    chainId: any;
+  }>;
+};
+
+export type GetBetPlacedQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
+  filter: BetPlaced_Filter;
+  orderBy: BetPlaced_OrderBy;
+  orderDirection: OrderDirection;
+}>;
+
+export type GetBetPlacedQuery = {
+  __typename?: 'Query';
+  betPlaceds: Array<{
+    __typename?: 'BetPlaced';
+    id: any;
+    betId: any;
+    user: any;
+    optionIndex: any;
+    amount: any;
+    poolId: any;
+    blockNumber: any;
+    blockTimestamp: any;
+    transactionHash: any;
+    tokenType: number;
   }>;
 };
 
 export type GetPoolQueryVariables = Exact<{
-  filter: Pool_Filter;
-  orderBy: Pool_OrderBy;
-  orderDirection: OrderDirection;
-  first?: InputMaybe<Scalars['Int']['input']>;
+  poolId: Scalars['ID']['input'];
 }>;
 
 export type GetPoolQuery = {
   __typename?: 'Query';
-  pools: Array<{
+  pool?: {
     __typename?: 'Pool';
     id: string;
     poolId: any;
@@ -2155,9 +2318,6 @@ export type GetPoolQuery = {
     createdBlockNumber: any;
     createdBlockTimestamp: any;
     createdTransactionHash: any;
-    lastUpdatedBlockNumber: any;
-    lastUpdatedBlockTimestamp: any;
-    lastUpdatedTransactionHash: any;
     gradedBlockNumber: any;
     gradedBlockTimestamp: any;
     gradedTransactionHash: any;
@@ -2166,8 +2326,18 @@ export type GetPoolQuery = {
     pointsBetTotals: Array<any>;
     usdcVolume: any;
     pointsVolume: any;
+    winningOption: any;
     originalTruthSocialPostId: string;
-  }>;
+    bets: Array<{
+      __typename?: 'Bet';
+      id: string;
+      betId: any;
+      user: any;
+      option: any;
+      amount: any;
+      tokenType: TokenType;
+    }>;
+  } | null;
 };
 
 export const GetPoolsDocument = {
@@ -2245,6 +2415,22 @@ export const GetPoolsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'options' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'chainId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'bets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'option' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                    ],
+                  },
+                },
                 { kind: 'Field', name: { kind: 'Name', value: 'chainName' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBlockNumber' } },
@@ -2270,20 +2456,26 @@ export const GetPoolsDocument = {
     },
   ],
 } as unknown as DocumentNode<GetPoolsQuery, GetPoolsQueryVariables>;
-export const GetPoolDocument = {
+export const GetBetsDocument = {
   kind: 'Document',
   definitions: [
     {
       kind: 'OperationDefinition',
       operation: 'query',
-      name: { kind: 'Name', value: 'GetPool' },
+      name: { kind: 'Name', value: 'GetBets' },
       variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '10' },
+        },
         {
           kind: 'VariableDefinition',
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
           type: {
             kind: 'NonNullType',
-            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Pool_filter' } },
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Bet_filter' } },
           },
         },
         {
@@ -2291,7 +2483,7 @@ export const GetPoolDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
           type: {
             kind: 'NonNullType',
-            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Pool_orderBy' } },
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Bet_orderBy' } },
           },
         },
         {
@@ -2302,19 +2494,19 @@ export const GetPoolDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
           },
         },
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
-          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
-            name: { kind: 'Name', value: 'pools' },
+            name: { kind: 'Name', value: 'bets' },
             arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
               {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'where' },
@@ -2330,10 +2522,411 @@ export const GetPoolDocument = {
                 name: { kind: 'Name', value: 'orderDirection' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
               },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'option' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'poolId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isWithdrawn' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'pool' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'poolId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'question' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'options' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'chainId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'chainName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'pointsVolume' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'usdcVolume' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'usdcBetTotals' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'pointsBetTotals' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'originalTruthSocialPostId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'betsCloseAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetBetsQuery, GetBetsQueryVariables>;
+export const GetPayoutClaimedDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetPayoutClaimed' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '100' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'PayoutClaimed_orderBy' } },
+          defaultValue: { kind: 'EnumValue', value: 'blockTimestamp' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
+          defaultValue: { kind: 'EnumValue', value: 'desc' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'where' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'PayoutClaimed_filter' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'payoutClaimeds' },
+            arguments: [
               {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'first' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'skip' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderBy' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderDirection' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'where' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'where' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'poolId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'bet' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'option' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isWithdrawn' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'pool' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'question' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'options' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'winningOption' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'isDraw' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'betsCloseAt' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'usdcVolume' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'pointsVolume' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'usdcBetTotals' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'pointsBetTotals' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'pool' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'question' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'options' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'winningOption' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isDraw' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'betsCloseAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'usdcVolume' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'pointsVolume' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'usdcBetTotals' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'pointsBetTotals' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>;
+export const GetBetWithdrawalsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetBetWithdrawals' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '100' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'BetWithdrawal_orderBy' } },
+          defaultValue: { kind: 'EnumValue', value: 'blockTimestamp' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
+          defaultValue: { kind: 'EnumValue', value: 'desc' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'where' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'BetWithdrawal_filter' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'betWithdrawals' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'skip' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderBy' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderDirection' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'where' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'where' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainId' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetBetWithdrawalsQuery, GetBetWithdrawalsQueryVariables>;
+export const GetBetPlacedDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetBetPlaced' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '10' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'BetPlaced_filter' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'BetPlaced_orderBy' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'betPlaceds' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'where' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderBy' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderDirection' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'optionIndex' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'poolId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetBetPlacedQuery, GetBetPlacedQueryVariables>;
+export const GetPoolDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetPool' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'poolId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pool' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'poolId' } },
               },
             ],
             selectionSet: {
@@ -2350,9 +2943,6 @@ export const GetPoolDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBlockNumber' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBlockTimestamp' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdTransactionHash' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedBlockNumber' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedBlockTimestamp' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedTransactionHash' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'gradedBlockNumber' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'gradedBlockTimestamp' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'gradedTransactionHash' } },
@@ -2361,7 +2951,23 @@ export const GetPoolDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'pointsBetTotals' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'usdcVolume' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'pointsVolume' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'winningOption' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'originalTruthSocialPostId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'bets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'option' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+                    ],
+                  },
+                },
               ],
             },
           },

@@ -1,12 +1,19 @@
 import { GET_BET_WITHDRAWALS, GET_BETS, GET_PAYOUT_CLAIMED } from '@/app/queries';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
+import {
+  Bet_Filter,
+  Bet_OrderBy,
+  BetWithdrawal_OrderBy,
+  OrderDirection,
+  PayoutClaimed_Filter,
+  PayoutClaimed_OrderBy,
+} from '@/types/__generated__/graphql';
 import { useQuery } from '@apollo/client';
-import { BetWithdrawal_OrderBy, OrderDirection } from '@trump-fun/common';
 import { useFilterConfig } from './useFilterConfig';
 
 export function useUserBetsData(activeFilter: string) {
   const { address } = useWalletAddress();
-  const { orderBy, orderDirection, filter } = useFilterConfig(address, activeFilter);
+  const config = useFilterConfig(address, activeFilter);
 
   // Query for user bets
   const {
@@ -16,9 +23,9 @@ export function useUserBetsData(activeFilter: string) {
     refetch: refetchBets,
   } = useQuery(GET_BETS, {
     variables: {
-      filter: filter,
-      orderBy,
-      orderDirection,
+      filter: ('filter' in config ? config.filter : {}) satisfies Bet_Filter,
+      orderBy: config.orderBy as Bet_OrderBy,
+      orderDirection: config.orderDirection as OrderDirection,
     },
     context: { name: 'userBets' },
     skip: !address || activeFilter === 'won',
@@ -32,9 +39,9 @@ export function useUserBetsData(activeFilter: string) {
     refetch: refetchPayouts,
   } = useQuery(GET_PAYOUT_CLAIMED, {
     variables: {
-      where: filter,
-      orderBy,
-      orderDirection,
+      where: ('where' in config ? config.where : {}) as PayoutClaimed_Filter,
+      orderBy: config.orderBy as PayoutClaimed_OrderBy,
+      orderDirection: config.orderDirection as OrderDirection,
     },
     context: { name: 'payoutClaimeds' },
     skip: !address || activeFilter !== 'won',

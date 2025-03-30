@@ -1,6 +1,6 @@
 import { UserBettingPost } from '@/components/user-betting-post';
+import { Bet, PayoutClaimed } from '@/types/__generated__/graphql';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
-import { Bet, PayoutClaimed } from '@trump-fun/common';
 import { Loader } from 'lucide-react';
 
 export function BetsList({
@@ -30,7 +30,7 @@ export function BetsList({
 
   return (
     <div className='flex-1 space-y-4'>
-      {pools.map(item => {
+      {pools.map((item) => {
         const bet = activeFilter === 'won' ? (item as PayoutClaimed).bet : (item as Bet);
         const pool =
           activeFilter === 'won'

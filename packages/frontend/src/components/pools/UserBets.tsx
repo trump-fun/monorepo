@@ -1,25 +1,31 @@
-import { Bet, Pool } from '@trump-fun/common';
+'use client';
+import { GetBetsQuery, GetPoolQuery } from '@/types/__generated__/graphql';
 import { format } from 'date-fns';
 import { ReactNode } from 'react';
 
 interface UserBetsProps {
-  placedBets: any; // Replace with proper typing
-  pool: Pool; // Replace with proper typing
+  placedBets: GetBetsQuery['bets']; // Replace with proper typing
+  pool: GetPoolQuery['pool']; // Replace with proper typing
   USDC_DECIMALS: number;
   tokenLogo: ReactNode;
   symbol: string;
 }
 
 export const UserBets = ({ placedBets, pool, USDC_DECIMALS, tokenLogo }: UserBetsProps) => {
-  if (!placedBets?.bets || placedBets.bets.length === 0) {
+  if (placedBets.length === 0) {
     return null;
   }
+
+  if (!pool) return null;
+
+  console.log('userBets pool', pool);
+  console.log('userBets placedBets', placedBets);
 
   return (
     <div className='mb-6'>
       <h3 className='mb-4 text-lg font-semibold'>Your Bets</h3>
       <div className='space-y-2'>
-        {placedBets.bets.map((bet: Bet) => (
+        {placedBets.map((bet) => (
           <div key={bet.id} className='flex items-center justify-between rounded-md border p-3'>
             <div className='flex flex-col'>
               <div className='flex items-center'>

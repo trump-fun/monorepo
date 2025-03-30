@@ -12,9 +12,11 @@ import { useUserBetsData } from '@/hooks/useUserBetsData';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { useWithdraw } from '@/hooks/useWithdraw';
+import { Bet, PayoutClaimed } from '@/types/__generated__/graphql';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+//TODO Types are very sloppy in this file
 export function ProfileClient() {
   const [activeFilter, setActiveFilter] = useState<string>('active');
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,13 +24,18 @@ export function ProfileClient() {
   const { tokenType } = useTokenContext();
   const { betsData, isLoading, isError } = useUserBetsData(activeFilter);
   const withdrawalProps = useWithdraw();
-  const userStats = useUserStats(betsData.bets, betsData.payoutClaimeds);
-  const filteredPools = useFilteredPools(
-    activeFilter,
-    searchQuery,
-    betsData.bets,
-    betsData.payoutClaimeds
+
+  // Use memoized values from the GraphQL queries
+  const memoizedBets = useMemo(() => betsData.bets as Bet[], [betsData.bets]);
+  const memoizedPayouts = useMemo(
+    () => betsData.payoutClaimeds as PayoutClaimed[],
+    [betsData.payoutClaimeds]
   );
+
+  const userStats = useUserStats(memoizedBets, memoizedPayouts);
+
+  const filteredPools = useFilteredPools(activeFilter, searchQuery, memoizedBets, memoizedPayouts);
+
   const handleFilterChange = (value: string) => setActiveFilter(value);
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value);
 

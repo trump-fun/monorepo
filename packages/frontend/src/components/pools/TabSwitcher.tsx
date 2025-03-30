@@ -1,14 +1,17 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bet, Pool, Tables, TokenType } from '@trump-fun/common';
+import { GetBetPlacedQuery, GetPoolQuery } from '@/types/__generated__/graphql';
+import { Tables } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
+import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
 
 interface TabSwitcherProps {
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
-  pool: Pool; // Replace with proper typing
+  pool: GetPoolQuery['pool']; // Replace with proper typing
+  bets: GetBetPlacedQuery['betPlaceds']; // Replace with proper typing
   comments: Tables<'comments'>[];
   isCommentsLoading: boolean;
   commentsError: any;
@@ -18,6 +21,7 @@ export const TabSwitcher = ({
   selectedTab,
   setSelectedTab,
   pool,
+  bets,
   comments,
   isCommentsLoading,
   commentsError,
@@ -26,6 +30,11 @@ export const TabSwitcher = ({
     if (!address) return '';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
+
+  if (!pool) {
+    return null;
+  }
+
   return (
     <Tabs
       defaultValue='comments'
@@ -53,14 +62,17 @@ export const TabSwitcher = ({
       </TabsContent>
 
       <TabsContent value='activity' className='pt-4'>
-        {pool?.bets?.length > 0 ? (
+        {bets?.length > 0 ? (
           <div className='space-y-2'>
-            {pool?.bets?.slice(0, 10).map((bet: Bet) => (
+            {bets?.slice(0, 10).map((bet) => (
               <div key={bet.id} className='flex items-center justify-between rounded-md border p-3'>
                 <div className='flex items-center'>
                   <Avatar className='mr-2 h-6 w-6'>
-                    <AvatarImage src='/avatar-placeholder.png' />
-                    <AvatarFallback>{truncateAddress(bet.user)[0]}</AvatarFallback>
+                    {bet.user ? (
+                      <Jazzicon diameter={24} seed={jsNumberForAddress(bet.user)} />
+                    ) : (
+                      <AvatarFallback>{truncateAddress(bet.user)[0]}</AvatarFallback>
+                    )}
                   </Avatar>
                   <div>
                     <div className='text-sm'>
@@ -68,17 +80,17 @@ export const TabSwitcher = ({
                       <span> bet on </span>
                       <span
                         className={
-                          bet.option === '0'
+                          bet.optionIndex === '0'
                             ? 'font-medium text-green-500'
                             : 'font-medium text-red-500'
                         }
                       >
-                        {pool.options[parseInt(bet.option)]}
+                        {pool.options[parseInt(bet.optionIndex)]}
                       </span>
                     </div>
                     <span className='text-muted-foreground text-xs'>
-                      {bet.updatedAt && !isNaN(Number(bet.updatedAt))
-                        ? formatDistanceToNow(new Date(Number(bet.updatedAt) * 1000), {
+                      {bet.blockTimestamp && !isNaN(Number(bet.blockTimestamp))
+                        ? formatDistanceToNow(new Date(Number(bet.blockTimestamp) * 1000), {
                             addSuffix: true,
                           })
                         : 'Unknown time'}
@@ -87,11 +99,11 @@ export const TabSwitcher = ({
                 </div>
                 <div className='font-medium'>
                   {(Number(bet.amount) / 10 ** 6).toLocaleString()}{' '}
-                  {bet.tokenType === TokenType.Usdc ? 'USDC' : 'pts'}
+                  {bet.tokenType === 0 ? 'USDC' : 'FREEDOM'}
                 </div>
               </div>
             ))}
-            {pool?.bets?.length > 10 && (
+            {bets?.length > 10 && (
               <div className='pt-2 text-center'>
                 <Button variant='link'>View all activity</Button>
               </div>

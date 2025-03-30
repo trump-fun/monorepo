@@ -6,7 +6,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { cn } from '@/lib/utils';
-import { TokenType } from '@trump-fun/common';
+import { TokenType } from '@/types';
 
 export function TokenSwitch() {
   const { tokenType, setTokenType, tokenLogo } = useTokenContext();

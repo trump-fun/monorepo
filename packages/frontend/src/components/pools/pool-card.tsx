@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { useTokenContext } from '@/hooks/useTokenContext';
+import { GetPoolsQuery } from '@/types/__generated__/graphql';
 import { calculateOptionPercentages, calculateVolume } from '@/utils/betsInfo';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
@@ -12,9 +13,7 @@ import Link from 'next/link';
 import TruthSocial from '../common/truth-social';
 import CountdownTimer from '../Timer';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Pool } from '@/types';
-
-export function PoolCard({ pool }: { pool: Pool }) {
+export function PoolCard({ pool }: { pool: GetPoolsQuery['pools'][number] }) {
   const { tokenType } = useTokenContext();
 
   const { data: postData } = useQuery({

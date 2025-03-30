@@ -1,14 +1,18 @@
 import { ProgressBar } from '@/components/ui/progress-bar';
-import { Pool } from '@/types';
+import { GetPoolQuery, GetPoolsQuery } from '@/types';
 
 interface BettingProgressProps {
   percentages: number[];
-  pool: Pool;
+  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
   totalVolume: string;
 }
 
 export const BettingProgress = ({ percentages, pool, totalVolume }: BettingProgressProps) => {
   const isZeroState = totalVolume === '$0' || totalVolume === '0 pts' || percentages[0] === 0;
+
+  if (!pool) {
+    return null;
+  }
 
   return (
     <div className='mb-6'>

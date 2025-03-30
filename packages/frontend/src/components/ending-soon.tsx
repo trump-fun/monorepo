@@ -2,7 +2,7 @@
 
 import { GET_POOLS } from '@/app/queries';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { OrderDirection, Pool, Pool_OrderBy, PoolStatus } from '@/types';
+import { GetPoolsQuery, OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import { Clock } from 'lucide-react';
@@ -11,7 +11,7 @@ import { EndingSoonBet } from './ending-soon-bet';
 
 export function EndingSoon() {
   const { tokenType } = useTokenContext();
-  const [pools, setPools] = useState<Pool[]>([]);
+  const [pools, setPools] = useState<GetPoolsQuery['pools']>([]);
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const oneDayFromNow = currentTimestamp + 86400;
 
@@ -60,7 +60,7 @@ export function EndingSoon() {
       <div className='space-y-4'>
         {loading && !previousData ? (
           <div className='space-y-4'>
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className='animate-pulse'>
                 <div className='flex gap-3'>
                   <div className='h-8 w-8 rounded-full bg-gray-700'></div>
@@ -77,7 +77,7 @@ export function EndingSoon() {
             ))}
           </div>
         ) : poolsToDisplay.length > 0 ? (
-          poolsToDisplay.map((pool: Pool) => {
+          poolsToDisplay.map((pool) => {
             return (
               <EndingSoonBet
                 key={pool.id}

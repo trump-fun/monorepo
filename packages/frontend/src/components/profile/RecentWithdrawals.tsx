@@ -1,6 +1,6 @@
 import { Separator } from '@/components/ui/separator';
-import { POINTS_DECIMALS, TokenType, USDC_DECIMALS } from '@trump-fun/common';
-
+import { TokenType } from '@/types';
+import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 export function RecentWithdrawals({ withdrawals }: { withdrawals?: any[] }) {
   if (!withdrawals || withdrawals.length === 0) return null;
 
@@ -12,7 +12,7 @@ export function RecentWithdrawals({ withdrawals }: { withdrawals?: any[] }) {
           Recent Withdrawals
         </div>
         <div className='max-h-60 space-y-2 overflow-y-auto'>
-          {withdrawals.slice(0, 5).map(withdrawal => (
+          {withdrawals.slice(0, 5).map((withdrawal) => (
             <WithdrawalItem key={withdrawal.id} withdrawal={withdrawal} />
           ))}
         </div>

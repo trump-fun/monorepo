@@ -1,6 +1,6 @@
-import { Pool } from '@/types';
+import { GetPoolQuery } from '@/types';
 
-export const calculateBettors = (pool: Pool) => {
+export const calculateBettors = (pool: GetPoolQuery['pool']) => {
   if (!pool) return 0;
 
   // If we have bet data, use real data from smart contract
@@ -9,7 +9,7 @@ export const calculateBettors = (pool: Pool) => {
     const uniqueAddresses = new Set();
 
     // Add each bettor's address to the Set
-    pool?.bets?.forEach(bet => {
+    pool?.bets?.forEach((bet) => {
       if (bet.user) {
         uniqueAddresses.add(bet.user);
       }

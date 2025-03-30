@@ -1,8 +1,9 @@
 'use client';
 
-import { gql } from '@apollo/client';
+import { gql } from '@/types';
+import { gql as apolloGql } from '@apollo/client';
 
-export const GET_POOLS = gql`
+export const GET_POOLS = gql(`
   query GetPools(
     $filter: Pool_filter!
     $orderBy: Pool_orderBy!
@@ -23,6 +24,7 @@ export const GET_POOLS = gql`
         option
         amount
         tokenType
+        updatedAt
       }
       chainName
       createdAt
@@ -43,29 +45,9 @@ export const GET_POOLS = gql`
       originalTruthSocialPostId
     }
   }
-`;
+`);
 
-export const GET_BET_PLACED = gql`
-  query GetBetPlaced(
-    $first: Int = 10
-    $filter: BetPlaced_filter!
-    $orderBy: BetPlaced_orderBy!
-    $orderDirection: OrderDirection!
-  ) {
-    betPlaceds(first: $first, where: $filter, orderBy: $orderBy, orderDirection: $orderDirection) {
-      id
-      betId
-      optionIndex
-      amount
-      poolId
-      blockNumber
-      blockTimestamp
-      transactionHash
-    }
-  }
-`;
-
-export const GET_BETS = gql`
+export const GET_BETS = gql(`
   query GetBets(
     $first: Int = 10
     $filter: Bet_filter!
@@ -86,6 +68,7 @@ export const GET_BETS = gql`
       createdAt
       isWithdrawn
       chainName
+      updatedAt
       pool {
         id
         poolId
@@ -105,9 +88,9 @@ export const GET_BETS = gql`
       }
     }
   }
-`;
+`);
 
-export const GET_PAYOUT_CLAIMED = gql`
+export const GET_PAYOUT_CLAIMED = gql(`
   query GetPayoutClaimed(
     $first: Int = 100
     $skip: Int = 0
@@ -170,9 +153,9 @@ export const GET_PAYOUT_CLAIMED = gql`
       }
     }
   }
-`;
+`);
 
-export const GET_BET_WITHDRAWALS = gql`
+export const GET_BET_WITHDRAWALS = gql(`
   query GetBetWithdrawals(
     $first: Int = 100
     $skip: Int = 0
@@ -189,33 +172,62 @@ export const GET_BET_WITHDRAWALS = gql`
     ) {
       id
       betId
-      poolId
       user
       blockNumber
       blockTimestamp
       transactionHash
       chainName
       chainId
-      bet {
-        id
-        amount
-        option
-        tokenType
-        isWithdrawn
-        pool {
-          id
-          question
-          options
-          status
-          winningOption
-          isDraw
-        }
-      }
     }
   }
-`;
+`);
 
-export const GET_POOL = gql`
+export const GET_BET_PLACEDS = gql(`
+  query GetBetPlaced(
+    $first: Int = 10
+    $filter: BetPlaced_filter!
+    $orderBy: BetPlaced_orderBy!
+    $orderDirection: OrderDirection!
+  ) {
+    betPlaceds(first: $first, where: $filter, orderBy: $orderBy, orderDirection: $orderDirection) {
+      id
+      betId
+      user
+      optionIndex
+      amount
+      poolId
+      blockNumber
+      blockTimestamp
+      transactionHash
+      tokenType
+    }
+  }
+`);
+
+// TODO what is going on with GQL?
+export const GET_BET_PLACEDS_SERVER = apolloGql(`
+  query GetBetPlaced(
+    $first: Int = 10
+    $filter: BetPlaced_filter!
+    $orderBy: BetPlaced_orderBy!
+    $orderDirection: OrderDirection!
+  ) {
+    betPlaceds(first: $first, where: $filter, orderBy: $orderBy, orderDirection: $orderDirection) {
+      id
+      betId
+      user
+      optionIndex
+      amount
+      poolId
+      blockNumber
+      blockTimestamp
+      transactionHash
+      tokenType
+    }
+  }
+`);
+
+export const GET_POOL = gql(`
   query GetPool($poolId: ID!) {
     pool(id: $poolId) {
       id
@@ -249,4 +261,4 @@ export const GET_POOL = gql`
       }
     }
   }
-`;
+`);

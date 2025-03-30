@@ -1,6 +1,7 @@
 'use client';
 
-import { CHAIN_CONFIG, DEFAULT_CHAIN_ID, TokenType, USDC_DECIMALS } from '@trump-fun/common';
+import { TokenType } from '@/types';
+import { CHAIN_CONFIG, DEFAULT_CHAIN_ID, USDC_DECIMALS } from '@trump-fun/common';
 import Image from 'next/image';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Address } from 'viem';

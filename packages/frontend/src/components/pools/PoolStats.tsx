@@ -1,44 +1,61 @@
+import CountdownTimer from '@/components/Timer';
+import { GetPoolQuery } from '@/types';
 import { calculateBettors } from '@/utils/calculateBettors';
-import { Pool } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
-import { Clock, Users } from 'lucide-react';
+import { Clock, TrendingUp, Users } from 'lucide-react';
 
 interface PoolStatsProps {
-  pool: Pool;
+  pool: GetPoolQuery['pool'];
   totalVolume: string;
 }
 
 export const PoolStats = ({ pool, totalVolume }: PoolStatsProps) => {
+  if (!pool) {
+    return null;
+  }
   return (
-    <div className='mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4'>
-      <div className='flex flex-col rounded-lg border p-3 shadow-sm'>
-        <span className='text-muted-foreground mb-1 text-xs'>Total Volume</span>
-        <span className='font-semibold'>{totalVolume}</span>
+    <div className='mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3'>
+      {/* Volume Card */}
+      <div className='bg-card flex flex-col items-center justify-center rounded-lg border border-gray-200 p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-800'>
+        <div className='mb-2 rounded-full bg-green-100 p-2 dark:bg-green-900/30'>
+          <TrendingUp className='text-green-500' size={20} />
+        </div>
+        <p className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
+          Total Vol
+        </p>
+        <p className='mt-1 text-xl font-bold'>{totalVolume}</p>
       </div>
 
-      <div className='flex flex-col rounded-lg border p-3 shadow-sm'>
-        <span className='text-muted-foreground mb-1 text-xs'>Total Bets</span>
-        <span className='font-semibold'>{pool?.bets?.length ? pool?.bets?.length : 0}</span>
+      {/* Time Left Card */}
+      <div className='bg-card flex flex-col items-center justify-center rounded-lg border border-gray-200 p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-800'>
+        <div className='mb-2 rounded-full bg-blue-100 p-2 dark:bg-blue-900/30'>
+          <Clock className='text-blue-500' size={20} />
+        </div>
+        <p className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
+          Bets close
+        </p>
+        <div className='mt-1 text-xl font-bold'>
+          {pool.betsCloseAt ? (
+            <CountdownTimer
+              showClockIcon={false}
+              closesAt={Number(pool.betsCloseAt) * 1000}
+              digitClassName='text-white'
+              colonClassName='text-white'
+            />
+          ) : (
+            'Manual'
+          )}
+        </div>
       </div>
 
-      <div className='flex flex-col rounded-lg border p-3 shadow-sm'>
-        <span className='text-muted-foreground mb-1 flex items-center gap-1 text-xs'>
-          <Users size={12} />
-          <span>Unique Bettors</span>
-        </span>
-        <span className='font-semibold'>{calculateBettors(pool)}</span>
-      </div>
-
-      <div className='flex flex-col rounded-lg border p-3 shadow-sm'>
-        <span className='text-muted-foreground mb-1 flex items-center gap-1 text-xs'>
-          <Clock size={12} />
-          <span>Ends</span>
-        </span>
-        <span className='font-semibold'>
-          {pool.betsCloseAt
-            ? formatDistanceToNow(new Date(Number(pool.betsCloseAt) * 1000), { addSuffix: true })
-            : 'Manual'}
-        </span>
+      {/* Bettors Card */}
+      <div className='bg-card flex flex-col items-center justify-center rounded-lg border border-gray-200 p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-800'>
+        <div className='mb-2 rounded-full bg-orange-100 p-2 dark:bg-orange-900/30'>
+          <Users className='text-orange-500' size={20} />
+        </div>
+        <p className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
+          Bettors
+        </p>
+        <p className='mt-1 text-xl font-bold'>{calculateBettors(pool)}</p>
       </div>
     </div>
   );

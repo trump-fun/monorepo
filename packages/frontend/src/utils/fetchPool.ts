@@ -1,16 +1,14 @@
 import { apolloClient } from '@/lib/apollo/client';
-import { GET_POOL } from '@/server/queries';
-import { Pool, Pool_OrderBy } from '@trump-fun/common';
+import { GET_POOL_SERVER } from '@/server/queries';
+import { GetPoolQuery } from '@/types';
 
-export async function fetchPool(poolId: string): Promise<Pool | null> {
+export async function fetchPool(poolId: string): Promise<GetPoolQuery['pool'] | null> {
   const { data } = await apolloClient.query({
-    query: GET_POOL,
+    query: GET_POOL_SERVER,
     variables: {
-      filter: { poolId },
-      orderBy: Pool_OrderBy.CreatedAt,
-      orderDirection: 'desc',
+      poolId,
     },
   });
 
-  return data?.pools?.length ? (data.pools[0] as Pool) : null;
+  return data.pool;
 }

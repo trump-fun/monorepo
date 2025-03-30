@@ -1,6 +1,5 @@
-import { Bet, PayoutClaimed } from '@trump-fun/common';
+import { Bet, PayoutClaimed } from '@/types';
 import { useMemo } from 'react';
-
 export function useFilteredPools(
   activeFilter: string,
   searchQuery: string,
@@ -12,7 +11,7 @@ export function useFilteredPools(
       if (!searchQuery.trim()) return payoutClaimeds;
       const query = searchQuery.toLowerCase().trim();
       return payoutClaimeds.filter(
-        payout =>
+        (payout) =>
           payout.bet?.pool?.question.toLowerCase().includes(query) ||
           payout.pool?.question.toLowerCase().includes(query)
       );
@@ -22,6 +21,6 @@ export function useFilteredPools(
     if (!searchQuery.trim()) return bets;
 
     const query = searchQuery.toLowerCase().trim();
-    return bets.filter(bet => bet.pool.question.toLowerCase().includes(query));
+    return bets.filter((bet) => bet.pool.question.toLowerCase().includes(query));
   }, [bets, payoutClaimeds, searchQuery, activeFilter]);
 }

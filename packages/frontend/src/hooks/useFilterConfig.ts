@@ -1,23 +1,29 @@
-import { Bet_OrderBy, OrderDirection, PayoutClaimed_OrderBy } from '@trump-fun/common';
+import {
+  Bet_OrderBy,
+  GetBetsQueryVariables,
+  GetPayoutClaimedQueryVariables,
+  OrderDirection,
+  PayoutClaimed_OrderBy,
+  PoolStatus,
+} from '@/types/__generated__/graphql';
 import { useMemo } from 'react';
-
 export function useFilterConfig(address?: string, activeFilter: string = 'active') {
   return useMemo(() => {
-    const filterConfigs = {
+    const filterConfigs: Record<string, GetPayoutClaimedQueryVariables | GetBetsQueryVariables> = {
       active: {
         orderBy: Bet_OrderBy.UpdatedAt,
         orderDirection: OrderDirection.Desc,
         filter: {
           user: address,
           pool_: {
-            status: 'PENDING',
+            status: PoolStatus.Pending,
           },
         },
       },
       won: {
         orderBy: PayoutClaimed_OrderBy.BlockTimestamp,
         orderDirection: OrderDirection.Desc,
-        filter: {
+        where: {
           user: address?.toLowerCase(),
           bet_: {
             user: address,
@@ -30,7 +36,7 @@ export function useFilterConfig(address?: string, activeFilter: string = 'active
         filter: {
           user: address,
           pool_: {
-            status: 'GRADED',
+            status: PoolStatus.Graded,
           },
           isWithdrawn: false,
         },

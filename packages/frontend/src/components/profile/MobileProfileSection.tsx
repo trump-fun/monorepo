@@ -3,10 +3,10 @@ import { UserAvatar } from '@/components/shared/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
-import { TokenType } from '@trump-fun/common';
+import { TokenType } from '@/types';
 import { ArrowUpFromLine } from 'lucide-react';
-import { BettingStats } from './BettingStats';
 import { Dispatch, SetStateAction } from 'react';
+import { BettingStats } from './BettingStats';
 
 export function MobileProfileSection({
   address,
@@ -63,7 +63,7 @@ export function MobileProfileSection({
             placeholder='Enter amount'
             className='w-full border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800'
             value={withdrawAmount}
-            onChange={e => setWithdrawAmount(Number(e.target.value))}
+            onChange={(e) => setWithdrawAmount(Number(e.target.value))}
           />
         </div>
         <Button

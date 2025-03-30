@@ -48,18 +48,12 @@ export const GET_POOLS = gql(`
   }
 `);
 
-export const GET_POOL = gql(`
-  query GetPool(
-    $filter: Pool_filter!
-    $orderBy: Pool_orderBy!
-    $orderDirection: OrderDirection!
-    $first: Int
+export const GET_POOL_SERVER = gql(`
+  query GetPoolServer(
+    $poolId: ID!
   ) {
-    pools(
-      where: $filter
-      orderBy: $orderBy
-      orderDirection: $orderDirection
-      first: $first
+    pool(
+      id: $poolId
     ) {
         id
         poolId

@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
+import { Pool } from '@/types';
 import { fetchPool } from '@/utils/fetchPool';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { Pool } from '@/types';
 
 const openai = new OpenAI();
 const WALLETS = [
@@ -36,7 +36,7 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Pool not found' }, { status: 404 });
     }
 
-    const commentsArray = await generateComments(pool);
+    const commentsArray = await generateComments(pool as Pool);
     if (!commentsArray || commentsArray.length === 0) {
       return NextResponse.json({ error: 'No valid comments generated' }, { status: 500 });
     }
@@ -106,15 +106,15 @@ function extractCommentsFromString(content: string): string[] {
 
     return content
       .split(/[\n,]/)
-      .map(line => line.replace(/["'\[\]{}]/g, '').trim())
-      .filter(line => line.length > 0);
+      .map((line) => line.replace(/["'\[\]{}]/g, '').trim())
+      .filter((line) => line.length > 0);
   } catch {
     return [];
   }
 }
 
 async function saveComments(poolId: string, comments: string[]): Promise<void> {
-  const commentsToInsert = comments.map(comment => {
+  const commentsToInsert = comments.map((comment) => {
     const randomWallet = WALLETS[Math.floor(Math.random() * WALLETS.length)];
     return {
       pool_id: poolId,

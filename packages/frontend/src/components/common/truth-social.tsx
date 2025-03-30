@@ -4,7 +4,13 @@ import Link from 'next/link';
 export default function TruthSocial({ postId }: { postId: string }) {
   return (
     <Link href={`${TRUMP_FUN_TRUTH_SOCIAL_URL}/posts/${postId}`} target='_blank'>
-      <Image src='/truth-social.png' alt='Truth Social' width={20} height={20} />
+      <Image
+        src='/truth-social.png'
+        alt='Truth Social'
+        width={20}
+        height={20}
+        className='h-auto w-auto'
+      />
     </Link>
   );
 }

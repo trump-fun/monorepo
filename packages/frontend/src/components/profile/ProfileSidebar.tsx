@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
+import { TokenType } from '@/types';
 import { ArrowUpFromLine, History } from 'lucide-react';
 import { BettingStats } from './BettingStats';
 import { RecentWithdrawals } from './RecentWithdrawals';
-import { TokenType } from '@trump-fun/common';
 
 export function ProfileSidebar({
   address,
@@ -66,7 +66,7 @@ export function ProfileSidebar({
             placeholder='Enter amount'
             className='w-full border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800'
             value={withdrawAmount}
-            onChange={e => setWithdrawAmount(Number(e.target.value))}
+            onChange={(e) => setWithdrawAmount(Number(e.target.value))}
           />
         </div>
         <div className='flex w-full'>

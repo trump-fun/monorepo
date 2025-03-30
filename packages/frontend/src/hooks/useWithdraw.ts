@@ -1,7 +1,8 @@
 import { useNetwork } from '@/hooks/useNetwork';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
-import { bettingContractAbi, POINTS_DECIMALS, TokenType, USDC_DECIMALS } from '@trump-fun/common';
+import { TokenType } from '@/types';
+import { bettingContractAbi, POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import { useMemo, useState } from 'react';
 import { usePublicClient, useReadContract, useWriteContract } from 'wagmi';
 

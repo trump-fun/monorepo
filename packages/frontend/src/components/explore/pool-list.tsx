@@ -1,10 +1,10 @@
 import { BettingPost } from '@/components/betting-post';
+import { GetPoolsQuery, TokenType } from '@/types/__generated__/graphql';
 import { getBetTotals, getVolumeForTokenType } from '@/utils/betsInfo';
-import { Pool, TokenType } from '@trump-fun/common';
 import Image from 'next/image';
 
 interface PoolListProps {
-  pools: Pool[];
+  pools: GetPoolsQuery['pools'];
   isLoading: boolean;
   tokenType: TokenType;
 }
@@ -34,7 +34,7 @@ export function PoolList({ pools, isLoading, tokenType }: PoolListProps) {
       )}
 
       {pools.length > 0 &&
-        pools.map((pool: Pool) => (
+        pools.map((pool) => (
           <BettingPost
             key={pool.id}
             id={pool.id}

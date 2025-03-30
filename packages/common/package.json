@@ -5,13 +5,18 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "db-types": "npx supabase gen types typescript --project-id fxewzungnacaxpsnowcu --schema public > database.types.ts"
+    "db-types": "npx supabase gen types typescript --project-id fxewzungnacaxpsnowcu --schema public > database.types.ts",
+    "codegen": "graphql-codegen && grep -v \"PoolId = 'pool__id',\\|BetId = 'bet__id',\" src/types/__generated__/graphql.ts > temp.ts && mv temp.ts src/types/__generated__/graphql.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.3",
     "supabase": "^2.20.5"
   },
   "devDependencies": {
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "@graphql-codegen/cli": "5.0.5",
+    "@graphql-codegen/client-preset": "4.8.0",
+    "@graphql-codegen/introspection": "4.0.3",
+    "@graphql-codegen/typescript-operations": "^4.6.0"
   }
 }

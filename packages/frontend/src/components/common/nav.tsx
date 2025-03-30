@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
+import { SUPABASE_BUCKET } from '@trump-fun/common';
 import { Compass, Menu, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,7 +11,6 @@ import { NetworkIndicator } from '../network-indicator';
 import { ThemeToggle } from '../theme-toggle';
 import { TokenSwitch } from '../token-switch';
 import { TrumpUserPill } from '../user-pill';
-import { SUPABASE_BUCKET } from '@trump-fun/common';
 
 export default function Nav() {
   const { formattedBalance, tokenLogo } = useTokenBalance();
@@ -38,6 +38,7 @@ export default function Nav() {
                 alt='Trump.fun'
                 width={40}
                 height={40}
+                className='h-auto w-8'
               />
               <span className='text-2xl font-bold'>Trump.fun</span>
             </Link>
@@ -46,7 +47,7 @@ export default function Nav() {
             {/* Desktop navigation */}
             <div className='hidden items-center gap-4 md:flex'>
               <NetworkIndicator />
-              {navItems.map(item => (
+              {navItems.map((item) => (
                 <Button
                   key={item.href}
                   variant='outline'
@@ -102,7 +103,7 @@ export default function Nav() {
                   <TokenSwitch />
 
                   <div className='w-full space-y-4'>
-                    {navItems.map(item => (
+                    {navItems.map((item) => (
                       <Button
                         key={item.href}
                         variant='outline'
