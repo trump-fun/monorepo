@@ -1,5 +1,5 @@
 import { ProgressBar } from '@/components/ui/progress-bar';
-import { Pool } from '@trump-fun/common';
+import { Pool } from '@/types';
 
 interface BettingProgressProps {
   percentages: number[];

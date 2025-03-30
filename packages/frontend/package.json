@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "deploy": "sh deploy.sh"
+    "deploy": "sh deploy.sh",
+    "codegen": "graphql-codegen"
   },
   "dependencies": {
     "@apollo/client": "^3.13.5",
@@ -56,6 +57,10 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@graphql-codegen/cli": "5.0.5",
+    "@graphql-codegen/client-preset": "4.8.0",
+    "@graphql-codegen/introspection": "4.0.3",
+    "@graphql-codegen/typescript-operations": "^4.6.0",
     "@tailwindcss/postcss": "^4.0.17",
     "@types/node": "^22.13.14",
     "@types/react": "^19.0.12",

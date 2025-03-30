@@ -1,4 +1,5 @@
-import { DEFAULT_CHAIN_ID, Pool, PoolStatus } from '@trump-fun/common';
+import { Pool, PoolStatus } from '@/types';
+import { DEFAULT_CHAIN_ID } from '@trump-fun/common';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 export const USDC_DECIMALS = 6;

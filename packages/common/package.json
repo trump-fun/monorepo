@@ -5,14 +5,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "codegen": "graphql-codegen",
     "db-types": "npx supabase gen types typescript --project-id fxewzungnacaxpsnowcu --schema public > database.types.ts"
   },
   "dependencies": {
-    "@graphql-codegen/cli": "5.0.5",
-    "@graphql-codegen/client-preset": "4.8.0",
-    "@graphql-codegen/introspection": "4.0.3",
-    "@graphql-codegen/typescript-operations": "^4.6.0",
     "@supabase/supabase-js": "^2.49.3",
     "supabase": "^2.20.5"
   },

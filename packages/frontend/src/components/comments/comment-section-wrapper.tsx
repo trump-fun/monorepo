@@ -1,10 +1,8 @@
 'use client';
 
-import { Comment } from '@trump-fun/common';
-
 interface CommentSectionWrapperProps {
   poolId: string;
-  initialComments?: Comment[];
+  initialComments?: Tables<'comments'>[];
   isLoading: boolean;
   error: Error | null;
 }

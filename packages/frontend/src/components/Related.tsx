@@ -1,10 +1,10 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Pool } from '@trump-fun/common';
 import { Loader2 } from 'lucide-react';
 import { type FC } from 'react';
 import { PoolCard } from './pools/pool-card';
+import { Pool } from '@/types';
 
 interface RelatedProps {
   question: string;

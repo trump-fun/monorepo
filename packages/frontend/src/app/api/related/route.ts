@@ -1,9 +1,8 @@
 import { apolloClient } from '@/lib/apollo/client';
 import { GET_POOLS } from '@/server/queries';
-import { OrderDirection, Pool, Pool_OrderBy, PoolStatus } from '@trump-fun/common';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-
+import { Pool, Pool_OrderBy, PoolStatus, OrderDirection } from '@/types';
 const openaiClient = new OpenAI();
 
 export const GET = async (request: NextRequest) => {

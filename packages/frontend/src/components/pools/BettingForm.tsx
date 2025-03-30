@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { TokenBalance } from '@/types/pool';
-import { Pool } from '@trump-fun/common';
+import { Pool } from '@/types';
 import { ReactNode } from 'react';
 
 interface BettingFormProps {

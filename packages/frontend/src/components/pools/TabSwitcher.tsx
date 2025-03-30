@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bet, Comment, Pool, TokenType } from '@trump-fun/common';
+import { Bet, Pool, Tables, TokenType } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
 
@@ -9,7 +9,7 @@ interface TabSwitcherProps {
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
   pool: Pool; // Replace with proper typing
-  comments: Comment[];
+  comments: Tables<'comments'>[];
   isCommentsLoading: boolean;
   commentsError: any;
 }

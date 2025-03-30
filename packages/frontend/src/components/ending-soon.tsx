@@ -2,9 +2,9 @@
 
 import { GET_POOLS } from '@/app/queries';
 import { useTokenContext } from '@/hooks/useTokenContext';
+import { OrderDirection, Pool, Pool_OrderBy, PoolStatus } from '@/types';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
-import { OrderDirection, Pool, Pool_OrderBy, PoolStatus } from '@trump-fun/common';
 import { Clock } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { EndingSoonBet } from './ending-soon-bet';
