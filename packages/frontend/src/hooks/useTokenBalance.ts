@@ -1,7 +1,7 @@
 'use client';
 
 import { freedomAbi } from '@trump-fun/common';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type Address } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { useTokenContext } from './useTokenContext';
@@ -10,6 +10,8 @@ import { useWalletAddress } from './useWalletAddress';
 interface UseTokenBalanceOptions {
   /** Whether to enable the balance query */
   enabled?: boolean;
+  /** Cooldown in milliseconds between balance fetches (default: 15000) */
+  cooldownMs?: number;
 }
 
 interface TokenBalanceData {
@@ -32,6 +34,10 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  // Cooldown mechanism
+  const lastFetchTimeRef = useRef<number>(0);
+  const cooldownMs = options.cooldownMs ?? 5000; // Default 5 second cooldown
+
   // Only fetch if wallet is connected
   const shouldFetch = Boolean(isConnected && address && options.enabled !== false);
 
@@ -43,8 +49,15 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
     }
 
     const fetchBalance = async () => {
+      // Check cooldown
+      const now = Date.now();
+      if (now - lastFetchTimeRef.current < cooldownMs) {
+        return;
+      }
+
       setIsLoading(true);
       setIsError(false);
+      lastFetchTimeRef.current = now;
 
       try {
         const tokenAddressHex = tokenAddress as Address;
@@ -82,6 +95,7 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
     tokenDecimals,
     tokenSymbol,
     chainId,
+    cooldownMs,
   ]);
 
   // Format balance with proper decimal precision - no decimals for display
@@ -90,6 +104,15 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
     : '0';
 
   const refetch = async () => {
+    // Check cooldown for manual refetches too
+    const now = Date.now();
+    if (now - lastFetchTimeRef.current < cooldownMs) {
+      console.log(
+        `Skipping balance fetch - cooldown active (${Math.ceil((cooldownMs - (now - lastFetchTimeRef.current)) / 1000)}s remaining)`
+      );
+      return;
+    }
+
     // Reset error state
     setIsError(false);
 
@@ -99,6 +122,7 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
     }
 
     setIsLoading(true);
+    lastFetchTimeRef.current = now;
 
     try {
       const tokenAddressHex = tokenAddress as Address;
