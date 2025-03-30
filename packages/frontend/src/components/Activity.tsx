@@ -1,8 +1,9 @@
 'use client';
 
 import { GET_BETS, GET_BETS_SUBSCRIPTION } from '@/app/queries';
+import { Bet, Bet_OrderBy, Pool } from '@/types';
 import { useQuery, useSubscription } from '@apollo/client';
-import { Bet, Bet_OrderBy, POINTS_DECIMALS, Pool } from '@trump-fun/common';
+import { POINTS_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowUpRight, Clock, Loader2 } from 'lucide-react';
 import { type FC, useEffect, useState } from 'react';

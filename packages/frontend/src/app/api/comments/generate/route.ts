@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { fetchPool } from '@/utils/fetchPool';
-import { Pool } from '@trump-fun/common';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { Pool } from '@/types';
 
 const openai = new OpenAI();
 const WALLETS = [

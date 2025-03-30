@@ -1,4 +1,4 @@
-import { Pool } from '@trump-fun/common';
+import { Pool } from '@/types';
 
 export const calculateBettors = (pool: Pool) => {
   if (!pool) return 0;

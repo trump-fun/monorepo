@@ -1,5 +1,5 @@
 import { calculateBettors } from '@/utils/calculateBettors';
-import { Pool } from '@trump-fun/common';
+import { Pool } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Clock, Users } from 'lucide-react';
 

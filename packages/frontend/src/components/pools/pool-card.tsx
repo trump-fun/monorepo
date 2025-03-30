@@ -12,7 +12,7 @@ import Link from 'next/link';
 import TruthSocial from '../common/truth-social';
 import CountdownTimer from '../Timer';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Pool } from '@trump-fun/common';
+import { Pool } from '@/types';
 
 export function PoolCard({ pool }: { pool: Pool }) {
   const { tokenType } = useTokenContext();

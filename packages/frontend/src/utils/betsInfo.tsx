@@ -1,5 +1,6 @@
 import { TOKEN_SYMBOLS } from '@/hooks/useTokenContext';
-import { POINTS_DECIMALS, Pool, TokenType, USDC_DECIMALS } from '@trump-fun/common';
+import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { Pool, TokenType } from '@/types';
 import React from 'react';
 
 // Helper function to safely convert token amounts

@@ -1,6 +1,6 @@
 import { apolloClient } from '@/lib/apollo/client';
 import { GET_POOL } from '@/server/queries';
-import { Pool } from '@trump-fun/common';
+import { Pool } from '@/types';
 
 export async function fetchPool(poolId: string): Promise<Pool | null> {
   const { data } = await apolloClient.query({
