@@ -107,23 +107,6 @@ builder
   .addEdge('create_betting_pools', 'upsert_truth_social_posts')
   .addEdge('upsert_truth_social_posts', END);
 
-// const generateBettingPoolSubgraph = builder
-//   .addNode("research_news", newsApiSearchFunction)
-//   .addNode("research_web", tavilySearchFunction)
-//   .addNode("generate_betting_pool_ideas", generateBettingPoolIdeas)
-//   // .addNode("generate_images", generateImages)
-//   .addNode("create_betting_pools", createBettingPools)
-//   .addNode("upsert_truth_social_posts", upsertTruthSocialPosts)
-//   .addEdge(START, "research_news")
-//   .addEdge(START, "research_web")
-//   .addEdge("research_news", "generate_betting_pool_ideas")
-//   .addEdge("research_web", "generate_betting_pool_ideas")
-//   // .addEdge("generate_betting_pool_ideas", "generate_images")
-//   .addEdge("generate_betting_pool_ideas", "create_betting_pools")
-//   // .addEdge("generate_images", "create_betting_pools")
-//   .addEdge("create_betting_pools", "upsert_truth_social_posts")
-//   .addEdge("upsert_truth_social_posts", END);
-
 // Compile the graph
 export const bettingPoolGeneratorGraph = builder.compile();
 bettingPoolGeneratorGraph.name = 'trump-fun-pool-creation-agent';

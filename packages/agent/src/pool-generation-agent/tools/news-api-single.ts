@@ -93,6 +93,7 @@ export async function newsApiSearchFunctionSingle(
         apiKey: config.newsApiKey,
       },
     });
+    console.log('response', response.request?.path);
 
     console.log('newsApiSearch response status:', response.status);
 
@@ -100,6 +101,7 @@ export async function newsApiSearchFunctionSingle(
     const articles = response.data.articles || [];
     const articleTitles = articles.map((article: any) => article.title);
 
+    console.log('articleTitles', articleTitles);
     return {
       research: {
         ...researchItem,

@@ -1,17 +1,26 @@
 /**
+ * A single post betting pool generator that processes one Truth Social post at a time.
+ * This graph takes a Truth Social post and creates a betting pool by:
+ * 1. Extracting search queries
+ * 2. Performing parallel research (News API and Tavily)
+ * 3. Generating a betting pool idea
+ * 4. Generating an image
+ * 5. Creating the betting pool on-chain
  *
- * IMPORTANT: THIS ANNOTATION IS NOT BEING USED RIGHT NOW, DO NOT MODIFY IF YOU'RE DEALING WITH A PRODUCTION ISSUE
- * IT'S A STARTING POINT TO TRAIN OTHER TEAM MEMBERS ON THE AGENT CODE
- * Feel free to modify, just make sure the other agent code runs before deploying
- *
- * Learning session scheduled for Mar. 26th.
- * Please remove this comment after the single research subgraph is fully implemented
+ * IMPORTANT: This implementation replaces the previous commented version.
+ * After reviewing this implementation, please remove the warning header at the top of the file.
  */
 import type { BaseMessage } from '@langchain/core/messages';
-import { Annotation } from '@langchain/langgraph';
+import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
 import type { BettingChainConfig } from '../config';
 import { DEFAULT_CHAIN_ID, config } from '../config';
 import type { ResearchItem } from '../types/research-item';
+import { createBettingPool } from './tools/create-betting-pool';
+import { generateBettingPoolIdea } from './tools/generate-betting-pool-idea';
+import { generateImage } from './tools/generate-image';
+import { newsApiSearchFunctionSingle } from './tools/news-api-single';
+import { extractSearchQueryFunctionSingle } from './tools/search-query-single';
+import { tavilySearchFunction } from './tools/tavily-search';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,
@@ -104,3 +113,62 @@ export const SingleResearchItemAnnotation = Annotation.Root({
 });
 
 export type SingleResearchItemState = typeof SingleResearchItemAnnotation.State;
+
+// Function to check if we should proceed with processing
+function shouldContinueProcessing(state: SingleResearchItemState): 'continue' | 'stop' {
+  if (!state.research) return 'stop';
+
+  // If the item is explicitly marked as should not process, stop
+  if (state.research.should_process === false) return 'stop';
+
+  // If the item already has a pool ID or transaction hash, it's already processed
+  if (state.research.pool_id || state.research.transaction_hash) return 'stop';
+
+  return 'continue';
+}
+
+// Create the graph
+const builder = new StateGraph(SingleResearchItemAnnotation);
+
+// Add nodes to the graph
+builder
+  .addNode('extract_search_query', extractSearchQueryFunctionSingle)
+  .addNode('news_api_search', newsApiSearchFunctionSingle)
+  .addNode('tavily_search', tavilySearchFunction)
+  .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
+  .addNode('generate_image', generateImage)
+  .addNode('create_betting_pool', createBettingPool)
+  .addEdge(START, 'extract_search_query')
+  .addConditionalEdges('extract_search_query', shouldContinueProcessing, {
+    continue: 'news_api_search',
+    stop: END,
+  })
+  .addEdge('news_api_search', 'tavily_search')
+  .addEdge('tavily_search', 'generate_betting_pool_idea')
+  .addConditionalEdges('generate_betting_pool_idea', shouldContinueProcessing, {
+    continue: 'generate_image',
+    stop: END,
+  })
+  .addConditionalEdges('generate_image', shouldContinueProcessing, {
+    continue: 'create_betting_pool',
+    stop: END,
+  })
+  .addEdge('create_betting_pool', END);
+
+// Compile the graph
+export const singleBettingPoolGraph = builder.compile();
+singleBettingPoolGraph.name = 'trump-fun-single-pool-creation';
+
+// Export a function to run a single node for testing
+export async function runSingleNode(
+  nodeName: keyof typeof singleBettingPoolGraph.nodes,
+  state: SingleResearchItemState
+) {
+  const node = singleBettingPoolGraph.nodes[nodeName];
+  if (!node) {
+    throw new Error(`Node '${nodeName}' not found in the graph`);
+  }
+
+  const result = await node.invoke(state);
+  return result;
+}
