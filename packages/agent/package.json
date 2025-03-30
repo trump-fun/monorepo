@@ -1,6 +1,7 @@
 {
   "name": "@trump-fun/agent",
   "version": "1.0.0",
+  "main": "dist/index.js",
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -12,7 +13,7 @@
     "generate-noise": "bun run generate-noise.ts",
     "generate-pool": "bun run generate-pool.ts",
     "reply-to-trump": "bun run reply-to-trump.ts",
-    "build": "bun build index.ts --target=bun",
+    "build": "bun build index.ts --target=bun --outdir=dist",
     "bet-grading": "bun run-bet-grading-agent.ts",
     "pool-creation": "bun run-pool-creation-agent.ts",
     "deploy": "sh deploy.sh"

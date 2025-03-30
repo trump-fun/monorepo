@@ -1,6 +1,6 @@
+import { bettingContractAbi } from '@trump-fun/common';
 import { createPublicClient, createWalletClient, http, parseEventLogs } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import contractABI from '../../../artifacts/BettingContract.json';
 import type { ResearchItem } from '../../types/research-item';
 import type { AgentState } from '../betting-pool-graph';
 
@@ -101,7 +101,7 @@ export async function createBettingPools(state: AgentState): Promise<Partial<Age
         // Send the transaction
         const hash = await walletClient.writeContract({
           address: chainConfig.contractAddress,
-          abi: contractABI.abi,
+          abi: bettingContractAbi,
           functionName: 'createPool',
           args: [createPoolParams],
         });
@@ -126,7 +126,7 @@ export async function createBettingPools(state: AgentState): Promise<Partial<Age
 
           // Parse the logs to get the poolId
           const logs = parseEventLogs({
-            abi: contractABI.abi,
+            abi: bettingContractAbi,
             eventName: 'PoolCreated',
             logs: receipt.logs,
           });

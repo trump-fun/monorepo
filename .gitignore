@@ -36,3 +36,6 @@ Thumbs.db
 
 # Bun specific
 .bun
+
+# LangGraph API
+.langgraph_api

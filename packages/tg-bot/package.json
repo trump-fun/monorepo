@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch bot.ts",
-    "build": "bun build bot.ts --target=bun",
+    "build": "bun build bot.ts --target=bun --outdir=dist",
     "start": "bun bot.ts",
     "deploy": "sh deploy.sh",
     "start:prod": "bun run start:prod --env=production",

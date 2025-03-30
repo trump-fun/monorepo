@@ -1,4 +1,3 @@
-import { HumanMessage } from '@langchain/core/messages';
 import 'dotenv/config';
 import { bettingGraderGraph } from './src/bet-grading-agent/betting-grader-graph';
 import { config, DEFAULT_CHAIN_ID } from './src/config';
@@ -8,7 +7,7 @@ async function testBettingGrader() {
 
   // Initial state for the grader graph
   const result = await bettingGraderGraph.invoke({
-    messages: [new HumanMessage('Test grading pending betting pools')],
+    messages: [],
     pendingPools: {}, // Will be populated by fetch_pending_pools node
     chainConfig: config.chainConfig[DEFAULT_CHAIN_ID],
   });

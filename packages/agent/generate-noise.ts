@@ -350,7 +350,7 @@ const placeBet = async (poolId: bigint, account: ReturnType<typeof privateKeyToA
 };
 
 // Get pools by ID
-const getTopPools = async (count: number): Promise<Pool[]> => {
+const getMostRecentPools = async (count: number): Promise<Pool[]> => {
   try {
     // Get current time in seconds
     const currentTimeSeconds = Math.floor(Date.now() / 1000);
@@ -443,7 +443,7 @@ const run = async () => {
       console.log('\n=== Starting new round of bets ===');
 
       // 1. Get top pools by ID and place bets
-      const topPools = await getTopPools(3);
+      const topPools = await getMostRecentPools(3);
       console.log(`Found ${topPools.length} top pools by ID`);
 
       for (const pool of topPools) {
