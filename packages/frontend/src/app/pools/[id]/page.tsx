@@ -4,11 +4,6 @@ import { fetchPool } from '@/utils/fetchPool';
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 
-type Props = {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-};
-
 // Cache data fetching to improve performance
 export const revalidate = 60; // Revalidate every 60 seconds
 

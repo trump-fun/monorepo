@@ -1,16 +1,14 @@
 'use client';
 
-import { useSubscription } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
-import { Bet_OrderBy, Pool, PoolStatus } from '@trump-fun/common';
+import { Pool, PoolStatus } from '@trump-fun/common';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
-import { GET_BETS_SUBSCRIPTION, GET_POOL_SUBSCRIPTION } from '@/app/queries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
@@ -18,10 +16,11 @@ import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
-import { USDC_DECIMALS } from '@trump-fun/common';
+import { USDC_DECIMALS, bettingContractAbi } from '@trump-fun/common';
 
 // Import custom hooks
 import { useBettingForm } from '@/hooks/useBettingForm';
+import { useNetwork } from '@/hooks/useNetwork';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { usePoolFacts } from '@/hooks/usePoolFacts';
 
@@ -57,6 +56,7 @@ export function PoolDetailClient({
   const account = useAccount();
   const { ready } = usePrivy();
   const [selectedTab, setSelectedTab] = useState<string>('comments');
+  const { appAddress } = useNetwork();
 
   // State management
   const [pool, setPool] = useState<Pool | null>(initialPool);
@@ -89,33 +89,6 @@ export function PoolDetailClient({
   } = usePoolFacts(id as string, authenticated);
 
   const approvedAmount = useApprovalAmount(tokenAddress, hash);
-  const { data: poolSubData } = useSubscription(GET_POOL_SUBSCRIPTION, {
-    variables: { poolId: id },
-    shouldResubscribe: true,
-    onData: ({ data }) => {
-      if (data?.data?.pool) {
-        setPool(data.data.pool);
-      }
-    },
-  });
-
-  const { data: betsSubData } = useSubscription(GET_BETS_SUBSCRIPTION, {
-    variables: {
-      filter: {
-        user: account.address,
-        poolId: id,
-      },
-      orderBy: Bet_OrderBy.CreatedAt,
-      orderDirection: 'desc',
-    },
-    shouldResubscribe: true,
-    skip: !account.address,
-    onData: ({ data }) => {
-      if (data?.data) {
-        setPlacedBetsData(data.data);
-      }
-    },
-  });
 
   // Post data fetching with initialData
   const { data: postData } = useQuery({
@@ -189,6 +162,120 @@ export function PoolDetailClient({
       showSuccessToast('Transaction confirmed!');
     }
   }, [isConfirmed]);
+
+  // Watch BetPlaced events for the current pool
+  useEffect(() => {
+    if (!publicClient || !appAddress || !pool) return;
+
+    const unwatch = publicClient.watchContractEvent({
+      address: appAddress,
+      abi: bettingContractAbi,
+      eventName: 'BetPlaced',
+      args: {
+        poolId: BigInt(id),
+      },
+      onLogs: logs => {
+        logs.forEach(log => {
+          const { args } = log;
+
+          if (!args || !pool) return;
+
+          const { betId, poolId, user, optionIndex, amount, tokenType: betTokenType } = args;
+
+          // Update pool volumes in the local state
+          setPool(currentPool => {
+            if (!currentPool) return currentPool;
+
+            // Deep clone the current pool to avoid mutation
+            const updatedPool = JSON.parse(JSON.stringify(currentPool));
+
+            // Update the appropriate bet total based on token type
+            if (betTokenType === 0) {
+              // USDC
+              if (!updatedPool.usdcVolume) {
+                updatedPool.usdcVolume = ['0', '0'];
+              }
+              // Ensure optionIndex is a valid number that can be used as an array index
+              const index = Number(optionIndex) < 2 ? Number(optionIndex) : 0;
+              const currentAmount = updatedPool.usdcVolume[index] || '0';
+              updatedPool.usdcVolume[index] = (
+                BigInt(currentAmount) + BigInt(amount || 0)
+              ).toString();
+            } else {
+              // POINTS
+              if (!updatedPool.pointsVolume) {
+                updatedPool.pointsVolume = ['0', '0'];
+              }
+              // Ensure optionIndex is a valid number that can be used as an array index
+              const index = Number(optionIndex) < 2 ? Number(optionIndex) : 0;
+              const currentAmount = updatedPool.pointsVolume[index] || '0';
+              updatedPool.pointsVolume[index] = (
+                BigInt(currentAmount) + BigInt(amount || 0)
+              ).toString();
+            }
+
+            return updatedPool;
+          });
+
+          // If the bet was placed by the current user, check if we need to update the user's bets
+          if (user?.toLowerCase() === account.address?.toLowerCase()) {
+            // This will refresh user's bets through the subscription
+            // But we could optionally update it directly here as well
+
+            // Make sure all required fields are present
+            if (!betId || !poolId || !amount) return;
+
+            // Create a new bet object based on the event data
+            const newBet = {
+              id: betId.toString(),
+              user: {
+                id: user,
+              },
+              pool: {
+                id: poolId.toString(),
+              },
+              option: Number(optionIndex),
+              amount: amount.toString(),
+              createdAt: Math.floor(Date.now() / 1000).toString(),
+              tokenType: Number(betTokenType),
+            };
+
+            // Update the placedBetsData state to include the new bet
+            setPlacedBetsData(
+              (currentData: { bets: Array<{ id: string; [key: string]: any }> } | null) => {
+                if (!currentData) {
+                  return { bets: [newBet] };
+                }
+
+                // Check if this bet already exists in the data (by ID)
+                const existingBetIndex = currentData.bets.findIndex(
+                  (bet: { id: string }) => bet.id === betId.toString()
+                );
+
+                if (existingBetIndex >= 0) {
+                  // Update existing bet
+                  const updatedBets = [...currentData.bets];
+                  updatedBets[existingBetIndex] = newBet;
+                  return { ...currentData, bets: updatedBets };
+                } else {
+                  // Add new bet to the beginning of the array (newest first)
+                  return {
+                    ...currentData,
+                    bets: [newBet, ...currentData.bets],
+                  };
+                }
+              }
+            );
+          }
+        });
+      },
+    });
+
+    // Clean up the subscription when component unmounts
+    return () => {
+      unwatch();
+    };
+  }, [publicClient, appAddress, id, account.address, pool]);
 
   // Handle FACTS button click
   const handleFacts = () => {
