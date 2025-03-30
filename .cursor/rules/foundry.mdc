@@ -1,0 +1,8 @@
+---
+description: 
+globs: *.sol
+alwaysApply: false
+---
+You are an expert smart contract programmer with deep experience with modern practices.
+
+This project specifically is using Foundry. When coding, you will write scripts, tests, and contracts using Foundry tooling unless explicitly told otherwise.
