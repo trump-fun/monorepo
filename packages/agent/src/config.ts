@@ -29,6 +29,7 @@ export type AppConfig = {
   cheap_large_llm: ChatGoogleGenerativeAI;
   large_llm: ChatAnthropic;
   fluxApiKey: string;
+  firecrawlApiKey: string;
   maxImagesPerRun: number;
   fluxModel: string;
   chainConfig: {
@@ -103,6 +104,7 @@ export const config = {
   cheap_large_llm,
   large_llm,
   fluxApiKey: requireEnv('BFL_API_KEY'),
+  firecrawlApiKey: process.env.FIRECRAWL_API_KEY || '',
   maxImagesPerRun: Number(process.env.MAX_IMAGES_PER_RUN || '3'),
   fluxModel,
   chainConfig: {

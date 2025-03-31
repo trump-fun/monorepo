@@ -17,6 +17,8 @@ export interface ResearchItem {
   skip_reason?: string; // Reason why the item was marked for skipping (e.g., "already_processed", "too_old")
   image_prompt?: string; // Generated prompt for image creation
   image_url?: string | null; // URL of the generated image
+  external_link_content?: string | null; // Scraped content from any external link in the post
+  external_link_url?: string | null; // URL of the external link that was scraped
 }
 
 export interface SingleResearchItem {
@@ -32,4 +34,6 @@ export interface SingleResearchItem {
   skip_reason?: string; // Reason why the item was marked for skipping (e.g., "already_processed", "too_old")
   image_prompt?: string; // Generated prompt for image creation
   image_url?: string | null; // URL of the generated image
+  external_link_content?: string | null; // Scraped content from any external link in the post
+  external_link_url?: string | null; // URL of the external link that was scraped
 }

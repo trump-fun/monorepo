@@ -68,6 +68,23 @@ export async function generateBettingPoolIdea(
       ? `Related search results: ${researchItemTyped.related_tavily_search_results.join(', ')}`
       : 'No search results yet';
 
+    // Include any external link content (with less weight)
+    let externalLinkInfo = '';
+    if (researchItemTyped.external_link_content && researchItemTyped.external_link_url) {
+      // Truncate even further for the prompt to avoid overwhelming it
+      const truncatedContent =
+        researchItemTyped.external_link_content.length > 2000
+          ? `${researchItemTyped.external_link_content.substring(0, 2000)}...`
+          : researchItemTyped.external_link_content;
+
+      externalLinkInfo = `
+<external_link_content>
+Source URL: ${researchItemTyped.external_link_url}
+Content (treat this as supplementary context with less weight than the Truth Social post):
+${truncatedContent}
+</external_link_content>`;
+    }
+
     const prompt = `
 You are creating a Yes/No betting question based on a Truth Social post by Donald Trump.
 The question should be written in Trump's distinctive style, using ALL CAPS for emphasis and his characteristic tone.
@@ -84,6 +101,7 @@ ${newsInfo}
 <related_web_search_results>
 ${searchInfo}
 </related_web_search_results>
+${externalLinkInfo}
 
 IMPORTANT TIMING INSTRUCTIONS:
 1. You must ONLY create betting pools for FUTURE events that have not been decided yet
@@ -91,10 +109,15 @@ IMPORTANT TIMING INSTRUCTIONS:
 3. Avoid creating pools about past events that already happened before ${currentDateFormatted}
 4. The resolution criteria must be clear and objectively verifiable
 
+IMPORTANT CONTEXT WEIGHTING:
+- Give highest weight to the Truth Social post content
+- External link content should be considered supplementary and given less weight
+- Use the external link information only to provide context but focus on the Truth Social post for the main idea
+
 Create a Yes/No question in Trump's style that users can bet on. The question should:
 1. Be related to the content of the post
 2. Be written in FIRST PERSON as if Trump is asking it
-3. Use ALL CAPS for emphasis
+3. Use Trump's tendency to use ALL CAPS on specific words to emphasize the question. Avoid using ALL CAPS for the entire question, only use it on specific words.
 4. Include Trump's distinctive phrasing and tone
 5. Be clear what a YES or NO outcome would mean
 6. Focus on something that will be verifiable within the next 7 days

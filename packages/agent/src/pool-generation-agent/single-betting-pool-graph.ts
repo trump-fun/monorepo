@@ -19,6 +19,7 @@ import { createBettingPool } from './tools/create-betting-pool';
 import { generateBettingPoolIdea } from './tools/generate-betting-pool-idea';
 import { generateImage } from './tools/generate-image';
 import { newsApiSearchFunctionSingle } from './tools/news-api';
+import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-external-link';
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
 import { tavilySearchFunction } from './tools/tavily-search';
 
@@ -133,6 +134,7 @@ const builder = new StateGraph(SingleResearchItemAnnotation);
 // Add nodes to the graph
 builder
   .addNode('extract_search_query', extractSearchQueryFunctionSingle)
+  .addNode('check_external_link', extractAndScrapeExternalLink)
   .addNode('news_api_search', newsApiSearchFunctionSingle)
   .addNode('tavily_search', tavilySearchFunction)
   .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
@@ -143,7 +145,13 @@ builder
     continue: 'news_api_search',
     stop: END,
   })
-  .addEdge('news_api_search', 'tavily_search')
+  // Check if the post has an external link after news API search
+  .addConditionalEdges('news_api_search', hasExternalLink, {
+    scrape: 'check_external_link',
+    skip: 'tavily_search',
+  })
+  // After scraping external link, proceed to tavily search
+  .addEdge('check_external_link', 'tavily_search')
   .addEdge('tavily_search', 'generate_betting_pool_idea')
   .addConditionalEdges('generate_betting_pool_idea', shouldContinueProcessing, {
     continue: 'generate_image',
