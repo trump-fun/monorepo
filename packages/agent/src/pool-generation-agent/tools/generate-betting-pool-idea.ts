@@ -87,7 +87,7 @@ ${truncatedContent}
 
     const prompt = `
 You are creating a Yes/No betting question based on a Truth Social post by Donald Trump.
-The question should be written in Trump's distinctive style, using ALL CAPS for emphasis and his characteristic tone.
+The question should be written in Trump's distinctive style, using ALL CAPS for emphasis on certain words and his characteristic tone.
 The question must be a clear Yes/No prediction about something that could happen in the FUTURE related to the post.
 
 Truth Social post: "${postContent}"

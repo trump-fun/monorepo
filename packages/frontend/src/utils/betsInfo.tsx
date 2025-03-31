@@ -132,8 +132,7 @@ export const calculateOptionPercentages = (
  */
 export const calculateRelativeVolumePercentages = (
   pools: GetPoolsQuery['pools'],
-  tokenType: TokenType,
-  minPercentage = 5
+  tokenType: TokenType
 ): {
   pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
   percentage: number;
@@ -160,7 +159,7 @@ export const calculateRelativeVolumePercentages = (
   // Prepare display data
   return volumeValues.map(({ pool, rawVolume }) => ({
     pool,
-    percentage: Math.max(Math.round((rawVolume / maxVolume) * 100), minPercentage), // Minimum percentage for visibility
+    percentage: Math.round((rawVolume / maxVolume) * 100),
     displayVolume: pool ? getVolumeForTokenType(pool, tokenType) : 0,
   }));
 };

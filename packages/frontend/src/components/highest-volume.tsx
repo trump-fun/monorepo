@@ -1,11 +1,11 @@
 'use client';
 
 import { GET_POOLS } from '@/app/queries';
+import { BettingProgress } from '@/components/pools/BettingProgress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ProgressBar } from '@/components/ui/progress-bar';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@/types/__generated__/graphql';
-import { calculateRelativeVolumePercentages } from '@/utils/betsInfo';
+import { calculateOptionPercentages, calculateRelativeVolumePercentages } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import { useQueries } from '@tanstack/react-query';
 import { TrendingUp } from 'lucide-react';
@@ -128,11 +128,11 @@ export function HighestVolume() {
                     <p className='mb-1 line-clamp-2 text-sm'>{pool.question}</p>
                     <div className='mb-2 flex items-center gap-2'>
                       <div className='flex-1'>
-                        <ProgressBar
-                          percentages={[percentage, 100 - percentage]}
-                          height='h-1'
-                          colors={['bg-green-500', 'bg-red-500']}
-                          backgroundColor='bg-red-500'
+                        <BettingProgress
+                          percentages={calculateOptionPercentages(pool, tokenType)}
+                          pool={pool}
+                          totalVolume={displayVolume.toString()}
+                          compact
                         />
                       </div>
                       <div className='flex items-center gap-1 text-xs text-gray-400'>

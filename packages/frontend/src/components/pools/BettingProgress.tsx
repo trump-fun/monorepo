@@ -5,9 +5,15 @@ interface BettingProgressProps {
   percentages: number[];
   pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
   totalVolume: string;
+  compact?: boolean;
 }
 
-export const BettingProgress = ({ percentages, pool, totalVolume }: BettingProgressProps) => {
+export const BettingProgress = ({
+  percentages,
+  pool,
+  totalVolume,
+  compact = false,
+}: BettingProgressProps) => {
   const isZeroState = totalVolume === '$0' || totalVolume === '0 pts' || percentages[0] === 0;
 
   if (!pool) {
@@ -15,25 +21,29 @@ export const BettingProgress = ({ percentages, pool, totalVolume }: BettingProgr
   }
 
   return (
-    <div className='mb-6'>
+    <div className={compact ? '' : 'mb-6'}>
       <ProgressBar
         percentages={percentages}
-        height='h-4'
-        className='mb-2'
+        height={compact ? 'h-1' : 'h-4'}
+        className={compact ? '' : 'mb-2'}
         isZeroState={isZeroState}
       />
-      <div className='mb-2 flex justify-between text-sm font-medium'>
-        {pool.options.map((option: string, index: number) => (
-          <span
-            key={index}
-            className={
-              index === 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-            }
-          >
-            {option} {percentages[index]}%
-          </span>
-        ))}
-      </div>
+      {!compact && (
+        <div className='mb-2 flex justify-between text-sm font-medium'>
+          {pool.options.map((option: string, index: number) => (
+            <span
+              key={index}
+              className={
+                index === 0
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
+              }
+            >
+              {option} {percentages[index]}%
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
