@@ -6,6 +6,7 @@ import { Tables } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
+import { RefetchOptions } from '@tanstack/react-query';
 
 interface TabSwitcherProps {
   selectedTab: string;
@@ -15,6 +16,7 @@ interface TabSwitcherProps {
   comments: Tables<'comments'>[];
   isCommentsLoading: boolean;
   commentsError: any;
+  onCommentsUpdated: (options?: RefetchOptions | undefined) => Promise<any>;
 }
 
 export const TabSwitcher = ({
@@ -25,6 +27,7 @@ export const TabSwitcher = ({
   comments,
   isCommentsLoading,
   commentsError,
+  onCommentsUpdated,
 }: TabSwitcherProps) => {
   const truncateAddress = (address: string) => {
     if (!address) return '';
@@ -58,6 +61,7 @@ export const TabSwitcher = ({
           initialComments={comments}
           isLoading={isCommentsLoading}
           key={pool.id}
+          onCommentsUpdated={onCommentsUpdated}
         />
       </TabsContent>
 

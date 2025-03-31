@@ -100,10 +100,8 @@ export const CommentModal: FC<CommentPostModalProps> = ({
           address: wallet.address,
         }
       );
-      console.log(signature);
 
       const { data } = await addComment(poolId, comment, signature, messageStr);
-      console.log(data);
 
       setComment('');
       setIsOpen(false);
@@ -139,7 +137,7 @@ export const CommentModal: FC<CommentPostModalProps> = ({
               placeholder='Write your comment here...'
               className='min-h-[120px] resize-none focus-visible:ring-orange-500'
               value={comment}
-              onChange={e => setComment(e.target.value)}
+              onChange={(e) => setComment(e.target.value)}
             />
           </div>
         </div>

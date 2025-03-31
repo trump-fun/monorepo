@@ -5,6 +5,7 @@ interface CommentSectionWrapperProps {
   initialComments?: Tables<'comments'>[];
   isLoading: boolean;
   error: Error | null;
+  onCommentsUpdated?: () => void; // Add this prop
 }
 
 import { addComment } from '@/app/actions/comment-actions';
@@ -27,6 +28,7 @@ export default function CommentSectionWrapper({
   initialComments,
   isLoading,
   error,
+  onCommentsUpdated,
 }: CommentSectionWrapperProps) {
   const [comments, setComments] = useState<Tables<'comments'>[]>(initialComments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,28 +79,25 @@ export default function CommentSectionWrapper({
         }
       );
 
-      const tempComment: Tables<'comments'> = {
-        body: content,
-        pool_id: poolId,
-        signature,
-        user_address: wallet.address,
-        created_at: new Date().toISOString(),
-        id: Date.now(),
-        updated_at: null,
-        commentID: null,
-        upvotes: null,
-        trump_responded: false,
-      };
+      // Submit the comment to the server without creating tempComment first
+      const result = await addComment(poolId, content, signature, messageStr);
 
-      if (!tempComment || !comments) {
-        setIsSubmitting(false);
-        return;
+      // Instead of optimistic update, fetch the latest comments
+      // This should be a callback passed from the parent component
+      if (onCommentsUpdated) {
+        onCommentsUpdated();
       }
 
-      setComments([tempComment, ...comments]);
-      await addComment(poolId, content, signature, messageStr);
+      // Show success notification
+      import('@/utils/toast').then(({ showSuccessToast }) => {
+        showSuccessToast('Comment posted successfully');
+      });
     } catch (err) {
       console.error('Error adding comment:', err);
+      // Show error notification
+      import('@/utils/toast').then(({ showErrorToast }) => {
+        showErrorToast('Failed to post comment');
+      });
     } finally {
       setIsSubmitting(false);
     }

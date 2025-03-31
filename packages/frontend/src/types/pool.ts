@@ -9,12 +9,6 @@ export interface BetData {
   tokenType: string;
 }
 
-export interface PostData {
-  post?: {
-    image_url: string;
-  };
-}
-
 export interface TokenBalance {
   value: string | bigint;
   decimals: number;

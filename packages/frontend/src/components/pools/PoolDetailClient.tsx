@@ -5,8 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { useApolloClient } from '@apollo/client';
 
 import { GET_BET_PLACEDS_SERVER, GET_BETS, GET_POOL } from '@/app/queries';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
-import { POLLING_INTERVALS, USDC_DECIMALS } from '@trump-fun/common';
+import { Database, POLLING_INTERVALS, USDC_DECIMALS } from '@trump-fun/common';
 
 import { useBettingForm } from '@/hooks/useBettingForm';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
@@ -29,7 +30,6 @@ import { PoolHeader } from '@/components/pools/PoolHeader';
 import { PoolStats } from '@/components/pools/PoolStats';
 import { TabSwitcher } from '@/components/pools/TabSwitcher';
 import { UserBets } from '@/components/pools/UserBets';
-import { useNetwork } from '@/hooks/useNetwork';
 import {
   Bet_OrderBy,
   BetPlaced_OrderBy,
@@ -40,39 +40,38 @@ import {
   PoolStatus,
 } from '@/types/__generated__/graphql';
 import { Comment } from '@/types/pool';
-import { useApolloClient } from '@apollo/client';
 
 type PoolDetailClientProps = {
   id: string;
   initialPool: GetPoolQuery['pool'] | null;
-  initialPostData: any | null;
+  postData: Database['public']['Tables']['truth_social_posts']['Row'] | null;
   initialComments: Comment[] | null;
 };
 
 export function PoolDetailClient({
   id,
   initialPool,
-  initialPostData,
+  postData,
   initialComments,
 }: PoolDetailClientProps) {
   const { tokenType, tokenAddress } = useTokenContext();
   const { isConnected, authenticated } = useWalletAddress();
-  const { login } = usePrivy();
+  const { login, ready } = usePrivy();
   const account = useAccount();
   const publicClient = usePublicClient();
-  const { ready } = usePrivy();
-  const [selectedTab, setSelectedTab] = useState<string>('comments');
   const apolloClient = useApolloClient();
-  const { chainId } = useNetwork();
 
+  const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [pool, setPool] = useState<GetPoolQuery['pool'] | null>(initialPool);
   const [userBetsData, setUserBetsData] = useState<GetBetsQuery['bets']>([]);
   const [betPlacedData, setBetPlacedData] = useState<GetBetPlacedQuery['betPlaceds']>([]);
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { data: hash, isPending, writeContract } = useWriteContract();
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
-
   const { balance, formattedBalance, symbol, tokenLogo } = useTokenBalance();
+
   const {
     betAmount,
     setBetAmount,
@@ -94,6 +93,8 @@ export function PoolDetailClient({
   } = usePoolFacts(id, authenticated);
 
   const fetchPoolData = useCallback(async () => {
+    setIsDataLoading(true);
+    setError(null);
     try {
       const { data } = await apolloClient.query({
         query: GET_POOL,
@@ -104,7 +105,10 @@ export function PoolDetailClient({
         setPool(data.pool);
       }
     } catch (error) {
+      setError('Failed to fetch pool data');
       console.error('Error fetching pool data:', error);
+    } finally {
+      setIsDataLoading(false);
     }
   }, [apolloClient, id]);
 
@@ -133,8 +137,6 @@ export function PoolDetailClient({
   }, [apolloClient, account.address, id]);
 
   const fetchBetPlaced = useCallback(async () => {
-    if (!account.address) return;
-
     try {
       const { data } = await apolloClient.query({
         query: GET_BET_PLACEDS_SERVER,
@@ -152,42 +154,37 @@ export function PoolDetailClient({
     } catch (error) {
       console.error('Error fetching bet placed:', error);
     }
-  }, [account.address, apolloClient, id]);
+  }, [apolloClient, id]);
 
-  useEffect(() => {
+  const refreshData = useCallback(() => {
     fetchPoolData();
     fetchUserBets();
     fetchBetPlaced();
   }, [fetchPoolData, fetchUserBets, fetchBetPlaced]);
 
-  // Setup polling for pool data and user bets
   useEffect(() => {
-    const poolPollingInterval = setInterval(() => {
-      fetchPoolData();
-    }, POLLING_INTERVALS['pool-drilldown-main']);
+    refreshData();
 
-    const userBetsPollingInterval = setInterval(() => {
-      fetchUserBets();
-    }, POLLING_INTERVALS['user-bets']);
+    const poolPollingInterval = setInterval(
+      fetchPoolData,
+      POLLING_INTERVALS['pool-drilldown-main']
+    );
+    const userBetsPollingInterval = setInterval(fetchUserBets, POLLING_INTERVALS['user-bets']);
+    const betPlacedPollingInterval = setInterval(fetchBetPlaced, POLLING_INTERVALS['user-bets']);
 
     return () => {
       clearInterval(poolPollingInterval);
       clearInterval(userBetsPollingInterval);
+      clearInterval(betPlacedPollingInterval);
     };
-  }, [fetchPoolData, fetchUserBets]);
+  }, [fetchPoolData, fetchUserBets, fetchBetPlaced, refreshData]);
 
-  const { data: postData } = useQuery({
-    queryKey: ['post', id],
-    queryFn: async () => {
-      const res = await fetch(`/api/post?poolId=${id}`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    },
-    initialData: initialPostData,
-    staleTime: 60000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
+  useEffect(() => {
+    if (isConfirmed) {
+      showSuccessToast('Transaction confirmed!');
+      refreshData();
+    }
+  }, [isConfirmed, refreshData]);
 
   const {
     data: commentsData,
@@ -207,7 +204,10 @@ export function PoolDetailClient({
     refetchOnWindowFocus: false,
   });
 
-  const comments = commentsData?.comments || [];
+  const comments = useMemo(
+    () => commentsData?.comments || initialComments || [],
+    [commentsData, initialComments]
+  );
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -227,8 +227,7 @@ export function PoolDetailClient({
       }
 
       if (optionParam && !isNaN(Number(optionParam))) {
-        const optionValue = Number(optionParam);
-        setSelectedOption(optionValue);
+        setSelectedOption(Number(optionParam));
       }
 
       if (amountParam || optionParam) {
@@ -237,19 +236,9 @@ export function PoolDetailClient({
     }
   }, [balance, setBetAmount, setSelectedOption, setSliderValue]);
 
-  useEffect(() => {
-    if (isConfirmed) {
-      showSuccessToast('Transaction confirmed!');
-      fetchPoolData();
-      fetchUserBets();
-      fetchBetPlaced();
-      refetchComments();
-    }
-  }, [fetchBetPlaced, fetchPoolData, fetchUserBets, isConfirmed, refetchComments]);
-
-  const handleFacts = () => {
+  const handleFacts = useCallback(() => {
     handleFactsAction(isConnected, login);
-  };
+  }, [handleFactsAction, isConnected, login]);
 
   const placeBet = usePlaceBet({
     writeContract,
@@ -263,22 +252,18 @@ export function PoolDetailClient({
     symbol,
   });
 
-  const handleBet = async () => {
+  const handleBet = useCallback(async () => {
+    if (!pool?.id || !pool?.options) return;
+
     await placeBet({
-      poolId: pool?.id,
+      poolId: pool.id,
       betAmount,
       selectedOption,
-      options: pool?.options,
+      options: pool.options,
     });
-  };
+  }, [placeBet, pool, betAmount, selectedOption]);
 
-  const refreshData = () => {
-    fetchPoolData();
-    fetchUserBets();
-    refetchComments();
-  };
-
-  if (!pool) {
+  if (isDataLoading && !pool) {
     return (
       <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
         <Image
@@ -292,9 +277,18 @@ export function PoolDetailClient({
     );
   }
 
-  if (!pool) {
-    return null;
+  if (error) {
+    return (
+      <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
+        <div className='text-red-500'>Error: {error}</div>
+        <Button onClick={refreshData} className='mt-4'>
+          Try Again
+        </Button>
+      </div>
+    );
   }
+
+  if (!pool) return null;
 
   const isActive = pool.status === PoolStatus.Pending || pool.status === PoolStatus.None;
   const totalVolume = getVolumeForTokenType(pool, tokenType);
@@ -308,10 +302,10 @@ export function PoolDetailClient({
       </Link>
 
       <Card className='mb-6'>
-        <PoolHeader pool={pool} postData={postData} />
+        <PoolHeader pool={pool} postData={postData || undefined} />
 
         <CardContent>
-          {postData && (
+          {postData?.image_url && (
             <Image
               src={postData.image_url}
               alt='Post Image'
@@ -379,6 +373,7 @@ export function PoolDetailClient({
             comments={comments}
             isCommentsLoading={isCommentsLoading}
             commentsError={commentsError}
+            onCommentsUpdated={refetchComments} // Pass this function to refresh comments
           />
         </CardContent>
       </Card>

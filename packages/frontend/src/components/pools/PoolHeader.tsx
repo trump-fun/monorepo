@@ -3,13 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { GetPoolQuery, PoolStatus } from '@/types';
-import { PostData } from '@/types/pool';
+import { Database } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
 
 interface PoolHeaderProps {
   pool: GetPoolQuery['pool'];
-  postData?: PostData;
+  postData?: Database['public']['Tables']['truth_social_posts']['Row'];
 }
 
 export const PoolHeader = ({ pool, postData }: PoolHeaderProps) => {
@@ -20,7 +20,7 @@ export const PoolHeader = ({ pool, postData }: PoolHeaderProps) => {
         <div className='flex items-center'>
           <Avatar className='mr-2 h-8 w-8'>
             <AvatarImage
-              src={postData ? postData?.post?.image_url : '/trump.jpeg'}
+              src={postData?.image_url ? postData?.image_url : '/trump.jpeg'}
               alt='realDonaldTrump'
             />
             <AvatarFallback>
