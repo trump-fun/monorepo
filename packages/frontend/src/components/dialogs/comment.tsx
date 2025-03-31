@@ -101,7 +101,7 @@ export const CommentModal: FC<CommentPostModalProps> = ({
         }
       );
 
-      const { data } = await addComment(poolId, comment, signature, messageStr);
+      await addComment(poolId, comment, signature, messageStr);
 
       setComment('');
       setIsOpen(false);

@@ -3,10 +3,7 @@
 import { isPoolFactsd, savePoolFacts } from '@/app/pool-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { usePlaceBet } from '@/hooks/usePlaceBet';
-import { useTokenBalance } from '@/hooks/useTokenBalance';
-import { useTokenContext } from '@/hooks/useTokenContext';
-import { showSuccessToast } from '@/utils/toast';
+import { PoolStatus } from '@/types/__generated__/graphql';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,13 +12,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { FaFlagUsa } from 'react-icons/fa';
-import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import TruthSocial from './common/truth-social';
+import { BetModal } from './dialogs/bet';
+import { CommentModal } from './dialogs/comment';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
-import { CommentModal } from './dialogs/comment';
-import { PoolStatus } from '@/types/__generated__/graphql';
-import { BetModal } from './dialogs/bet';
 
 interface BettingPostProps {
   id: string;
@@ -54,10 +49,7 @@ export function BettingPost({
   gradedBlockTimestamp,
   closesAt,
 }: BettingPostProps) {
-  const { tokenType, tokenAddress } = useTokenContext();
-  const [betAmount, setBetAmount] = useState<string>('');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [sliderValue, setSliderValue] = useState([0]);
   const [modalOpen, setModalOpen] = useState(false);
   const [betModalOpen, setBetModalOpen] = useState(false);
 
@@ -88,32 +80,9 @@ export function BettingPost({
     }
     return false;
   });
-
   const { authenticated, login } = usePrivy();
   const { wallets } = useWallets();
   const { signMessage } = useSignMessage();
-  const { balance, symbol } = useTokenBalance();
-
-  const publicClient = usePublicClient();
-  const account = useAccount();
-  const { data: hash, writeContract } = useWriteContract();
-  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
-
-  const placeBetWithHook = usePlaceBet({
-    writeContract,
-    ready: !!wallets?.length,
-    publicClient,
-    accountAddress: account.address,
-    tokenAddress,
-    tokenType,
-    isConfirmed,
-    resetBettingForm: () => {
-      setBetAmount('');
-      setSelectedOption(null);
-      setSliderValue([0]);
-    },
-    symbol,
-  });
 
   const isActive = status === PoolStatus.Pending || status === PoolStatus.None;
   const isWalletConnected = authenticated && wallets && wallets.length > 0 && wallets[0]?.address;
@@ -153,39 +122,6 @@ export function BettingPost({
       setHasFactsed(wasFactsd);
     }
   }, [id]);
-
-  useEffect(() => {
-    if (!balance) return;
-
-    const rawBalanceValue = Number(balance.value) / Math.pow(10, balance.decimals);
-
-    if (sliderValue[0] > 0) {
-      const percentage = sliderValue[0] / 100;
-
-      if (sliderValue[0] === 100) {
-        const exactAmount = Math.ceil(rawBalanceValue).toString();
-        if (exactAmount !== betAmount) {
-          setBetAmount(exactAmount);
-        }
-        return;
-      }
-
-      const amount = Math.max(Math.ceil(rawBalanceValue * percentage), 1);
-      const amountStr = amount.toString();
-
-      if (amountStr !== betAmount) {
-        setBetAmount(amountStr);
-      }
-    } else if (sliderValue[0] === 0 && betAmount !== '') {
-      setBetAmount('');
-    }
-  }, [sliderValue, balance, betAmount]);
-
-  useEffect(() => {
-    if (isConfirmed) {
-      showSuccessToast('Transaction confirmed!');
-    }
-  }, [isConfirmed]);
 
   const handleFacts = async () => {
     if (!isWalletConnected) {

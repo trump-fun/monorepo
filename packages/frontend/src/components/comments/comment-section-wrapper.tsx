@@ -80,7 +80,7 @@ export default function CommentSectionWrapper({
       );
 
       // Submit the comment to the server without creating tempComment first
-      const result = await addComment(poolId, content, signature, messageStr);
+      await addComment(poolId, content, signature, messageStr);
 
       // Instead of optimistic update, fetch the latest comments
       // This should be a callback passed from the parent component
