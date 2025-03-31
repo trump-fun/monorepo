@@ -69,11 +69,6 @@ export default async function PoolDetailPage({ params }: Props) {
   }
 
   return (
-    <PoolDetailClient
-      id={id}
-      initialPostData={postData}
-      initialComments={comments}
-      initialPool={pool}
-    />
+    <PoolDetailClient id={id} postData={postData} initialComments={comments} initialPool={pool} />
   );
 }
