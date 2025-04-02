@@ -107,9 +107,6 @@ export const useTokenBalance = (options: UseTokenBalanceOptions = {}) => {
     // Check cooldown for manual refetches too
     const now = Date.now();
     if (now - lastFetchTimeRef.current < cooldownMs) {
-      console.log(
-        `Skipping balance fetch - cooldown active (${Math.ceil((cooldownMs - (now - lastFetchTimeRef.current)) / 1000)}s remaining)`
-      );
       return;
     }
 

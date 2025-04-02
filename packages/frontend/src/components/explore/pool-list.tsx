@@ -50,6 +50,7 @@ export function PoolList({ pools, isLoading, tokenType }: PoolListProps) {
             closesAt={pool.betsCloseAt}
             gradedBlockTimestamp={pool.gradedBlockTimestamp}
             status={pool.status}
+            bets={pool.bets.map((bet) => ({ ...bet, createdAt: bet.updatedAt }))}
           />
         ))}
 

@@ -13,6 +13,7 @@ import Link from 'next/link';
 import TruthSocial from '../common/truth-social';
 import CountdownTimer from '../Timer';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
 export function PoolCard({ pool }: { pool: GetPoolsQuery['pools'][number] }) {
   const { tokenType } = useTokenContext();
 
@@ -26,7 +27,7 @@ export function PoolCard({ pool }: { pool: GetPoolsQuery['pools'][number] }) {
 
       return res.json();
     },
-    staleTime: 60000, // Consider data stale after 1 minute
+    staleTime: 60000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     refetchInterval: 5000,
