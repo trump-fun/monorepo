@@ -107,7 +107,7 @@ export function HighestVolume() {
             ))}
           </div>
         ) : volumeData.length > 0 ? (
-          volumeData.map(({ pool, percentage, displayVolume }, index) => {
+          volumeData.map(({ pool, displayVolume }, index) => {
             if (!pool) return null;
             const poolData = poolQueries[index]?.data as PoolPostData | undefined;
 

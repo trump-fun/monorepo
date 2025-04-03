@@ -7,9 +7,19 @@ interface PoolListProps {
   pools: GetPoolsQuery['pools'];
   isLoading: boolean;
   tokenType: TokenType;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
 }
 
-export function PoolList({ pools, isLoading, tokenType }: PoolListProps) {
+export function PoolList({
+  pools,
+  isLoading,
+  tokenType,
+  hasMore = false,
+  onLoadMore,
+  isLoadingMore = false,
+}: PoolListProps) {
   if (isLoading && pools.length === 0) {
     return (
       <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
@@ -50,8 +60,28 @@ export function PoolList({ pools, isLoading, tokenType }: PoolListProps) {
             closesAt={pool.betsCloseAt}
             gradedBlockTimestamp={pool.gradedBlockTimestamp}
             status={pool.status}
+            bets={pool.bets.map((bet) => ({ ...bet, createdAt: bet.updatedAt }))}
           />
         ))}
+
+      {hasMore && (
+        <div className='flex justify-center py-4'>
+          <button
+            onClick={onLoadMore}
+            disabled={isLoadingMore || isLoading}
+            className='bg-primary hover:bg-primary/90 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50'
+          >
+            {isLoadingMore ? (
+              <>
+                <div className='size-4 animate-spin rounded-full border-2 border-white/30 border-t-white'></div>
+                <span>Loading...</span>
+              </>
+            ) : (
+              <span>Load More</span>
+            )}
+          </button>
+        </div>
+      )}
 
       {!isLoading && pools.length === 0 && (
         <div className='py-4 text-center text-gray-500 dark:text-gray-400'>No pools found</div>

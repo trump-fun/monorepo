@@ -18,6 +18,16 @@ import { CommentModal } from './dialogs/comment';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
 
+interface Bet {
+  amount: string;
+  tokenType: string;
+  betId: string;
+  option: string;
+  user: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
 interface BettingPostProps {
   id: string;
   avatar: string;
@@ -32,6 +42,7 @@ interface BettingPostProps {
   optionBets?: string[];
   closesAt?: number;
   gradedBlockTimestamp?: number;
+  bets?: Bet[];
 }
 
 export function BettingPost({
@@ -48,6 +59,7 @@ export function BettingPost({
   optionBets = [],
   gradedBlockTimestamp,
   closesAt,
+  bets,
 }: BettingPostProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -115,6 +127,49 @@ export function BettingPost({
       displayPercentages,
     };
   }, [optionBets]);
+
+  const currentUserAddress = '0x6bF08768995E7430184a48e96940B83C15c1653f';
+
+  const userBetsByOption = useMemo(() => {
+    if (!bets || !currentUserAddress)
+      return {} as Record<string, { amount: string; tokenType: string }[]>;
+
+    const userBets = bets.filter(
+      (bet: Bet) => bet.user.toLowerCase() === currentUserAddress.toLowerCase()
+    );
+
+    const optionMapping: Record<string, string> = {};
+    options.forEach((opt, index) => {
+      optionMapping[opt] = index.toString();
+    });
+
+    const betsByOption: Record<string, { amount: string; tokenType: string }[]> = {};
+
+    userBets.forEach((bet: Bet) => {
+      const optionKey = optionMapping[bet.option] || bet.option;
+
+      if (!betsByOption[optionKey]) {
+        betsByOption[optionKey] = [];
+      }
+
+      betsByOption[optionKey].push({
+        amount: bet.amount,
+        tokenType: bet.tokenType,
+      });
+    });
+
+    return betsByOption;
+  }, [bets, currentUserAddress, options]);
+
+  // Format bet amount for display
+  const formatBetAmount = (amount: string) => {
+    const value = parseInt(amount, 10);
+    return value >= 1000000
+      ? `${(value / 1000000).toFixed(1)}M`
+      : value >= 1000
+        ? `${(value / 1000).toFixed(1)}K`
+        : value.toString();
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -320,25 +375,54 @@ export function BettingPost({
             const { text: textColor, bg: bgColor } = optionColors[colorIndex];
             const percent = betData.displayPercentages[i] || 0;
 
+            const optionKey = i.toString();
+            const userBetsOnOption = userBetsByOption[optionKey] || [];
+            const hasUserBet = userBetsOnOption.length > 0;
+
             return (
               <div
                 key={i}
                 className={`flex items-center justify-between rounded-md p-2 transition-colors ${
                   selectedOption === i
                     ? `border border-${bgColor.replace('bg-', '')} bg-gray-100 dark:bg-gray-800`
-                    : 'bg-gray-50 opacity-90 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800'
-                } cursor-pointer`}
+                    : hasUserBet
+                      ? `border border-${bgColor.replace('bg-', '')} bg-opacity-10 dark:bg-opacity-30 bg-gray-50 dark:bg-gray-900`
+                      : 'bg-gray-50 opacity-90 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800'
+                } relative cursor-pointer`}
                 onClick={() => setSelectedOption(i)}
               >
-                <span className={`font-medium ${textColor}`}>
-                  {option} {percent}%
-                </span>
+                <div className='flex flex-col'>
+                  <span className={`font-medium ${textColor}`}>
+                    {option} {percent}%
+                  </span>
+
+                  {hasUserBet && (
+                    <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                      You bet{' '}
+                      {userBetsOnOption.reduce((total, bet, idx) => {
+                        const amount = formatBetAmount(bet.amount);
+                        return `${total}${idx > 0 ? ' + ' : ''}${amount} ${bet.tokenType}`;
+                      }, '')}{' '}
+                      on {option}
+                    </div>
+                  )}
+                </div>
 
                 <div
                   className={`flex items-center justify-center rounded-full ${bgColor} px-3 py-1 text-sm font-medium text-white`}
                 >
                   {optionBets[i] || '0'}
                 </div>
+
+                {hasUserBet && (
+                  <div
+                    className='absolute -top-1 -right-1 z-10 h-3 w-3 rounded-full border border-white bg-blue-500 dark:border-gray-800'
+                    style={{
+                      boxShadow: '0 0 0 1px white',
+                      pointerEvents: 'none',
+                    }}
+                  ></div>
+                )}
               </div>
             );
           })}

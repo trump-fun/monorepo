@@ -18,9 +18,6 @@ export const UserBets = ({ placedBets, pool, USDC_DECIMALS, tokenLogo }: UserBet
 
   if (!pool) return null;
 
-  console.log('userBets pool', pool);
-  console.log('userBets placedBets', placedBets);
-
   return (
     <div className='mb-6'>
       <h3 className='mb-4 text-lg font-semibold'>Your Bets</h3>
