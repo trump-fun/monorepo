@@ -102,7 +102,7 @@ async function runSinglePostProcess() {
   console.log('API keys configured:');
   console.log('- Tavily API Key:', config.tavilyApiKey ? 'Configured ✓' : 'Missing ✗');
   console.log('- News API Key:', config.newsApiKey ? 'Configured ✓' : 'Missing ✗');
-  console.log('- Flux API Key:', config.fluxApiKey ? 'Configured ✓' : 'Missing ✗');
+  console.log('- Venice API Key:', config.veniceApiKey ? 'Configured ✓' : 'Missing ✗');
 
   // Create a research item with the example post
   const researchItem: ResearchItem = {

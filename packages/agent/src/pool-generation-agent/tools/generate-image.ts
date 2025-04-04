@@ -5,7 +5,7 @@ import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
 // Define schema for image prompt output
 const imagePromptSchema = z.object({
-  imagePrompt: z.string().describe('Generated prompt for Flux AI image generation'),
+  imagePrompt: z.string().describe('Generated prompt for Venice AI image generation'),
 });
 
 /**
@@ -22,7 +22,7 @@ function generateFilenameFromPrompt(prompt: string): string {
 }
 
 /**
- * Generates an image prompt and image for a single betting pool idea using Anthropic and Flux.ai
+ * Generates an image prompt and image for a single betting pool idea using Anthropic and Venice.ai
  * This enhances the betting pool with a visual element
  */
 export async function generateImage(
@@ -74,7 +74,7 @@ export async function generateImage(
     const imagePromptTemplate = ChatPromptTemplate.fromMessages([
       [
         'system',
-        `You are an expert prompt engineer who will help a user generate a strong prompt to pass to Flux AI to generate an image.
+        `You are an expert prompt engineer who will help a user generate a strong prompt to pass to Venice AI to generate an image.
 
 The user has created a bettable idea based on a Truth Social post from Donald Trump and wants to generate an image to go along with it.
 
@@ -97,7 +97,7 @@ Your response should only be the prompt and nothing else.`,
 And this is the bettable idea based on it:
 {bettingPoolIdea}
 
-Please generate an image prompt for Flux AI.`,
+Please generate an image prompt for Venice AI.`,
       ],
     ]);
 
@@ -120,88 +120,56 @@ Please generate an image prompt for Flux AI.`,
 
     console.log(`Generated image prompt: ${imagePrompt.substring(0, 100)}...`);
 
-    // Call Flux API to generate the image
-    console.log(`Calling Flux API with model: ${config.fluxModel}`);
+    // Call Venice API to generate the image
+    console.log(`Calling Venice API with model: ${config.veniceModel}`);
 
-    // Create URL with parameters for POST request
-    const fluxResponse = await fetch('https://api.us1.bfl.ai/v1/' + config.fluxModel, {
+    // Create request options for Venice API
+    const veniceResponse = await fetch('https://api.venice.ai/api/v1/image/generate', {
       method: 'POST',
       headers: {
-        accept: 'application/json',
-        'x-key': config.fluxApiKey,
+        Authorization: `Bearer ${config.veniceApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        model: config.veniceModel,
         prompt: imagePrompt,
-        width: 1024,
         height: 1024,
+        width: 1024,
+        steps: 20,
+        cfg_scale: 7.5,
+        seed: Math.floor(Math.random() * 1000000000),
+        safe_mode: false,
+        return_binary: false,
+        hide_watermark: false,
+        format: 'webp',
       }),
     });
 
-    if (!fluxResponse.ok) {
-      throw new Error(`Flux API error: ${fluxResponse.status} ${fluxResponse.statusText}`);
+    if (!veniceResponse.ok) {
+      throw new Error(`Venice API error: ${veniceResponse.status} ${veniceResponse.statusText}`);
     }
 
-    const fluxData = (await fluxResponse.json()) as { id: string };
-    const requestId = fluxData.id;
-
-    console.log(`Flux API request submitted with ID: ${requestId}`);
-
-    // Poll for the result
-    let fluxImageUrl = null;
-    let attempts = 0;
-    const maxAttempts = 30; // Maximum 15 seconds (30 attempts * 500ms)
-
-    while (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between polling
-
-      // Create URL with query parameters appended
-      const resultUrl = new URL('https://api.us1.bfl.ai/v1/get_result');
-      resultUrl.searchParams.append('id', requestId);
-
-      const resultResponse = await fetch(resultUrl.toString(), {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          'x-key': config.fluxApiKey,
-        },
-      });
-
-      if (!resultResponse.ok) {
-        console.warn(
-          `Error fetching result: ${resultResponse.status} ${resultResponse.statusText}`
-        );
-        attempts++;
-        continue;
-      }
-
-      const result = (await resultResponse.json()) as {
-        status: string;
-        result?: { sample: string };
-        error?: string;
+    // Define the type for Venice API response
+    interface VeniceApiResponse {
+      result?: {
+        image_url: string;
       };
-
-      if (result.status === 'Ready' && result.result) {
-        fluxImageUrl = result.result.sample;
-        console.log(`Image generated successfully: ${fluxImageUrl}`);
-        break;
-      } else if (result.status === 'Error') {
-        throw new Error(`Error generating image: ${result.error || 'Unknown error'}`);
-      }
-
-      console.log(
-        `Image generation status: ${result.status}, attempt ${attempts + 1}/${maxAttempts}`
-      );
-      attempts++;
     }
 
-    if (!fluxImageUrl) {
-      throw new Error('Timed out waiting for image generation');
+    const veniceData = (await veniceResponse.json()) as VeniceApiResponse;
+
+    // Extract image URL from Venice response
+    const veniceImageUrl = veniceData.result?.image_url;
+
+    if (!veniceImageUrl) {
+      throw new Error('No image URL returned from Venice API');
     }
 
-    // Now download the image from Flux and upload to Supabase
-    console.log('Downloading image from Flux...');
-    const imageResponse = await fetch(fluxImageUrl);
+    console.log(`Image generated successfully: ${veniceImageUrl}`);
+
+    // Now download the image from Venice and upload to Supabase
+    console.log('Downloading image from Venice...');
+    const imageResponse = await fetch(veniceImageUrl);
 
     if (!imageResponse.ok) {
       throw new Error(
@@ -223,7 +191,7 @@ Please generate an image prompt for Flux AI.`,
     console.log(`Uploading image to Supabase at path: ${filepath}`);
 
     // Upload to Supabase
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('trump-fun')
       .upload(filepath, buffer, {
         contentType: 'image/jpeg',
@@ -245,7 +213,7 @@ Please generate an image prompt for Flux AI.`,
     const updatedResearchItem = {
       ...researchItem,
       image_prompt: imagePrompt,
-      image_url: supabaseImageUrl, // Store Supabase URL instead of Flux URL
+      image_url: supabaseImageUrl, // Store Supabase URL instead of Venice URL
     };
 
     console.log(`Research item updated with Supabase image URL: ${supabaseImageUrl}`);
