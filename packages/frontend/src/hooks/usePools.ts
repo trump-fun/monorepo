@@ -1,7 +1,6 @@
 import { GET_POOLS } from '@/app/queries';
 import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@/types/__generated__/graphql';
 import { useQuery } from '@apollo/client';
-import { Pool } from '@trump-fun/common';
 import { useMemo, useState } from 'react';
 
 export type FilterType = 'newest' | 'highest' | 'ending_soon' | 'ended' | 'recently_closed';
@@ -77,7 +76,7 @@ export function usePools(tokenType: TokenType) {
     if (!searchQuery.trim()) return pools;
 
     const query = searchQuery.toLowerCase().trim();
-    return pools.filter((pool: Pool) => pool.question.toLowerCase().includes(query));
+    return pools.filter((pool) => pool.question.toLowerCase().includes(query));
   }, [data, searchQuery]);
 
   const handleFilterChange = (newFilter: FilterType) => {

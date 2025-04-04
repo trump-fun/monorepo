@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 import { verifySignature } from '@/utils/verifySignature';
 
 type ToggleResponse = {
@@ -17,7 +17,7 @@ export async function togglePoolFacts(
   messageStr?: string
 ): Promise<ToggleResponse> {
   try {
-    const supabase = await createClient();
+    const supabase = await createSupabaseAdminClient();
     let walletAddress = null;
 
     if (signature && messageStr) {

@@ -29,14 +29,3 @@ export interface PoolData {
   totalAmount: string;
   totalAmountPoints: string;
 }
-
-export interface Comment {
-  id: string;
-  content: string;
-  author: {
-    address: string;
-    name?: string;
-    avatarUrl?: string;
-  };
-  createdAt: string;
-}

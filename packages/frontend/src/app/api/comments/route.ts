@@ -1,14 +1,20 @@
 import { NextRequest } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { supabaseAnonClient } from '@/lib/supabase';
 
 const GET = async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const poolId = searchParams.get('poolId') || null;
+  const poolId = searchParams.get('poolId');
 
   try {
-    const supabase = await createClient();
-    const { data } = await supabase
+    if (!poolId) {
+      return Response.json(
+        { error: 'Pool ID is required' },
+        { status: 400, statusText: 'Bad Request' }
+      );
+    }
+
+    const { data } = await supabaseAnonClient
       .from('comments')
       .select('*')
       .eq('pool_id', poolId)

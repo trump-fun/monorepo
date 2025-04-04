@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { supabaseAnonClient } from '@/lib/supabase';
 import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -11,9 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
-
-    const { count, error: countError } = await supabase
+    const { count, error: countError } = await supabaseAnonClient
       .from('facts')
       .select('*', { count: 'exact', head: true })
       .eq('pool_id', poolId)
@@ -23,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     let userLiked = false;
     if (userAddress) {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAnonClient
         .from('facts')
         .select('id')
         .eq('pool_id', poolId)

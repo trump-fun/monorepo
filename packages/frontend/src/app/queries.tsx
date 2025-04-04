@@ -1,8 +1,8 @@
 'use client';
 
-import { gql } from '@apollo/client';
+import { gql } from '@/types/__generated__/gql';
 
-export const GET_POOLS = gql`
+export const GET_POOLS = gql(`
   query GetPools(
     $filter: Pool_filter!
     $orderBy: Pool_orderBy!
@@ -51,9 +51,9 @@ export const GET_POOLS = gql`
       originalTruthSocialPostId
     }
   }
-`;
+`);
 
-export const GET_BETS = gql`
+export const GET_BETS = gql(`
   query GetBets(
     $first: Int = 10
     $filter: Bet_filter!
@@ -101,9 +101,9 @@ export const GET_BETS = gql`
       }
     }
   }
-`;
+`);
 
-export const GET_PAYOUT_CLAIMED = gql`
+export const GET_PAYOUT_CLAIMED = gql(`
   query GetPayoutClaimed(
     $first: Int = 100
     $skip: Int = 0
@@ -166,9 +166,9 @@ export const GET_PAYOUT_CLAIMED = gql`
       }
     }
   }
-`;
+`);
 
-export const GET_BET_WITHDRAWALS = gql`
+export const GET_BET_WITHDRAWALS = gql(`
   query GetBetWithdrawals(
     $first: Int = 100
     $skip: Int = 0
@@ -193,9 +193,9 @@ export const GET_BET_WITHDRAWALS = gql`
       chainId
     }
   }
-`;
+`);
 
-export const GET_BET_PLACEDS = gql`
+export const GET_BET_PLACEDS = gql(`
   query GetBetPlaced(
     $first: Int = 10
     $filter: BetPlaced_filter!
@@ -222,10 +222,10 @@ export const GET_BET_PLACEDS = gql`
       tokenType
     }
   }
-`;
+`);
 
-export const GET_BET_PLACEDS_SERVER = gql`
-  query GetBetPlaced(
+export const GET_BET_PLACEDS_SERVER = gql(`
+  query GetBetPlacedServer(
     $first: Int = 10
     $filter: BetPlaced_filter!
     $orderBy: BetPlaced_orderBy!
@@ -251,9 +251,9 @@ export const GET_BET_PLACEDS_SERVER = gql`
       tokenType
     }
   }
-`;
+`);
 
-export const GET_POOL = gql`
+export const GET_POOL = gql(`
   query GetPool($poolId: ID!) {
     pool(id: $poolId) {
       id
@@ -287,4 +287,94 @@ export const GET_POOL = gql`
       }
     }
   }
-`;
+`);
+
+export const GET_POOLS_SERVER = gql(`
+  query GetPoolsServer(
+    $filter: Pool_filter!
+    $orderBy: Pool_orderBy!
+    $orderDirection: OrderDirection!
+    $first: Int
+  ) {
+    pools(
+      where: $filter
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+      first: $first
+    ) {
+        id
+        poolId
+        question
+        options
+        status
+        chainId
+        chainName
+        createdAt
+        createdBlockNumber
+        createdBlockTimestamp
+        createdTransactionHash
+        lastUpdatedBlockNumber
+        lastUpdatedBlockTimestamp
+        lastUpdatedTransactionHash
+        gradedBlockNumber
+        gradedBlockTimestamp
+       bets {
+        id
+        betId
+        user
+        option
+        amount
+        tokenType
+      }
+        gradedTransactionHash
+        betsCloseAt
+        usdcBetTotals
+        pointsBetTotals
+        usdcVolume
+        pointsVolume
+        originalTruthSocialPostId
+    }
+  }
+`);
+
+export const GET_POOL_SERVER = gql(`
+  query GetPoolServer(
+    $poolId: ID!
+  ) {
+    pool(
+      id: $poolId
+    ) {
+        id
+        poolId
+        question
+        options
+        status
+        chainId
+        chainName
+        createdAt
+        createdBlockNumber
+        createdBlockTimestamp
+        createdTransactionHash
+        lastUpdatedBlockNumber
+        lastUpdatedBlockTimestamp
+        lastUpdatedTransactionHash
+        gradedBlockNumber
+        gradedBlockTimestamp
+        gradedTransactionHash
+        betsCloseAt
+       bets {
+        id
+        betId
+        user
+        option
+        amount
+        tokenType
+      }
+        usdcBetTotals
+        pointsBetTotals
+        usdcVolume
+        pointsVolume
+        originalTruthSocialPostId
+    }
+  }
+`);

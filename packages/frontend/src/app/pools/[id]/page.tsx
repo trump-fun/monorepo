@@ -1,5 +1,5 @@
 import { PoolDetailClient } from '@/components/pools/PoolDetailClient';
-import { createClient } from '@/lib/supabase/server';
+import { supabaseAnonClient } from '@/lib/supabase';
 import { fetchPool } from '@/utils/fetchPool';
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -8,19 +8,17 @@ type Props = {
   params: Promise<{
     id: string;
   }>;
-  searchParams?: Promise<any>;
+  searchParams?: Promise<any>; //TODO Clean me up
 };
 
 export const revalidate = 60;
 
 async function getPoolData(poolId: string) {
   try {
-    const supabase = await createClient();
-
     const [pool, postResponse, commentsResponse] = await Promise.all([
       fetchPool(poolId),
-      supabase.from('truth_social_posts').select('*').eq('pool_id', poolId).single(),
-      supabase
+      supabaseAnonClient.from('truth_social_posts').select('*').eq('pool_id', poolId).single(),
+      supabaseAnonClient
         .from('comments')
         .select('*')
         .eq('pool_id', poolId)

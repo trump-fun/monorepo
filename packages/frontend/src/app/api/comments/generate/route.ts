@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 import { Pool } from '@/types';
 import { fetchPool } from '@/utils/fetchPool';
 import { NextRequest, NextResponse } from 'next/server';
@@ -124,6 +124,6 @@ async function saveComments(poolId: string, comments: string[]): Promise<void> {
     };
   });
 
-  const supabase = await createClient();
+  const supabase = await createSupabaseAdminClient();
   await supabase.from('comments').insert(commentsToInsert);
 }

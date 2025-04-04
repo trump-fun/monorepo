@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 import { verifySignature } from '@/utils/verifySignature';
 
 type ToggleLikeResult = {
@@ -16,7 +16,7 @@ export async function toggleLike(
   messageStr?: string
 ): Promise<ToggleLikeResult> {
   try {
-    const supabase = await createClient();
+    const supabase = await createSupabaseAdminClient();
     let walletAddress = null;
 
     if (signature && messageStr) {

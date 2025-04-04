@@ -1,17 +1,23 @@
 import { NextRequest } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { supabaseAnonClient } from '@/lib/supabase';
 
 const GET = async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const comment_id = searchParams.get('comment_id') || null;
+  const comment_id = searchParams.get('comment_id');
 
   try {
-    const supabase = await createClient();
-    const { data } = await supabase
+    if (!comment_id) {
+      return Response.json(
+        { error: 'Comment ID is required' },
+        { status: 400, statusText: 'Bad Request' }
+      );
+    }
+
+    const { data } = await supabaseAnonClient
       .from('comments')
       .select('*')
-      .eq('commentID', comment_id)
+      .eq('commentID', parseInt(comment_id as string, 10))
       .order('created_at', { ascending: false });
 
     return Response.json(

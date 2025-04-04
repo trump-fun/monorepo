@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 import { CHAIN_CONFIG, POINTS_DECIMALS, SupportedChainIds, freedomAbi } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
@@ -23,7 +23,7 @@ const NEW_USER_POINTS = BigInt(10000) * BigInt(10) ** BigInt(POINTS_DECIMALS);
 const RETURNING_USER_POINTS = BigInt(1000) * BigInt(10) ** BigInt(POINTS_DECIMALS);
 
 const checkRateLimit = async (walletAddress: string): Promise<boolean> => {
-  const supabase = await createClient();
+  const supabase = await createSupabaseAdminClient();
 
   try {
     const { data, error } = await supabase
@@ -51,7 +51,7 @@ const checkRateLimit = async (walletAddress: string): Promise<boolean> => {
 };
 
 const setRateLimit = async (walletAddress: string): Promise<void> => {
-  const supabase = await createClient();
+  const supabase = await createSupabaseAdminClient();
 
   try {
     const { error } = await supabase.from('trump_users').upsert([
@@ -71,7 +71,7 @@ const setRateLimit = async (walletAddress: string): Promise<void> => {
 };
 
 const isNewUser = async (walletAddress: string): Promise<boolean> => {
-  const supabase = await createClient();
+  const supabase = await createSupabaseAdminClient();
 
   try {
     const { error } = await supabase

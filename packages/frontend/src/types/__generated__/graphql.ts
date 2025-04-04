@@ -1761,178 +1761,6 @@ export type QueryWithdrawalsArgs = {
   where?: InputMaybe<Withdrawal_Filter>;
 };
 
-export type Subscription = {
-  __typename?: 'Subscription';
-  /** Access to subgraph metadata */
-  _meta?: Maybe<_Meta_>;
-  bet?: Maybe<Bet>;
-  betPlaced?: Maybe<BetPlaced>;
-  betPlaceds: Array<BetPlaced>;
-  betWithdrawal?: Maybe<BetWithdrawal>;
-  betWithdrawals: Array<BetWithdrawal>;
-  bets: Array<Bet>;
-  ownershipTransferred?: Maybe<OwnershipTransferred>;
-  ownershipTransferreds: Array<OwnershipTransferred>;
-  payoutClaimed?: Maybe<PayoutClaimed>;
-  payoutClaimeds: Array<PayoutClaimed>;
-  pool?: Maybe<Pool>;
-  poolClosed?: Maybe<PoolClosed>;
-  poolCloseds: Array<PoolClosed>;
-  poolCreated?: Maybe<PoolCreated>;
-  poolCreateds: Array<PoolCreated>;
-  pools: Array<Pool>;
-  withdrawal?: Maybe<Withdrawal>;
-  withdrawals: Array<Withdrawal>;
-};
-
-export type Subscription_MetaArgs = {
-  block?: InputMaybe<Block_Height>;
-};
-
-export type SubscriptionBetArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBetPlacedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBetPlacedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BetPlaced_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BetPlaced_Filter>;
-};
-
-export type SubscriptionBetWithdrawalArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBetWithdrawalsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BetWithdrawal_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BetWithdrawal_Filter>;
-};
-
-export type SubscriptionBetsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Bet_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Bet_Filter>;
-};
-
-export type SubscriptionOwnershipTransferredArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionOwnershipTransferredsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<OwnershipTransferred_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<OwnershipTransferred_Filter>;
-};
-
-export type SubscriptionPayoutClaimedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPayoutClaimedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PayoutClaimed_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PayoutClaimed_Filter>;
-};
-
-export type SubscriptionPoolArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPoolClosedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPoolClosedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PoolClosed_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolClosed_Filter>;
-};
-
-export type SubscriptionPoolCreatedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPoolCreatedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PoolCreated_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolCreated_Filter>;
-};
-
-export type SubscriptionPoolsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Pool_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Pool_Filter>;
-};
-
-export type SubscriptionWithdrawalArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionWithdrawalsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Withdrawal_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Withdrawal_Filter>;
-};
-
 export enum TokenType {
   Points = 'POINTS',
   Usdc = 'USDC',
@@ -2101,6 +1929,7 @@ export type GetPoolsQueryVariables = Exact<{
   orderBy: Pool_OrderBy;
   orderDirection: OrderDirection;
   first?: InputMaybe<Scalars['Int']['input']>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 export type GetPoolsQuery = {
@@ -2148,6 +1977,7 @@ export type GetBetsQueryVariables = Exact<{
   filter: Bet_Filter;
   orderBy: Bet_OrderBy;
   orderDirection: OrderDirection;
+  skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 export type GetBetsQuery = {
@@ -2280,9 +2110,35 @@ export type GetBetPlacedQueryVariables = Exact<{
   filter: BetPlaced_Filter;
   orderBy: BetPlaced_OrderBy;
   orderDirection: OrderDirection;
+  skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 export type GetBetPlacedQuery = {
+  __typename?: 'Query';
+  betPlaceds: Array<{
+    __typename?: 'BetPlaced';
+    id: any;
+    betId: any;
+    user: any;
+    optionIndex: any;
+    amount: any;
+    poolId: any;
+    blockNumber: any;
+    blockTimestamp: any;
+    transactionHash: any;
+    tokenType: number;
+  }>;
+};
+
+export type GetBetPlacedServerQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
+  filter: BetPlaced_Filter;
+  orderBy: BetPlaced_OrderBy;
+  orderDirection: OrderDirection;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+export type GetBetPlacedServerQuery = {
   __typename?: 'Query';
   betPlaceds: Array<{
     __typename?: 'BetPlaced';
@@ -2340,6 +2196,95 @@ export type GetPoolQuery = {
   } | null;
 };
 
+export type GetPoolsServerQueryVariables = Exact<{
+  filter: Pool_Filter;
+  orderBy: Pool_OrderBy;
+  orderDirection: OrderDirection;
+  first?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+export type GetPoolsServerQuery = {
+  __typename?: 'Query';
+  pools: Array<{
+    __typename?: 'Pool';
+    id: string;
+    poolId: any;
+    question: string;
+    options: Array<string>;
+    status: PoolStatus;
+    chainId: any;
+    chainName: string;
+    createdAt: any;
+    createdBlockNumber: any;
+    createdBlockTimestamp: any;
+    createdTransactionHash: any;
+    lastUpdatedBlockNumber: any;
+    lastUpdatedBlockTimestamp: any;
+    lastUpdatedTransactionHash: any;
+    gradedBlockNumber: any;
+    gradedBlockTimestamp: any;
+    gradedTransactionHash: any;
+    betsCloseAt: any;
+    usdcBetTotals: Array<any>;
+    pointsBetTotals: Array<any>;
+    usdcVolume: any;
+    pointsVolume: any;
+    originalTruthSocialPostId: string;
+    bets: Array<{
+      __typename?: 'Bet';
+      id: string;
+      betId: any;
+      user: any;
+      option: any;
+      amount: any;
+      tokenType: TokenType;
+    }>;
+  }>;
+};
+
+export type GetPoolServerQueryVariables = Exact<{
+  poolId: Scalars['ID']['input'];
+}>;
+
+export type GetPoolServerQuery = {
+  __typename?: 'Query';
+  pool?: {
+    __typename?: 'Pool';
+    id: string;
+    poolId: any;
+    question: string;
+    options: Array<string>;
+    status: PoolStatus;
+    chainId: any;
+    chainName: string;
+    createdAt: any;
+    createdBlockNumber: any;
+    createdBlockTimestamp: any;
+    createdTransactionHash: any;
+    lastUpdatedBlockNumber: any;
+    lastUpdatedBlockTimestamp: any;
+    lastUpdatedTransactionHash: any;
+    gradedBlockNumber: any;
+    gradedBlockTimestamp: any;
+    gradedTransactionHash: any;
+    betsCloseAt: any;
+    usdcBetTotals: Array<any>;
+    pointsBetTotals: Array<any>;
+    usdcVolume: any;
+    pointsVolume: any;
+    originalTruthSocialPostId: string;
+    bets: Array<{
+      __typename?: 'Bet';
+      id: string;
+      betId: any;
+      user: any;
+      option: any;
+      amount: any;
+      tokenType: TokenType;
+    }>;
+  } | null;
+};
+
 export const GetPoolsDocument = {
   kind: 'Document',
   definitions: [
@@ -2377,6 +2322,11 @@ export const GetPoolsDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -2404,6 +2354,11 @@ export const GetPoolsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'first' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'skip' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
               },
             ],
             selectionSet: {
@@ -2494,6 +2449,12 @@ export const GetBetsDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -2521,6 +2482,11 @@ export const GetBetsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'orderDirection' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'skip' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
               },
             ],
             selectionSet: {
@@ -2849,6 +2815,12 @@ export const GetBetPlacedDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -2877,6 +2849,11 @@ export const GetBetPlacedDocument = {
                 name: { kind: 'Name', value: 'orderDirection' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'skip' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+              },
             ],
             selectionSet: {
               kind: 'SelectionSet',
@@ -2899,6 +2876,105 @@ export const GetBetPlacedDocument = {
     },
   ],
 } as unknown as DocumentNode<GetBetPlacedQuery, GetBetPlacedQueryVariables>;
+export const GetBetPlacedServerDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetBetPlacedServer' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '10' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'BetPlaced_filter' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'BetPlaced_orderBy' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'betPlaceds' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'where' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderBy' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderDirection' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'skip' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'optionIndex' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'poolId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'transactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetBetPlacedServerQuery, GetBetPlacedServerQueryVariables>;
 export const GetPoolDocument = {
   kind: 'Document',
   definitions: [
@@ -2976,3 +3052,197 @@ export const GetPoolDocument = {
     },
   ],
 } as unknown as DocumentNode<GetPoolQuery, GetPoolQueryVariables>;
+export const GetPoolsServerDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetPoolsServer' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Pool_filter' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Pool_orderBy' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'OrderDirection' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pools' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'where' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'filter' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderBy' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderBy' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'orderDirection' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'orderDirection' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'first' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'first' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'poolId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'question' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'options' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBlockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBlockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdTransactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedBlockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedBlockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedTransactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gradedBlockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gradedBlockTimestamp' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'bets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'option' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'gradedTransactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'betsCloseAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'usdcBetTotals' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'pointsBetTotals' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'usdcVolume' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'pointsVolume' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'originalTruthSocialPostId' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetPoolsServerQuery, GetPoolsServerQueryVariables>;
+export const GetPoolServerDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetPoolServer' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'poolId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pool' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'poolId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'poolId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'question' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'options' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'chainName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBlockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBlockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdTransactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedBlockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedBlockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lastUpdatedTransactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gradedBlockNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gradedBlockTimestamp' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gradedTransactionHash' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'betsCloseAt' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'bets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'betId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'user' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'option' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'tokenType' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'usdcBetTotals' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'pointsBetTotals' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'usdcVolume' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'pointsVolume' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'originalTruthSocialPostId' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetPoolServerQuery, GetPoolServerQueryVariables>;

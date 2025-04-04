@@ -1,5 +1,6 @@
 'use client';
 
+import { useApolloClient } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -7,7 +8,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
-import { useApolloClient } from '@apollo/client';
 
 import { GET_BET_PLACEDS_SERVER, GET_BETS, GET_POOL } from '@/app/queries';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
-import { Database, POLLING_INTERVALS, USDC_DECIMALS } from '@trump-fun/common';
+import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
 
 import { useBettingForm } from '@/hooks/useBettingForm';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
@@ -39,13 +39,12 @@ import {
   OrderDirection,
   PoolStatus,
 } from '@/types/__generated__/graphql';
-import { Comment } from '@/types/pool';
 
 type PoolDetailClientProps = {
   id: string;
   initialPool: GetPoolQuery['pool'] | null;
-  postData: Database['public']['Tables']['truth_social_posts']['Row'] | null;
-  initialComments: Comment[] | null;
+  postData: Tables<'truth_social_posts'> | null;
+  initialComments: Tables<'comments'>[] | null;
 };
 
 export function PoolDetailClient({

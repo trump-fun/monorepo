@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 import { verifySignature } from '@/utils/verifySignature';
 import { Database } from '@trump-fun/common';
 
@@ -11,7 +11,7 @@ export async function addComment(
   messageStr?: string
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = await createSupabaseAdminClient();
 
     if (!signature || !messageStr) {
       return { success: false, error: 'Signature required' };
