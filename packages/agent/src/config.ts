@@ -175,7 +175,7 @@ export const config = {
   large_llm,
   fluxApiKey: requireEnv('BFL_API_KEY'),
   veniceApiKey: requireEnv('VENICE_API_KEY'),
-  veniceModel: process.env.VENICE_MODEL || 'fluently-xl',
+  veniceModel: process.env.VENICE_MODEL || 'flux-dev-uncensored',
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY || '',
   maxImagesPerRun: Number(process.env.MAX_IMAGES_PER_RUN || '3'),
   fluxModel,
