@@ -181,7 +181,7 @@ Please generate an image prompt for Venice AI.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: config.veniceModel,
+        model: config.veniceImageModel,
         prompt: truncatedPrompt,
         height: 1024,
         width: 1024,
