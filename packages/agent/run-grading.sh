@@ -4,7 +4,7 @@ source /root/.bashrc
 source /root/.profile
 
 echo "Running agent $(date)"
-ROOT_DIR="/root/trump-fun-agent"
+ROOT_DIR="/root/trump-fun-monorepo/packages/agent"
 
 # Load environment variables if .env exists
 if [ -f $ROOT_DIR/.env ]; then
@@ -12,5 +12,5 @@ if [ -f $ROOT_DIR/.env ]; then
 fi
 
 # Run the agent
-/root/.nvm/versions/node/v23.10.0/bin/bun run /root/trump-fun-agent/run-bet-grading-agent.ts
+/root/.nvm/versions/node/v23.10.0/bin/bun run $ROOT_DIR/run-bet-grading-agent.ts
 #bun run test-trump-agent.ts
