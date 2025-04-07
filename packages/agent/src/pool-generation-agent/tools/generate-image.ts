@@ -1,6 +1,9 @@
 import config, { supabase } from '../../config';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
+// Import or define LARGE_LLM_PROVIDER
+const LARGE_LLM_PROVIDER = process.env.LARGE_LLM_PROVIDER || 'anthropic';
+
 /**
  * Extracts a filename from a prompt
  * Creates a simple filename based on the first few words of the prompt plus timestamp
@@ -130,7 +133,10 @@ Please generate an image prompt for Venice AI.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: config.veniceTextModel,
+        model:
+          LARGE_LLM_PROVIDER === 'venice'
+            ? process.env.VENICE_LARGE_LLM || 'mistral-31-24b'
+            : 'mistral-31-24b',
         messages: [
           { role: 'system', content: systemInstructions },
           { role: 'user', content: userPrompt },
@@ -181,7 +187,7 @@ Please generate an image prompt for Venice AI.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: config.veniceImageModel,
+        model: config.imageModel,
         prompt: truncatedPrompt,
         height: 1024,
         width: 1024,
@@ -238,14 +244,15 @@ Please generate an image prompt for Venice AI.`;
     }
 
     console.log(`Image uploaded to Supabase: ${supabaseImageUrl}`);
+    const updatedResearch = {
+      ...researchItem,
+      image_prompt: truncatedPrompt,
+      image_url: supabaseImageUrl,
+    };
 
     // Update the research item with the image prompt and URL
     return {
-      research: {
-        ...researchItem,
-        image_prompt: truncatedPrompt,
-        image_url: supabaseImageUrl,
-      },
+      research: updatedResearch,
     };
   } catch (error) {
     console.error('Error generating image:', error);

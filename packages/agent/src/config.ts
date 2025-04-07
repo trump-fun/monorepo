@@ -27,11 +27,12 @@ export type AppConfig = {
   small_llm: ChatAnthropic | ChatGoogleGenerativeAI | ChatOpenAI;
   cheap_large_llm: ChatAnthropic | ChatGoogleGenerativeAI | ChatOpenAI;
   large_llm: ChatAnthropic | ChatGoogleGenerativeAI | ChatOpenAI;
-  fluxApiKey: string;
-  veniceApiKey: string;
+  imageProvider: string;
+  imageModel: string;
+  bflApiKey: string; // Need raw API key to make REST requests to image provider, no SDK
+  veniceApiKey: string; // Need raw API key to make REST requests to image provider, no SDK
   firecrawlApiKey: string;
   maxImagesPerRun: number;
-  fluxModel: string;
   chainConfig: {
     [chainId: number]: BettingChainConfig;
   };
@@ -64,12 +65,21 @@ const GOOGLE_GENERATIVE_AI_SMALL_LLM =
   process.env.GOOGLE_GENERATIVE_AI_SMALL_LLM || 'gemini-2.0-flash-lite';
 const GOOGLE_GENERATIVE_AI_LARGE_LLM =
   process.env.GOOGLE_GENERATIVE_AI_LARGE_LLM || 'gemini-2.5-pro-exp-03-25';
+const VENICE_SMALL_LLM = process.env.VENICE_SMALL_LLM || 'mistral-31-24b';
+const VENICE_LARGE_LLM = process.env.VENICE_LARGE_LLM || 'mistral-31-24b';
+const VENICE_BASE_URL = 'https://api.venice.ai/api/v1/'; //TODO This should code from env
+
+// Image provider configuration
+const IMAGE_PROVIDER = process.env.IMAGE_PROVIDER?.toLowerCase() || 'bfl';
+const BFL_IMAGE_MODEL = process.env.BFL_IMAGE_MODEL || 'flux-dev';
+const VENICE_IMAGE_MODEL = process.env.VENICE_IMAGE_MODEL || 'flux-dev-uncensored';
 
 // Initialize models based on providers
 let small_llm;
 let openaiApiKey = '';
 let anthropicApiKey = '';
 let googleGenerativeAiApiKey = '';
+let veniceApiKey = '';
 
 if (SMALL_LLM_PROVIDER === 'anthropic') {
   small_llm = new ChatAnthropic({
@@ -86,12 +96,22 @@ if (SMALL_LLM_PROVIDER === 'anthropic') {
     modelName: OPENAI_SMALL_LLM,
     openAIApiKey: requireEnv('OPENAI_API_KEY'),
   });
+} else if (SMALL_LLM_PROVIDER === 'venice') {
+  veniceApiKey = requireEnv('VENICE_API_KEY');
+  small_llm = new ChatOpenAI({
+    modelName: VENICE_SMALL_LLM,
+    openAIApiKey: veniceApiKey,
+    configuration: {
+      baseURL: VENICE_BASE_URL,
+    },
+  });
 } else {
   throw new Error(
-    `Invalid SMALL_LLM_PROVIDER: ${SMALL_LLM_PROVIDER}. Must be 'anthropic', 'google', or 'openai'`
+    `Invalid SMALL_LLM_PROVIDER: ${SMALL_LLM_PROVIDER}. Must be 'anthropic', 'google', 'openai', or 'venice'`
   );
 }
 
+//TODO This config element poorly implemented, should have CHEAP_LARGE_LLM_MODEL envvars for each provider
 let cheap_large_llm;
 if (CHEAP_LARGE_LLM_PROVIDER === 'anthropic') {
   if (!anthropicApiKey) {
@@ -117,9 +137,20 @@ if (CHEAP_LARGE_LLM_PROVIDER === 'anthropic') {
     modelName: OPENAI_SMALL_LLM, // Using small model for cost efficiency
     openAIApiKey: openaiApiKey,
   });
+} else if (CHEAP_LARGE_LLM_PROVIDER === 'venice') {
+  if (!veniceApiKey) {
+    veniceApiKey = requireEnv('VENICE_API_KEY');
+  }
+  cheap_large_llm = new ChatOpenAI({
+    modelName: VENICE_SMALL_LLM, // Using small model for cost efficiency
+    openAIApiKey: veniceApiKey,
+    configuration: {
+      baseURL: VENICE_BASE_URL,
+    },
+  });
 } else {
   throw new Error(
-    `Invalid CHEAP_LARGE_LLM_PROVIDER: ${CHEAP_LARGE_LLM_PROVIDER}. Must be 'anthropic', 'google', or 'openai'`
+    `Invalid CHEAP_LARGE_LLM_PROVIDER: ${CHEAP_LARGE_LLM_PROVIDER}. Must be 'anthropic', 'google', 'openai', or 'venice'`
   );
 }
 
@@ -148,20 +179,32 @@ if (LARGE_LLM_PROVIDER === 'anthropic') {
     modelName: OPENAI_LARGE_LLM,
     openAIApiKey: openaiApiKey,
   });
+} else if (LARGE_LLM_PROVIDER === 'venice') {
+  if (!veniceApiKey) {
+    veniceApiKey = requireEnv('VENICE_API_KEY');
+  }
+  large_llm = new ChatOpenAI({
+    modelName: VENICE_LARGE_LLM,
+    openAIApiKey: veniceApiKey,
+    configuration: {
+      baseURL: VENICE_BASE_URL,
+    },
+  });
 } else {
   throw new Error(
-    `Invalid LARGE_LLM_PROVIDER: ${LARGE_LLM_PROVIDER}. Must be 'anthropic', 'google', or 'openai'`
+    `Invalid LARGE_LLM_PROVIDER: ${LARGE_LLM_PROVIDER}. Must be 'anthropic', 'google', 'openai', or 'venice'`
   );
 }
 
-const fluxModel = process.env.FLUX_MODEL || 'flux-dev';
+// Validate image model
 if (
-  fluxModel !== 'flux-dev' &&
-  fluxModel !== 'flux-pro-1.1' &&
-  fluxModel !== 'flux-pro' &&
-  fluxModel !== 'lux-pro-1.1-ultra'
+  IMAGE_PROVIDER === 'bfl' &&
+  BFL_IMAGE_MODEL !== 'flux-dev' &&
+  BFL_IMAGE_MODEL !== 'flux-pro-1.1' &&
+  BFL_IMAGE_MODEL !== 'flux-pro' &&
+  BFL_IMAGE_MODEL !== 'lux-pro-1.1-ultra'
 ) {
-  throw new Error(`Invalid FLUX_MODEL: ${fluxModel}`);
+  throw new Error(`Invalid BFL_IMAGE_MODEL: ${BFL_IMAGE_MODEL}`);
 }
 
 // Export config object for convenience
@@ -173,13 +216,12 @@ export const config = {
   small_llm,
   cheap_large_llm,
   large_llm,
-  fluxApiKey: requireEnv('BFL_API_KEY'),
-  veniceApiKey: requireEnv('VENICE_API_KEY'),
-  veniceImageModel: process.env.VENICE_IMAGE_MODEL || 'flux-dev-uncensored',
-  veniceTextModel: process.env.VENICE_TEXT_MODEL || 'mistral-31-24b',
+  imageProvider: IMAGE_PROVIDER,
+  imageModel: IMAGE_PROVIDER === 'bfl' ? BFL_IMAGE_MODEL : VENICE_IMAGE_MODEL,
+  bflApiKey: requireEnv('BFL_API_KEY'),
+  veniceApiKey: veniceApiKey || requireEnv('VENICE_API_KEY'),
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY || '',
   maxImagesPerRun: Number(process.env.MAX_IMAGES_PER_RUN || '3'),
-  fluxModel,
   chainConfig: {
     [baseSepolia.id]: {
       chain: baseSepolia,

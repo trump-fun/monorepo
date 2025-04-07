@@ -8,6 +8,7 @@ import { getLatestTruthSocialPosts } from './tools/get-latest-truth-social-posts
 import { runBettingPoolSubgraphs } from './tools/run-betting-pool-subgraphs';
 import { setOriginalMessageFunction } from './tools/set-original-message';
 
+//TODO we can update the research reducer to outright remove items that should not be processed when they're encountered
 const AgentStateAnnotation = Annotation.Root({
   originalMessage: Annotation<string>,
   targetTruthSocialAccountId: Annotation<string>,

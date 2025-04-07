@@ -18,7 +18,6 @@ export interface NetworkInfo {
   usdcAddress: `0x${string}`;
   freedomAddress: `0x${string}`;
   appAddress: `0x${string}`;
-  subgraphUrl: string;
 }
 
 /**

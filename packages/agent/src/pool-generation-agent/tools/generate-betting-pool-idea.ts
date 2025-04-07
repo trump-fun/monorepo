@@ -9,8 +9,6 @@ import type { SingleResearchItemState } from '../single-betting-pool-graph';
 export async function generateBettingPoolIdea(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  console.log('Generating betting pool idea for research item');
-
   // Get the research item from state
   const researchItem = state.research;
 

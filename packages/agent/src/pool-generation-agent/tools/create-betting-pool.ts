@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import bettingContractAbi from '../../../../contracts/out/BettingContract.sol/BettingContract.json';
+import bettingContractAbi from '../../types/BettingContract.json';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 /**
  * Creates a betting pool for a single research item
@@ -68,7 +68,7 @@ export async function createBettingPool(
       originalTruthSocialPostId: researchItem.truth_social_post?.id?.toString() || '',
       imageUrl: researchItem.image_url || '',
     };
-    console.log('contract.createPool', contract.createPool);
+    console.log('Params passed to createPool:', poolParams);
 
     // Check if createPool method exists
     if (typeof contract.createPool !== 'function') {

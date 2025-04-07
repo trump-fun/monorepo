@@ -38,8 +38,6 @@ You should return just the search query text that would be sent to a search engi
 export async function extractSearchQueryFunctionSingle(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  console.log('extract_query_single initial state', state);
-
   const researchItem = state.research;
   if (!researchItem) {
     console.log('No research item to extract search query for');
@@ -55,6 +53,7 @@ export async function extractSearchQueryFunctionSingle(
       research: researchItem,
     };
   }
+  console.log('extract_query_single on item', researchItem.truth_social_post.id);
 
   const structuredLlm = config.cheap_large_llm.withStructuredOutput(searchQuerySchema, {
     name: 'extractSearchQuery',

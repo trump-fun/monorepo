@@ -1,8 +1,13 @@
-import { APP_ADDRESS, bettingContractAbi, POINTS_ADDRESS, USDC_ADDRESS } from '@trump-fun/common';
+import { bettingContractAbi, CHAIN_CONFIG } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import type { Context } from 'grammy';
 import { privy } from '../lib/privy';
 import { getWallet } from '../utils/getWallet';
+
+//TODO fix this
+const APP_ADDRESS = CHAIN_CONFIG[84532].appAddress as `0x${string}`;
+const POINTS_ADDRESS = CHAIN_CONFIG[84532].freedomAddress as `0x${string}`;
+const USDC_ADDRESS = CHAIN_CONFIG[84532].usdcAddress as `0x${string}`;
 
 // Token type enum to match the contract
 enum TokenType {
@@ -134,15 +139,17 @@ export const withdrawCommand = async (ctx: Context) => {
       tokenAmount.toString(),
     ]);
 
+    const tokenAddress = tokenType === TokenType.USDC ? USDC_ADDRESS : POINTS_ADDRESS;
+
     const transaction = {
-      from: wallet.address,
-      to: APP_ADDRESS,
-      data,
-      value: '0x0',
-      gasLimit: '0x100000',
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      nonce: '0x' + nonce.toString(16),
+      from: wallet.address as `0x${string}`,
+      to: tokenAddress,
+      data: data as `0x${string}`,
+      value: '0x0' as `0x${string}`,
+      gasLimit: '0x100000' as `0x${string}`,
+      maxFeePerGas: maxFeePerGas as `0x${string}`,
+      maxPriorityFeePerGas: maxPriorityFeePerGas as `0x${string}`,
+      nonce,
       chainId: 84532,
     };
 
@@ -160,7 +167,6 @@ export const withdrawCommand = async (ctx: Context) => {
     const result = await privy.walletApi.ethereum.sendTransaction({
       walletId: wallet.wallet.id,
       transaction,
-      method: 'signAndSendTransaction',
       caip2: 'eip155:84532',
     });
 
@@ -319,21 +325,20 @@ async function transferFunds(
     const nonce = await provider.getTransactionCount(wallet.address);
 
     const transaction = {
-      from: wallet.address,
+      from: wallet.address as `0x${string}`,
       to: tokenAddress,
-      data,
-      value: '0x0',
-      gasLimit: '0x100000',
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      nonce: '0x' + nonce.toString(16),
+      data: data as `0x${string}`,
+      value: '0x0' as `0x${string}`,
+      gasLimit: '0x100000' as `0x${string}`,
+      maxFeePerGas: maxFeePerGas as `0x${string}`,
+      maxPriorityFeePerGas: maxPriorityFeePerGas as `0x${string}`,
+      nonce,
       chainId: 84532,
     };
 
     const result = await privy.walletApi.ethereum.sendTransaction({
       walletId: wallet.wallet.id,
       transaction,
-      method: 'signAndSendTransaction',
       caip2: 'eip155:84532',
     });
 

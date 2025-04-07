@@ -22,6 +22,7 @@ import { newsApiSearchFunctionSingle } from './tools/news-api';
 import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-external-link';
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
 import { tavilySearchFunction } from './tools/tavily-search';
+import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,
@@ -131,6 +132,7 @@ function shouldContinueProcessing(state: SingleResearchItemState): 'continue' | 
 // Create the graph
 const builder = new StateGraph(SingleResearchItemAnnotation);
 
+//TODO if the item should not be processed, we can still to end. Adding additional conditional edges to this could speed up the graph.
 // Add nodes to the graph
 builder
   .addNode('extract_search_query', extractSearchQueryFunctionSingle)
@@ -140,6 +142,7 @@ builder
   .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
   .addNode('generate_image', generateImage)
   .addNode('create_betting_pool', createBettingPool)
+  .addNode('upsert_truth_social_post', upsertTruthSocialPost)
   .addEdge(START, 'extract_search_query')
   .addConditionalEdges('extract_search_query', shouldContinueProcessing, {
     continue: 'news_api_search',
@@ -157,11 +160,13 @@ builder
     continue: 'generate_image',
     stop: END,
   })
+  // TODO we need to upsert the truth social post after generate image because image generation is extremely expensive.
   .addConditionalEdges('generate_image', shouldContinueProcessing, {
     continue: 'create_betting_pool',
     stop: END,
   })
-  .addEdge('create_betting_pool', END);
+  .addEdge('create_betting_pool', 'upsert_truth_social_post')
+  .addEdge('upsert_truth_social_post', END);
 
 // Compile the graph
 export const singleBettingPoolGraph = builder.compile();

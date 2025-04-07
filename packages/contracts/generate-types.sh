@@ -21,9 +21,11 @@ wagmi generate
 mkdir -p ../common/abi
 
 ABI_FILE=../common/abi/contract.types.ts
+
 # Copy generated types to frontend, backend, and common
 echo "Copying types to $ABI_FILE..."
 mv types/generated.ts $ABI_FILE
+cp out/BettingContract.sol/BettingContract.json ../agent/src/types/BettingContract.json
 rm -rf types
 
 echo "✨ Types generated and copied successfully!"
