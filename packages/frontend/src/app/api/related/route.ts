@@ -1,6 +1,6 @@
-import { GET_POOLS_SERVER } from '@/app/queries';
 import { apolloClient } from '@/lib/apollo';
-import { OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
+import { GET_POOLS_SERVER } from '@/lib/queries';
+import { GetPoolsServerQuery, OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 const openaiClient = new OpenAI();
@@ -28,8 +28,11 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'No pools found' }, { status: 404 });
     }
 
+    //TODO Typecasting below cryptic, shouldn't be necessary if apolloClient is using types
     const poolSummaries = data.pools
-      .map((pool) => `ID: ${pool.id}, Question: ${pool.question}`)
+      .map(
+        (pool: GetPoolsServerQuery['pools'][number]) => `ID: ${pool.id}, Question: ${pool.question}`
+      )
       .join('\n');
     const prompt = `The user is currently viewing a pool with the question: "${question}".\n\nHere are 10 pools with their IDs and questions:\n${poolSummaries}\n\nBased on similar characteristics (e.g., question), provide an array of 5 pool IDs that are most closely related to this pool.\n\nReturn the results in a JSON array format like this:\n["pool_id_1", "pool_id_2", "pool_id_3", "pool_id_4", "pool_id_5"]`;
 

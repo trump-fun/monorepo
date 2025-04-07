@@ -78,20 +78,18 @@ export function usePlaceBet({
         return showSuccessToast(`Approving ${betAmount} ${symbol}...`);
       }
 
-      const args = [
-        BigInt(poolId),
-        BigInt(selectedOption),
-        tokenAmount,
-        accountAddress as `0x${string}`,
-        tokenTypeC,
-      ] as const;
-
       const { request } = await publicClient.simulateContract({
         abi: bettingContractAbi,
         address: appAddress,
         functionName: 'placeBet',
         account: accountAddress as `0x${string}`,
-        args,
+        args: [
+          BigInt(poolId),
+          BigInt(selectedOption),
+          tokenAmount,
+          accountAddress as `0x${string}`,
+          tokenTypeC,
+        ],
       });
 
       writeContract(request);

@@ -1,7 +1,7 @@
 'use client';
 
-import { GET_POOLS } from '@/app/queries';
 import { useTokenContext } from '@/hooks/useTokenContext';
+import { GET_POOLS } from '@/lib/queries';
 import { GetPoolsQuery, OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient, useQuery as useApolloQuery } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -9,12 +9,12 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
-import { GET_BET_PLACEDS_SERVER, GET_BETS, GET_POOL } from '@/app/queries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
+import { GET_BET_PLACEDS_SERVER, GET_BETS, GET_POOL } from '@/lib/queries';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
 import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
@@ -35,24 +35,16 @@ import {
   BetPlaced_OrderBy,
   GetBetPlacedQuery,
   GetBetsQuery,
-  GetPoolQuery,
   OrderDirection,
   PoolStatus,
 } from '@/types/__generated__/graphql';
 
 type PoolDetailClientProps = {
   id: string;
-  initialPool: GetPoolQuery['pool'] | null;
-  postData: Tables<'truth_social_posts'> | null;
   initialComments: Tables<'comments'>[] | null;
 };
 
-export function PoolDetailClient({
-  id,
-  initialPool,
-  postData,
-  initialComments,
-}: PoolDetailClientProps) {
+export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
   const { tokenType, tokenAddress } = useTokenContext();
   const { isConnected, authenticated } = useWalletAddress();
   const { login, ready } = usePrivy();
@@ -61,7 +53,6 @@ export function PoolDetailClient({
   const apolloClient = useApolloClient();
 
   const [selectedTab, setSelectedTab] = useState<string>('comments');
-  const [pool, setPool] = useState<GetPoolQuery['pool'] | null>(initialPool);
   const [userBetsData, setUserBetsData] = useState<GetBetsQuery['bets']>([]);
   const [betPlacedData, setBetPlacedData] = useState<GetBetPlacedQuery['betPlaceds']>([]);
   const [isDataLoading, setIsDataLoading] = useState(false);
@@ -70,6 +61,19 @@ export function PoolDetailClient({
   const { data: hash, isPending, writeContract } = useWriteContract();
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
   const { balance, formattedBalance, symbol, tokenLogo } = useTokenBalance();
+
+  // Use Apollo's useQuery hook to fetch pool data
+  const {
+    data: poolData,
+    loading,
+    error: poolError,
+    refetch,
+  } = useApolloQuery(GET_POOL, {
+    variables: { poolId: id },
+    fetchPolicy: 'network-only',
+  });
+
+  const pool = poolData?.pool || null;
 
   const {
     betAmount,
@@ -90,26 +94,6 @@ export function PoolDetailClient({
     isFactsProcessing,
     handleFacts: handleFactsAction,
   } = usePoolFacts(id, authenticated);
-
-  const fetchPoolData = useCallback(async () => {
-    setIsDataLoading(true);
-    setError(null);
-    try {
-      const { data } = await apolloClient.query({
-        query: GET_POOL,
-        variables: { poolId: id },
-        fetchPolicy: 'network-only',
-      });
-      if (data?.pool) {
-        setPool(data.pool);
-      }
-    } catch (error) {
-      setError('Failed to fetch pool data');
-      console.error('Error fetching pool data:', error);
-    } finally {
-      setIsDataLoading(false);
-    }
-  }, [apolloClient, id]);
 
   const fetchUserBets = useCallback(async () => {
     if (!account.address) return;
@@ -156,27 +140,23 @@ export function PoolDetailClient({
   }, [apolloClient, id]);
 
   const refreshData = useCallback(() => {
-    fetchPoolData();
+    refetch();
     fetchUserBets();
     fetchBetPlaced();
-  }, [fetchPoolData, fetchUserBets, fetchBetPlaced]);
+  }, [refetch, fetchUserBets, fetchBetPlaced]);
 
   useEffect(() => {
-    refreshData();
+    fetchUserBets();
+    fetchBetPlaced();
 
-    const poolPollingInterval = setInterval(
-      fetchPoolData,
-      POLLING_INTERVALS['pool-drilldown-main']
-    );
     const userBetsPollingInterval = setInterval(fetchUserBets, POLLING_INTERVALS['user-bets']);
     const betPlacedPollingInterval = setInterval(fetchBetPlaced, POLLING_INTERVALS['user-bets']);
 
     return () => {
-      clearInterval(poolPollingInterval);
       clearInterval(userBetsPollingInterval);
       clearInterval(betPlacedPollingInterval);
     };
-  }, [fetchPoolData, fetchUserBets, fetchBetPlaced, refreshData]);
+  }, [fetchUserBets, fetchBetPlaced]);
 
   useEffect(() => {
     if (isConfirmed) {
@@ -262,7 +242,7 @@ export function PoolDetailClient({
     });
   }, [placeBet, pool, betAmount, selectedOption]);
 
-  if (isDataLoading && !pool) {
+  if (loading) {
     return (
       <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
         <Image
@@ -276,10 +256,10 @@ export function PoolDetailClient({
     );
   }
 
-  if (error) {
+  if (poolError) {
     return (
       <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
-        <div className='text-red-500'>Error: {error}</div>
+        <div className='text-red-500'>Error: {poolError.message}</div>
         <Button onClick={refreshData} className='mt-4'>
           Try Again
         </Button>
@@ -287,7 +267,16 @@ export function PoolDetailClient({
     );
   }
 
-  if (!pool) return null;
+  if (!pool) {
+    return (
+      <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
+        <div className='text-red-500'>Pool not found</div>
+        <Button onClick={refreshData} className='mt-4'>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
   const isActive = pool.status === PoolStatus.Pending || pool.status === PoolStatus.None;
   const totalVolume = getVolumeForTokenType(pool, tokenType);

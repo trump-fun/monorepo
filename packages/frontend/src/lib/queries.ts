@@ -1,6 +1,7 @@
 'use client';
 
 import { gql } from '@/types/__generated__/gql';
+import { gql as apolloGql } from '@apollo/client';
 
 export const GET_POOLS = gql(`
   query GetPools(
@@ -225,7 +226,7 @@ export const GET_BET_PLACEDS = gql(`
   }
 `);
 
-export const GET_BET_PLACEDS_SERVER = gql(`
+export const GET_BET_PLACEDS_SERVER = apolloGql(`
   query GetBetPlacedServer(
     $first: Int = 10
     $filter: BetPlaced_filter!
@@ -291,7 +292,7 @@ export const GET_POOL = gql(`
   }
 `);
 
-export const GET_POOLS_SERVER = gql(`
+export const GET_POOLS_SERVER = apolloGql(`
   query GetPoolsServer(
     $filter: Pool_filter!
     $orderBy: Pool_orderBy!
@@ -340,7 +341,7 @@ export const GET_POOLS_SERVER = gql(`
   }
 `);
 
-export const GET_POOL_SERVER = gql(`
+export const GET_POOL_SERVER = apolloGql(`
   query GetPoolServer(
     $poolId: ID!
   ) {

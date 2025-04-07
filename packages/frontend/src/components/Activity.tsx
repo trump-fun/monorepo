@@ -1,6 +1,6 @@
 'use client';
 
-import { GET_BETS } from '@/app/queries';
+import { GET_BETS } from '@/lib/queries';
 import { Bet, Bet_OrderBy, Pool } from '@/types';
 import { useQuery } from '@apollo/client';
 import { POINTS_DECIMALS } from '@trump-fun/common';
@@ -41,11 +41,11 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
 
   useEffect(() => {
     if (data?.bets) {
-      setAllBets(prevBets => {
+      setAllBets((prevBets) => {
         if (prevBets.length === 0) return data.bets;
 
-        const existingIds = new Set(prevBets.map(bet => bet.id));
-        const uniqueNewBets = data.bets.filter(bet => !existingIds.has(bet.id));
+        const existingIds = new Set(prevBets.map((bet) => bet.id));
+        const uniqueNewBets = data.bets.filter((bet) => !existingIds.has(bet.id));
 
         if (uniqueNewBets.length === 0) return prevBets;
 
@@ -66,7 +66,7 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
           updateQuery: (prev, { fetchMoreResult }) => {
             if (!fetchMoreResult) return prev;
 
-            setPage(prevPage => prevPage + 1);
+            setPage((prevPage) => prevPage + 1);
 
             return {
               bets: [...prev.bets, ...fetchMoreResult.bets],
@@ -128,7 +128,7 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
 
       {allBets.length > 0 ? (
         <div className='space-y-4'>
-          {allBets.map(bet => (
+          {allBets.map((bet) => (
             <div
               key={bet.id}
               className='group hover:border-primary/30 rounded-xl border bg-white/50 p-5 backdrop-blur-sm transition-all duration-300 hover:bg-white/80 hover:shadow-lg dark:border-gray-800 dark:bg-white/10 dark:hover:bg-white/20 dark:hover:shadow-lg'

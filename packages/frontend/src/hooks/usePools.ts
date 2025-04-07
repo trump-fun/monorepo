@@ -1,4 +1,4 @@
-import { GET_POOLS } from '@/app/queries';
+import { GET_POOLS } from '@/lib/queries';
 import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@/types/__generated__/graphql';
 import { useQuery } from '@apollo/client';
 import { useMemo, useState } from 'react';

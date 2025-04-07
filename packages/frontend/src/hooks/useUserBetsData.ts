@@ -1,5 +1,5 @@
-import { GET_BET_WITHDRAWALS, GET_BETS, GET_PAYOUT_CLAIMED } from '@/app/queries';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
+import { GET_BET_WITHDRAWALS, GET_BETS, GET_PAYOUT_CLAIMED } from '@/lib/queries';
 import {
   Bet_Filter,
   Bet_OrderBy,

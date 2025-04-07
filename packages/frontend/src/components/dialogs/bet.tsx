@@ -174,6 +174,7 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
 
     setIsSubmitting(true);
     try {
+      console.log('Placing bet with hook');
       await placeBetWithHook({
         poolId,
         betAmount,
