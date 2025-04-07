@@ -24,7 +24,7 @@
     "deploy:frontend": "bun run --cwd packages/frontend deploy",
     "deploy:tg-bot": "bun run --cwd packages/tg-bot deploy",
     "run:bet-grading": "bun run --cwd packages/agent bet-grading",
-    "rsun:pool-creation": "bun run --cwd packages/agent pool-creation",
+    "run:pool-creation": "bun run --cwd packages/agent pool-creation",
     "codegen": "bun run --cwd packages/common codegen",
     "db-types": "bun run --cwd packages/common db-types",
     "prepare": "husky",

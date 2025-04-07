@@ -28,6 +28,7 @@ export type AppConfig = {
   cheap_large_llm: ChatAnthropic | ChatGoogleGenerativeAI | ChatOpenAI;
   large_llm: ChatAnthropic | ChatGoogleGenerativeAI | ChatOpenAI;
   fluxApiKey: string;
+  veniceApiKey: string;
   firecrawlApiKey: string;
   maxImagesPerRun: number;
   fluxModel: string;
@@ -173,6 +174,9 @@ export const config = {
   cheap_large_llm,
   large_llm,
   fluxApiKey: requireEnv('BFL_API_KEY'),
+  veniceApiKey: requireEnv('VENICE_API_KEY'),
+  veniceImageModel: process.env.VENICE_IMAGE_MODEL || 'flux-dev-uncensored',
+  veniceTextModel: process.env.VENICE_TEXT_MODEL || 'mistral-31-24b',
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY || '',
   maxImagesPerRun: Number(process.env.MAX_IMAGES_PER_RUN || '3'),
   fluxModel,
