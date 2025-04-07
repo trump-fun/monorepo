@@ -130,7 +130,7 @@ Please generate an image prompt for Venice AI.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral-31-24b',
+        model: config.veniceTextModel,
         messages: [
           { role: 'system', content: systemInstructions },
           { role: 'user', content: userPrompt },
