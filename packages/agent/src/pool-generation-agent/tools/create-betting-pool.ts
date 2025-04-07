@@ -1,11 +1,9 @@
-import { bettingContractAbi } from '@trump-fun/common';
-import { createPublicClient, createWalletClient, http, parseEventLogs } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { ethers } from 'ethers';
+import bettingContractAbi from '../../../../contracts/out/BettingContract.sol/BettingContract.json';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
-
 /**
  * Creates a betting pool for a single research item
- * Uses viem to interact with the smart contract
+ * Uses ethers.js to interact with the smart contract
  */
 export async function createBettingPool(
   state: SingleResearchItemState
@@ -48,87 +46,76 @@ export async function createBettingPool(
     };
   }
 
-  // Set up viem clients
-  const account = privateKeyToAccount(chainConfig.privateKey);
+  // Set up ethers provider and wallet
+  const provider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
+  const wallet = new ethers.Wallet(chainConfig.privateKey, provider);
 
-  const publicClient = createPublicClient({
-    chain: chainConfig.chain,
-    transport: http(chainConfig.rpcUrl),
-  });
+  // Create contract instance and ensure it has createPool method
+  const contract = new ethers.Contract(chainConfig.contractAddress, bettingContractAbi.abi, wallet);
 
-  const walletClient = createWalletClient({
-    account,
-    chain: chainConfig.chain,
-    transport: http(chainConfig.rpcUrl),
-  });
-
+  console.log('Connected to chain ID:', (await provider.getNetwork()).chainId);
   try {
     console.log(`Creating betting pool for research item: ${researchItem.truth_social_post.id}`);
 
     // Set up the parameters for the betting pool
     const betsCloseAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
-    // Calculate and format the expected resolution date for human readability
-    const resolutionDate = new Date(betsCloseAt * 1000);
-    const formattedResolutionDate = resolutionDate.toLocaleString();
 
-    // Standard closure criteria and instructions for 7-day window
-    const closureCriteria =
-      'This pool will be resolved within 7 days based on verifiable public information.';
-    const closureInstructions = `This prediction resolves by ${formattedResolutionDate}. Grade as YES if the predicted event occurs by the resolution date, and NO otherwise. Use verifiable public sources to determine the outcome.`;
-
-    const createPoolParams = {
+    // Prepare pool creation parameters
+    const poolParams = {
       question: researchItem.betting_pool_idea,
-      options: ['Yes', 'No'] as [string, string],
+      options: ['Yes', 'No'],
       betsCloseAt: betsCloseAt,
-      closureCriteria: closureCriteria,
-      closureInstructions: closureInstructions,
       originalTruthSocialPostId: researchItem.truth_social_post?.id?.toString() || '',
+      imageUrl: researchItem.image_url || '',
     };
-    console.log('createPoolParams', createPoolParams);
+    console.log('contract.createPool', contract.createPool);
+
+    // Check if createPool method exists
+    if (typeof contract.createPool !== 'function') {
+      throw new Error('createPool method not found on contract');
+    }
 
     // Send the transaction
-    const hash = await walletClient.writeContract({
-      address: chainConfig.contractAddress,
-      abi: bettingContractAbi,
-      functionName: 'createPool',
-      args: [createPoolParams],
-    });
-
-    console.log(`Transaction sent, hash: ${hash}`);
+    const tx = await contract.createPool(poolParams);
+    console.log(`Transaction sent, hash: ${tx.hash}`);
 
     // Wait for transaction receipt
-    const receipt = await publicClient.waitForTransactionReceipt({
-      hash,
-      confirmations: 1,
-      timeout: 60000, // 60 seconds
-    });
+    const receipt = await tx.wait(1); // Wait for 1 confirmation
+    console.log(`Transaction confirmed, status: ${receipt?.status}`);
 
-    console.log(`Transaction confirmed, status: ${receipt.status}`);
-
-    if (receipt.status === 'success') {
+    if (receipt?.status === 1) {
+      // 1 means success in ethers.js
       // Always add the transaction hash for successful transactions
       let updatedResearchItem = {
         ...researchItem,
-        transaction_hash: hash,
+        transaction_hash: tx.hash,
       };
 
       // Parse the logs to get the poolId
-      const logs = parseEventLogs({
-        abi: bettingContractAbi,
-        eventName: 'PoolCreated',
-        logs: receipt.logs,
+      const eventInterface = new ethers.Interface(bettingContractAbi.abi);
+      const log = receipt.logs.find((log: ethers.Log) => {
+        try {
+          const parsed = eventInterface.parseLog(log);
+          return parsed?.name === 'PoolCreated';
+        } catch (e) {
+          return false;
+        }
       });
 
-      if (logs && logs.length > 0) {
-        type PoolCreatedEvent = { args: { poolId: bigint } };
-        const poolId = (logs[0] as unknown as PoolCreatedEvent).args.poolId;
-        console.log(`Pool created, poolId: ${poolId}`);
+      if (log) {
+        const parsedLog = eventInterface.parseLog(log as ethers.Log);
+        if (parsedLog && parsedLog.args && parsedLog.args.poolId) {
+          const poolId = parsedLog.args.poolId.toString();
+          console.log(`Pool created, poolId: ${poolId}`);
 
-        // Add pool ID to the already updated item
-        updatedResearchItem = {
-          ...updatedResearchItem,
-          pool_id: poolId.toString(),
-        };
+          // Add pool ID to the already updated item
+          updatedResearchItem = {
+            ...updatedResearchItem,
+            pool_id: poolId,
+          };
+        } else {
+          console.log('Pool created but could not parse poolId from logs');
+        }
       } else {
         console.log(`No pool ID found in logs, but transaction was successful`);
       }

@@ -1,12 +1,13 @@
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
-import { bettingContractAbi, freedomAbi, USDC_DECIMALS } from '@trump-fun/common';
 import { PublicClient } from 'viem';
 import { useApprovalAmount } from './useApprovalAmount';
 import { useNetwork } from './useNetwork';
+import { bettingContractAbi, freedomAbi, USDC_DECIMALS } from '@trump-fun/common';
+import { UseWriteContractReturnType } from 'wagmi';
 
 interface UsePlaceBetProps {
-  writeContract: any;
+  writeContract: UseWriteContractReturnType['writeContract'];
   ready: boolean;
   publicClient: PublicClient | undefined;
   accountAddress: string | undefined;

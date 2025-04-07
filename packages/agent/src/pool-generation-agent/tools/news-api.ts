@@ -109,12 +109,14 @@ export async function newsApiSearchFunctionSingle(
       },
     };
   } catch (error) {
-    console.error('Error calling News API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+    console.error(`Error calling News API: ${errorMessage}${status ? ` (Status: ${status})` : ''}`);
     return {
       research: {
-        ...researchItem,
-        should_process: false,
-        skip_reason: 'news_search_failed',
+        ...researchItem, // News api failing is non-fatal.
+        // should_process: false,
+        // skip_reason: 'news_search_failed',
       },
     };
   }

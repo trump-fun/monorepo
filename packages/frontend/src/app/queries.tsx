@@ -32,6 +32,7 @@ export const GET_POOLS = gql(`
         tokenType
         updatedAt
       }
+      imageUrl
       chainName
       createdAt
       createdBlockNumber
@@ -264,6 +265,7 @@ export const GET_POOL = gql(`
       chainId
       chainName
       createdAt
+      imageUrl
       createdBlockNumber
       createdBlockTimestamp
       createdTransactionHash
@@ -310,6 +312,7 @@ export const GET_POOLS_SERVER = gql(`
         chainId
         chainName
         createdAt
+        imageUrl
         createdBlockNumber
         createdBlockTimestamp
         createdTransactionHash
@@ -352,6 +355,7 @@ export const GET_POOL_SERVER = gql(`
         chainId
         chainName
         createdAt
+        imageUrl
         createdBlockNumber
         createdBlockTimestamp
         createdTransactionHash

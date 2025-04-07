@@ -534,6 +534,7 @@ export enum Bet_OrderBy {
   PoolGradedBlockNumber = 'pool__gradedBlockNumber',
   PoolGradedBlockTimestamp = 'pool__gradedBlockTimestamp',
   PoolGradedTransactionHash = 'pool__gradedTransactionHash',
+  PoolImageUrl = 'pool__imageUrl',
   PoolIsDraw = 'pool__isDraw',
   PoolLastUpdatedBlockNumber = 'pool__lastUpdatedBlockNumber',
   PoolLastUpdatedBlockTimestamp = 'pool__lastUpdatedBlockTimestamp',
@@ -890,6 +891,7 @@ export enum PayoutClaimed_OrderBy {
   PoolGradedBlockNumber = 'pool__gradedBlockNumber',
   PoolGradedBlockTimestamp = 'pool__gradedBlockTimestamp',
   PoolGradedTransactionHash = 'pool__gradedTransactionHash',
+  PoolImageUrl = 'pool__imageUrl',
   PoolIsDraw = 'pool__isDraw',
   PoolLastUpdatedBlockNumber = 'pool__lastUpdatedBlockNumber',
   PoolLastUpdatedBlockTimestamp = 'pool__lastUpdatedBlockTimestamp',
@@ -922,6 +924,7 @@ export type Pool = {
   gradedBlockTimestamp: Scalars['BigInt']['output'];
   gradedTransactionHash: Scalars['Bytes']['output'];
   id: Scalars['String']['output'];
+  imageUrl: Scalars['String']['output'];
   isDraw: Scalars['Boolean']['output'];
   lastUpdatedBlockNumber: Scalars['BigInt']['output'];
   lastUpdatedBlockTimestamp: Scalars['BigInt']['output'];
@@ -1066,6 +1069,7 @@ export type PoolCreated = {
   params_betsCloseAt: Scalars['BigInt']['output'];
   params_closureCriteria: Scalars['String']['output'];
   params_closureInstructions: Scalars['String']['output'];
+  params_imageUrl: Scalars['String']['output'];
   params_options: Array<Scalars['String']['output']>;
   params_originalTruthSocialPostId: Scalars['String']['output'];
   params_question: Scalars['String']['output'];
@@ -1180,6 +1184,26 @@ export type PoolCreated_Filter = {
   params_closureInstructions_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   params_closureInstructions_starts_with?: InputMaybe<Scalars['String']['input']>;
   params_closureInstructions_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_contains?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_gt?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_gte?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  params_imageUrl_lt?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_lte?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_not?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  params_imageUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
+  params_imageUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   params_options?: InputMaybe<Array<Scalars['String']['input']>>;
   params_options_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   params_options_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -1255,9 +1279,132 @@ export enum PoolCreated_OrderBy {
   ParamsBetsCloseAt = 'params_betsCloseAt',
   ParamsClosureCriteria = 'params_closureCriteria',
   ParamsClosureInstructions = 'params_closureInstructions',
+  ParamsImageUrl = 'params_imageUrl',
   ParamsOptions = 'params_options',
   ParamsOriginalTruthSocialPostId = 'params_originalTruthSocialPostId',
   ParamsQuestion = 'params_question',
+  PoolId = 'poolId',
+  TransactionHash = 'transactionHash',
+}
+
+export type PoolImageUrlSet = {
+  __typename?: 'PoolImageUrlSet';
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  chainId: Scalars['BigInt']['output'];
+  chainName: Scalars['String']['output'];
+  id: Scalars['Bytes']['output'];
+  imageUrl: Scalars['String']['output'];
+  poolId: Scalars['BigInt']['output'];
+  transactionHash: Scalars['Bytes']['output'];
+};
+
+export type PoolImageUrlSet_Filter = {
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<PoolImageUrlSet_Filter>>>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  chainId?: InputMaybe<Scalars['BigInt']['input']>;
+  chainId_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  chainId_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  chainId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  chainId_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  chainId_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  chainId_not?: InputMaybe<Scalars['BigInt']['input']>;
+  chainId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  chainName?: InputMaybe<Scalars['String']['input']>;
+  chainName_contains?: InputMaybe<Scalars['String']['input']>;
+  chainName_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  chainName_ends_with?: InputMaybe<Scalars['String']['input']>;
+  chainName_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  chainName_gt?: InputMaybe<Scalars['String']['input']>;
+  chainName_gte?: InputMaybe<Scalars['String']['input']>;
+  chainName_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  chainName_lt?: InputMaybe<Scalars['String']['input']>;
+  chainName_lte?: InputMaybe<Scalars['String']['input']>;
+  chainName_not?: InputMaybe<Scalars['String']['input']>;
+  chainName_not_contains?: InputMaybe<Scalars['String']['input']>;
+  chainName_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  chainName_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  chainName_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  chainName_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  chainName_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  chainName_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  chainName_starts_with?: InputMaybe<Scalars['String']['input']>;
+  chainName_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['Bytes']['input']>;
+  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
+  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
+  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
+  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
+  id_not?: InputMaybe<Scalars['Bytes']['input']>;
+  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_lt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_lte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  or?: InputMaybe<Array<InputMaybe<PoolImageUrlSet_Filter>>>;
+  poolId?: InputMaybe<Scalars['BigInt']['input']>;
+  poolId_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  poolId_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  poolId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  poolId_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  poolId_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  poolId_not?: InputMaybe<Scalars['BigInt']['input']>;
+  poolId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+};
+
+export enum PoolImageUrlSet_OrderBy {
+  BlockNumber = 'blockNumber',
+  BlockTimestamp = 'blockTimestamp',
+  ChainId = 'chainId',
+  ChainName = 'chainName',
+  Id = 'id',
+  ImageUrl = 'imageUrl',
   PoolId = 'poolId',
   TransactionHash = 'transactionHash',
 }
@@ -1430,6 +1577,26 @@ export type Pool_Filter = {
   id_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   id_starts_with?: InputMaybe<Scalars['String']['input']>;
   id_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_lt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_lte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   isDraw?: InputMaybe<Scalars['Boolean']['input']>;
   isDraw_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
   isDraw_not?: InputMaybe<Scalars['Boolean']['input']>;
@@ -1572,6 +1739,7 @@ export enum Pool_OrderBy {
   GradedBlockTimestamp = 'gradedBlockTimestamp',
   GradedTransactionHash = 'gradedTransactionHash',
   Id = 'id',
+  ImageUrl = 'imageUrl',
   IsDraw = 'isDraw',
   LastUpdatedBlockNumber = 'lastUpdatedBlockNumber',
   LastUpdatedBlockTimestamp = 'lastUpdatedBlockTimestamp',
@@ -1607,6 +1775,8 @@ export type Query = {
   poolCloseds: Array<PoolClosed>;
   poolCreated?: Maybe<PoolCreated>;
   poolCreateds: Array<PoolCreated>;
+  poolImageUrlSet?: Maybe<PoolImageUrlSet>;
+  poolImageUrlSets: Array<PoolImageUrlSet>;
   pools: Array<Pool>;
   withdrawal?: Maybe<Withdrawal>;
   withdrawals: Array<Withdrawal>;
@@ -1734,6 +1904,22 @@ export type QueryPoolCreatedsArgs = {
   where?: InputMaybe<PoolCreated_Filter>;
 };
 
+export type QueryPoolImageUrlSetArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars['ID']['input'];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type QueryPoolImageUrlSetsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<PoolImageUrlSet_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<PoolImageUrlSet_Filter>;
+};
+
 export type QueryPoolsArgs = {
   block?: InputMaybe<Block_Height>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1751,178 +1937,6 @@ export type QueryWithdrawalArgs = {
 };
 
 export type QueryWithdrawalsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Withdrawal_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Withdrawal_Filter>;
-};
-
-export type Subscription = {
-  __typename?: 'Subscription';
-  /** Access to subgraph metadata */
-  _meta?: Maybe<_Meta_>;
-  bet?: Maybe<Bet>;
-  betPlaced?: Maybe<BetPlaced>;
-  betPlaceds: Array<BetPlaced>;
-  betWithdrawal?: Maybe<BetWithdrawal>;
-  betWithdrawals: Array<BetWithdrawal>;
-  bets: Array<Bet>;
-  ownershipTransferred?: Maybe<OwnershipTransferred>;
-  ownershipTransferreds: Array<OwnershipTransferred>;
-  payoutClaimed?: Maybe<PayoutClaimed>;
-  payoutClaimeds: Array<PayoutClaimed>;
-  pool?: Maybe<Pool>;
-  poolClosed?: Maybe<PoolClosed>;
-  poolCloseds: Array<PoolClosed>;
-  poolCreated?: Maybe<PoolCreated>;
-  poolCreateds: Array<PoolCreated>;
-  pools: Array<Pool>;
-  withdrawal?: Maybe<Withdrawal>;
-  withdrawals: Array<Withdrawal>;
-};
-
-export type Subscription_MetaArgs = {
-  block?: InputMaybe<Block_Height>;
-};
-
-export type SubscriptionBetArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBetPlacedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBetPlacedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BetPlaced_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BetPlaced_Filter>;
-};
-
-export type SubscriptionBetWithdrawalArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBetWithdrawalsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BetWithdrawal_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BetWithdrawal_Filter>;
-};
-
-export type SubscriptionBetsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Bet_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Bet_Filter>;
-};
-
-export type SubscriptionOwnershipTransferredArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionOwnershipTransferredsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<OwnershipTransferred_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<OwnershipTransferred_Filter>;
-};
-
-export type SubscriptionPayoutClaimedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPayoutClaimedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PayoutClaimed_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PayoutClaimed_Filter>;
-};
-
-export type SubscriptionPoolArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPoolClosedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPoolClosedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PoolClosed_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolClosed_Filter>;
-};
-
-export type SubscriptionPoolCreatedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPoolCreatedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PoolCreated_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolCreated_Filter>;
-};
-
-export type SubscriptionPoolsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Pool_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Pool_Filter>;
-};
-
-export type SubscriptionWithdrawalArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars['ID']['input'];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionWithdrawalsArgs = {
   block?: InputMaybe<Block_Height>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Withdrawal_OrderBy>;

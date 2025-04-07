@@ -20,9 +20,10 @@ wagmi generate
 # Make sure the common/abi directory exists
 mkdir -p ../common/abi
 
+ABI_FILE=../common/abi/contract.types.ts
 # Copy generated types to frontend, backend, and common
-echo "Copying types to frontend, backend, and common directory..."
-mv types/generated.ts ../common/abi/contract.types.ts
+echo "Copying types to $ABI_FILE..."
+mv types/generated.ts $ABI_FILE
 rm -rf types
 
 echo "✨ Types generated and copied successfully!"

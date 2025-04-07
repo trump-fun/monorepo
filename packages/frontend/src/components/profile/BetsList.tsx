@@ -49,6 +49,7 @@ export function BetsList({
           <UserBettingPost
             key={bet.id}
             id={bet.pool.id}
+            imageUrl={pool.imageUrl}
             username='realDonaldTrump'
             time={pool.createdAt}
             question={pool.question}

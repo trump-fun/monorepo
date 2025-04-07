@@ -36,7 +36,9 @@ export async function extractAndScrapeExternalLink(
 
     // Check for URLs in the content using regex
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const matches = postContent.match(urlRegex);
+    const allMatches = postContent.match(urlRegex);
+    // Extract Truth Social links since it'll be uncommon for someone to use an external link to link to Truth Social, they'd usually retruth
+    const matches = allMatches?.filter(url => !url.includes('https://truthsocial.com/'));
 
     if (!matches || matches.length === 0) {
       console.log('No external links found in post');
@@ -48,8 +50,8 @@ export async function extractAndScrapeExternalLink(
       };
     }
 
-    // Use the first URL found
-    const url = matches[0];
+    // At this point, we know matches has at least one element
+    const url = matches[0] as string;
     console.log(`Found external link: ${url}`);
 
     try {
@@ -126,10 +128,13 @@ export function hasExternalLink(state: SingleResearchItemState): 'scrape' | 'ski
   // If the item already has external link content, skip
   if (state.research.external_link_content) return 'skip';
 
-  // Check the content for URLs
+  // Check the content for URLs, excluding Truth Social links
   const postContent = state.research.truth_social_post.content;
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const matches = postContent.match(urlRegex);
+  const allMatches = postContent.match(urlRegex);
+
+  // Extract Truth Social links since it'll be uncommon for someone to use an external link to link to Truth Social, they'd usually retruth
+  const matches = allMatches?.filter(url => !url.includes('https://truthsocial.com/'));
 
   if (!matches || matches.length === 0) {
     return 'skip';

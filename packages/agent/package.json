@@ -44,6 +44,7 @@
     "@wagmi/chains": "^1.8.0",
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
     "graphql": "^16.10.0",
     "graphql-request": "^7.1.2",
     "http-proxy-agent": "^7.0.2",

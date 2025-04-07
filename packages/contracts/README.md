@@ -36,24 +36,25 @@ The platform consists of several smart contracts that work together:
 
 ## 📊 Deployed Contracts (Base Sepolia)
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| PointsToken | `0xA373482b473E33B96412a6c0cA8B847E6BBB4D0d` | Native platform token (FREEDOM) |
-| USDC | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | USD Coin on Base Sepolia |
-| BettingContract | `0x2E180501D3D68241dd0318c68fD9BE0AF1D519a1` | Manages prediction markets |
-| TrumpFunPaymaster | `0x9031A3eB126892EE71F8A332feb04Ab1f313aB48` | Enables gas payments in USDC/FREEDOM |
+| Contract        | Address                                      | Description                     |
+| --------------- | -------------------------------------------- | ------------------------------- |
+| PointsToken     | `0x634AFEA4d8cbE4C1Deb5b5fDe992f92E92AD4214` | Native platform token (FREEDOM) |
+| USDC            | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | USD Coin on Base Sepolia        |
+| BettingContract | `0xE3092b0FEeD0eEdCD941B98B006b227C3ee924C4` | Manages prediction markets      |
 
 ## 🎲 Betting Contract Flow
 
 The betting process follows these steps:
 
 1. **Market Creation**
+
    - AI agent identifies a potential betting opportunity from Trump's posts
    - Smart contract creates a new prediction market
    - Sets market parameters (description, expiry, options)
    - Market enters OPEN state
 
 2. **Bet Placement**
+
    - User approves token spending (USDC/FREEDOM)
    - User selects an option and bet amount
    - BettingContract validates:
@@ -63,6 +64,7 @@ The betting process follows these steps:
    - Bet is recorded and tokens are transferred to contract
 
 3. **Market Resolution**
+
    - AI agent monitors real-world events to determine outcomes
    - Agent triggers market resolution after expiry or when the action is complete
    - Sets the winning option based on verifiable events
@@ -70,7 +72,7 @@ The betting process follows these steps:
 
 4. **Payout Processing**
    - Winners can claim their payouts
-   - Payout = (User's bet / Total winning bets) * Total pool
+   - Payout = (User's bet / Total winning bets) \* Total pool
    - Platform fee (3%) is deducted
    - Remaining funds distributed to winners
 
@@ -120,7 +122,6 @@ source .env
 forge script script/EndToEndTest.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify --fork-url $BASE_SEPOLIA_RPC_URL
 ```
 
-
 ### Using Management Scripts
 
 #### Grading a Pool
@@ -148,6 +149,7 @@ This script automatically finds all bets in the specified pool and processes the
 ## Contract Integration
 
 These contracts integrate with:
+
 - Frontend interface for user interactions
 - AI agents for market creation and resolution
 - Telegram bot for additional platform access

@@ -21,6 +21,7 @@ export function ExploreClient() {
     loadMore,
     hasMore,
   } = usePools(tokenType);
+  console.log('filteredPools', filteredPools);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);

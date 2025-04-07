@@ -42,7 +42,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const id = (await params).id;
-  const { pool, postData } = await getPoolData(id);
+  const { pool } = await getPoolData(id);
 
   if (!pool) {
     return { title: 'Pool Not Found' };
@@ -54,7 +54,7 @@ export async function generateMetadata(
     title: pool.question || `Prediction Pool #${id}`,
     description: pool.question || 'Predict the outcome of this event',
     openGraph: {
-      images: [postData?.image_url || '/default-pool-image.jpg', ...previousImages],
+      images: [pool.imageUrl || '/default-pool-image.jpg', ...previousImages],
     },
   };
 }

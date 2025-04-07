@@ -45,8 +45,6 @@ type Pool @entity {
   status: PoolStatus!
   isDraw: Boolean!
   createdAt: BigInt!
-  closureCriteria: String!
-  closureInstructions: String!
   originalTruthSocialPostId: String!
   imageUrl: String! # URL of the image associated with the pool
   bets: [Bet!]! @derivedFrom(field: "pool")
@@ -142,8 +140,6 @@ type PoolCreated @entity(immutable: true) {
   params_question: String! # string
   params_options: [String!]! # string[2]
   params_betsCloseAt: BigInt! # uint40
-  params_closureCriteria: String! # string
-  params_closureInstructions: String! # string
   params_originalTruthSocialPostId: String! # string
   params_imageUrl: String! # string
   blockNumber: BigInt!

@@ -1,4 +1,4 @@
-import { PoolStatus } from '@trump-fun/common';
+import { PoolStatus } from './__generated__/graphql';
 // Using GraphQL generated types as the source of truth
 export interface BetData {
   id: string;

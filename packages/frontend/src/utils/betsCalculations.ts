@@ -1,10 +1,11 @@
-import { Bet, POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { Bet } from '../types/__generated__/graphql';
 
 export function calculateVolume(bets: Bet[]) {
   let totalVolume = 0;
   let activeVolume = 0;
 
-  bets.forEach(bet => {
+  bets.forEach((bet) => {
     try {
       const betAmount = parseFloat(bet.amount);
       if (!isNaN(betAmount)) {

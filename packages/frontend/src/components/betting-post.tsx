@@ -1,20 +1,18 @@
 'use client';
 
 import { isPoolFactsd, savePoolFacts } from '@/app/pool-actions';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { PoolStatus } from '@/types/__generated__/graphql';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
-import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { FaFlagUsa } from 'react-icons/fa';
 import TruthSocial from './common/truth-social';
 import { BetModal } from './dialogs/bet';
 import { CommentModal } from './dialogs/comment';
+import { PoolImage } from './pool-image';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
 
@@ -30,7 +28,7 @@ interface Bet {
 
 interface BettingPostProps {
   id: string;
-  avatar: string;
+  imageUrl: string;
   username: string;
   time: number;
   question: string;
@@ -47,7 +45,7 @@ interface BettingPostProps {
 
 export function BettingPost({
   id,
-  avatar,
+  imageUrl,
   username,
   time,
   question,
@@ -64,18 +62,6 @@ export function BettingPost({
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [betModalOpen, setBetModalOpen] = useState(false);
-
-  const { data: poolData } = useQuery({
-    queryKey: ['pool', id],
-    queryFn: async () => {
-      const res = await fetch(`/api/post?poolId=${id}`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    },
-    staleTime: 60000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -308,17 +294,12 @@ export function BettingPost({
         setIsOpen={setModalOpen}
         poolId={id}
         username={username}
-        avatar={avatar}
+        avatar={imageUrl}
       />
       <BetModal isOpen={betModalOpen} setIsOpen={setBetModalOpen} poolId={id} options={options} />
       <div className='p-4'>
         <div className='mb-2 flex items-center gap-2'>
-          <Avatar className='h-10 w-10 overflow-hidden rounded-full'>
-            <AvatarImage src={poolData ? poolData?.post?.image_url : avatar} alt={username} />
-            <AvatarFallback>
-              <Image src={'/trump.jpeg'} alt='User' width={32} height={32} />
-            </AvatarFallback>
-          </Avatar>
+          <PoolImage imageUrl={imageUrl} width={32} height={32} />
           <div className='flex-1'>
             <div className='font-bold'>{username}</div>
           </div>

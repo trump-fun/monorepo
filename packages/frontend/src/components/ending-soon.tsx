@@ -81,7 +81,7 @@ export function EndingSoon() {
             return (
               <EndingSoonBet
                 key={pool.id}
-                avatar='/trump.jpeg'
+                imageUrl='/trump.jpeg'
                 question={pool.question}
                 volume={getVolumeForTokenType(pool, tokenType)}
                 timeLeft={pool.betsCloseAt}

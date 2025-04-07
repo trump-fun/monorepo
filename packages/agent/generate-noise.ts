@@ -69,9 +69,7 @@ const SUBGRAPH_URL = process.env.BASE_SEPOLIA_SUBGRAPH_URL as string;
 const SUBGRAPH_API_KEY = process.env.BASE_SEPOLIA_SUBGRAPH_API_KEY as string;
 
 // Freedom token address
-const FREEDOM_TOKEN_ADDRESS =
-  //   "0x634AFEA4d8cbE4C1Deb5b5fDe992f92E92AD4214" as `0x${string}`;
-  '0xA373482b473E33B96412a6c0cA8B847E6BBB4D0d' as `0x${string}`;
+const FREEDOM_TOKEN_ADDRESS = '0x634AFEA4d8cbE4C1Deb5b5fDe992f92E92AD4214' as `0x${string}`;
 
 // Setup accounts
 const PRIVATE_KEYS = [

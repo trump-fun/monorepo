@@ -1,18 +1,17 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PoolStatus, TokenType } from '@/types';
-import { useQuery } from '@tanstack/react-query';
 import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import TruthSocial from './common/truth-social';
+import PoolImage from './pool-image';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
 
 interface UserBettingPostProps {
   id: string;
   username: string;
+  imageUrl: string;
   time: number;
   question: string;
   options: string[];
@@ -34,6 +33,7 @@ interface UserBettingPostProps {
 
 export function UserBettingPost({
   id,
+  imageUrl,
   username,
   time,
   question,
@@ -47,20 +47,6 @@ export function UserBettingPost({
   truthSocialId,
 }: UserBettingPostProps) {
   const [highlight, setHighlight] = useState(false);
-  const { data: userBetData } = useQuery({
-    queryKey: ['user-profile-post', id],
-    queryFn: async () => {
-      const res = await fetch(`/api/post?poolId=${id}`);
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      return res.json();
-    },
-    staleTime: 60000, // Consider data stale after 1 minute
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-  });
 
   // Create highlight effect when component mounts
   useEffect(() => {
@@ -98,15 +84,7 @@ export function UserBettingPost({
     >
       <div className='p-4'>
         <div className='mb-2 flex items-center gap-2'>
-          <Avatar className='h-10 w-10 overflow-hidden rounded-full'>
-            <AvatarImage
-              src={userBetData ? userBetData?.post?.image_url : '/trump.jpeg'}
-              alt={username}
-            />
-            <AvatarFallback>
-              <Image src='/trump.jpeg' alt={username} width={40} height={40} />
-            </AvatarFallback>
-          </Avatar>
+          <PoolImage imageUrl={imageUrl} width={32} height={32} />
           <div className='flex-1'>
             <div className='font-bold'>{username}</div>
           </div>

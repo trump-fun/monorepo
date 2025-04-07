@@ -48,7 +48,7 @@ export function PoolList({
           <BettingPost
             key={pool.id}
             id={pool.id}
-            avatar='/trump.jpeg'
+            imageUrl={pool.imageUrl}
             username='realDonaldTrump'
             time={pool.createdAt}
             question={pool.question}

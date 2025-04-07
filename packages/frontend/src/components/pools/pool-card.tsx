@@ -6,7 +6,6 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { GetPoolsQuery } from '@/types/__generated__/graphql';
 import { calculateOptionPercentages, calculateVolume } from '@/utils/betsInfo';
-import { useQuery } from '@tanstack/react-query';
 import { formatDistance } from 'date-fns';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,37 +16,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 export function PoolCard({ pool }: { pool: GetPoolsQuery['pools'][number] }) {
   const { tokenType } = useTokenContext();
 
-  const { data: postData } = useQuery({
-    queryKey: ['user-bet', pool.id],
-    queryFn: async () => {
-      const res = await fetch(`/api/post?poolId=${pool.id}`);
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      return res.json();
-    },
-    staleTime: 60000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000,
-  });
-
   const percentages = calculateOptionPercentages(pool, tokenType);
 
   const isClosed = new Date(Number(pool.betsCloseAt) * 1000) < new Date();
 
-  const imageUrl = postData?.post?.image_url;
   return (
     <div>
       <Card className='h-full transition-shadow hover:shadow-md'>
         <CardHeader>
           <div className='flex items-center gap-x-3'>
             <Avatar className='size-8'>
-              <AvatarImage
-                src={imageUrl && !imageUrl.includes('bfl.ai') ? imageUrl : '/trump.jpeg'}
-                alt='Donald Trump'
-              />
+              <AvatarImage src={pool.imageUrl} alt='Donald Trump' />
               <AvatarFallback>
                 <Image src={'/trump.jpeg'} alt='User' width={32} height={32} />
               </AvatarFallback>

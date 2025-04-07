@@ -60,7 +60,7 @@ export async function tavilySearchFunction(
   } catch (error) {
     console.error('Error performing Tavily search:', error);
     return {
-      research: researchItem,
+      research: researchItem, // Tavily search is non-fatal.
     };
   }
 }

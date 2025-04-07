@@ -301,12 +301,12 @@ export function PoolDetailClient({
       </Link>
 
       <Card className='mb-6'>
-        <PoolHeader pool={pool} postData={postData || undefined} />
+        <PoolHeader pool={pool} />
 
         <CardContent>
-          {postData?.image_url && (
+          {pool.imageUrl && (
             <Image
-              src={postData.image_url}
+              src={pool.imageUrl}
               alt='Post Image'
               width={500}
               height={300}

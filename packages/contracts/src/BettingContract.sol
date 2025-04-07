@@ -11,6 +11,7 @@ contract BettingContract is Ownable {
         PENDING,
         GRADED,
         REGRADED // Disputed (leave here, but unused for now)
+
     }
 
     enum TokenType {
@@ -25,15 +26,12 @@ contract BettingContract is Ownable {
         uint256[2] usdcBetTotals; // Total amount bet on each option for USDC [optionIndex]. Must align with options array
         uint256[2] pointsBetTotals; // Total amount bet on each option for POINTS [optionIndex]. Must align with options array
         uint40 betsCloseAt; // Time at which no more bets can be placed
-        mapping(address => Bet[2]) usdcBetsByUser; // Mapping from user address to their USDC bets. Must align with options array
-        mapping(address => Bet[2]) pointsBetsByUser; // Mapping from user address to their POINTS bets. Must align with options array
         uint256 winningOption; // Option that won the bet (0 or 1) (only matters if status is GRADED)
         PoolStatus status; // Status of the bet
         bool isDraw; // Indicates if the bet is a push (no winner and betters are refunded)
         uint256 createdAt; // Time at which the bet was created
-        string closureCriteria; // Criteria for WHEN a bet should be graded
-        string closureInstructions; // Instructions for HOW to decide which option won
         string originalTruthSocialPostId; // The ID of the original Truth Social post
+        string imageUrl; // URL of the image associated with the pool
         uint256[] betIds; // Array of all bet IDs in this pool
     }
 
@@ -53,16 +51,15 @@ contract BettingContract is Ownable {
         string question;
         string[2] options;
         uint40 betsCloseAt;
-        string closureCriteria;
-        string closureInstructions;
         string originalTruthSocialPostId;
+        string imageUrl;
     }
 
     uint256 public constant PAYOUT_FEE_BP = 90; // 0.9% fee for the payout
 
     // State
     ERC20 public usdc;
-    ERC20 public pointsToken;
+    ERC20 public freedom;
 
     uint256 public nextPoolId = 1;
     uint256 public nextBetId = 1;
@@ -114,7 +111,7 @@ contract BettingContract is Ownable {
 
     constructor(address _usdc, address _pointsToken) Ownable(msg.sender) {
         usdc = ERC20(_usdc);
-        pointsToken = ERC20(_pointsToken);
+        freedom = ERC20(_pointsToken);
     }
 
     function createPool(CreatePoolParams calldata params) external onlyOwner returns (uint256 poolId) {
@@ -136,9 +133,8 @@ contract BettingContract is Ownable {
         pool.status = PoolStatus.PENDING;
         pool.isDraw = false;
         pool.createdAt = block.timestamp;
-        pool.closureCriteria = params.closureCriteria;
-        pool.closureInstructions = params.closureInstructions;
         pool.originalTruthSocialPostId = params.originalTruthSocialPostId;
+        pool.imageUrl = params.imageUrl;
 
         emit PoolCreated(poolId, params);
     }
@@ -156,7 +152,7 @@ contract BettingContract is Ownable {
         if (optionIndex >= 2) revert InvalidOptionIndex(optionIndex, 1);
         if (amount <= 0) revert ZeroAmount();
 
-        ERC20 token = tokenType == TokenType.USDC ? usdc : pointsToken;
+        ERC20 token = tokenType == TokenType.USDC ? usdc : freedom;
         if (token.balanceOf(bettor) < amount) {
             revert InsufficientBalance(bettor, amount, token.balanceOf(bettor));
         }
@@ -164,10 +160,16 @@ contract BettingContract is Ownable {
         bool success = token.transferFrom(bettor, address(this), amount);
         if (!success) revert TokenTransferFailed(address(token), bettor, address(this), amount);
 
-        // Get betId from the appropriate mapping based on token type
-        betId = tokenType == TokenType.USDC
-            ? pools[poolId].usdcBetsByUser[bettor][optionIndex].id
-            : pools[poolId].pointsBetsByUser[bettor][optionIndex].id;
+        // Check if user already has a bet for this pool, option, and token type
+        betId = 0;
+        uint256[] storage userBetIds = userBets[bettor];
+        for (uint256 i = 0; i < userBetIds.length; i++) {
+            Bet storage userBet = bets[userBetIds[i]];
+            if (userBet.poolId == poolId && userBet.option == optionIndex && userBet.tokenType == tokenType) {
+                betId = userBetIds[i];
+                break;
+            }
+        }
 
         if (betId == 0) {
             // User has not bet on this option before with this token type
@@ -186,23 +188,10 @@ contract BettingContract is Ownable {
             bets[betId] = newBet;
             userBets[bettor].push(betId);
 
-            // Store bet in the appropriate mapping based on token type
-            if (tokenType == TokenType.USDC) {
-                pools[poolId].usdcBetsByUser[bettor][optionIndex] = newBet;
-            } else {
-                pools[poolId].pointsBetsByUser[bettor][optionIndex] = newBet;
-            }
-
             // Track bet ID in the pool
             pools[poolId].betIds.push(betId);
         } else {
-            // Get existing bet from the appropriate mapping based on token type
-            Bet storage existingBet = tokenType == TokenType.USDC
-                ? pools[poolId].usdcBetsByUser[bettor][optionIndex]
-                : pools[poolId].pointsBetsByUser[bettor][optionIndex];
-
-            existingBet.amount += amount;
-            existingBet.updatedAt = block.timestamp;
+            // Update existing bet
             bets[betId].amount += amount;
             bets[betId].updatedAt = block.timestamp;
         }
@@ -297,7 +286,7 @@ contract BettingContract is Ownable {
         }
 
         // Select the token
-        ERC20 token = tokenType == TokenType.USDC ? usdc : pointsToken;
+        ERC20 token = tokenType == TokenType.USDC ? usdc : freedom;
 
         // Check contract's token balance
         uint256 contractBalance = token.balanceOf(address(this));

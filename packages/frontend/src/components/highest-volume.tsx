@@ -2,22 +2,14 @@
 
 import { GET_POOLS } from '@/app/queries';
 import { BettingProgress } from '@/components/pools/BettingProgress';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@/types/__generated__/graphql';
 import { calculateOptionPercentages, calculateRelativeVolumePercentages } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
-import { useQueries } from '@tanstack/react-query';
 import { TrendingUp } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo } from 'react';
-
-interface PoolPostData {
-  post?: {
-    image_url?: string;
-  };
-}
+import PoolImage from './pool-image';
 
 export function HighestVolume() {
   const { tokenType } = useTokenContext();
@@ -61,24 +53,6 @@ export function HighestVolume() {
     return calculateRelativeVolumePercentages(pools, tokenType);
   }, [poolsToDisplay, tokenType]);
 
-  // Use useQueries to fetch pool images in parallel
-  const poolQueries = useQueries({
-    queries: volumeData.map(({ pool }) => ({
-      queryKey: ['highest-volume-pool', pool?.id || 'unknown'],
-      queryFn: async () => {
-        if (!pool?.id) return { post: { image_url: '/trump.jpeg' } };
-        const res = await fetch(`/api/post?poolId=${pool.id}`);
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return res.json() as Promise<PoolPostData>;
-      },
-      staleTime: 60000,
-      refetchOnMount: true,
-      refetchOnWindowFocus: true,
-    })),
-  });
-
   return (
     <div className='bg-background mb-4 rounded-lg border border-gray-800 p-4 shadow-lg'>
       <div className='mb-4 flex items-center gap-2'>
@@ -109,7 +83,6 @@ export function HighestVolume() {
         ) : volumeData.length > 0 ? (
           volumeData.map(({ pool, displayVolume }, index) => {
             if (!pool) return null;
-            const poolData = poolQueries[index]?.data as PoolPostData | undefined;
 
             return (
               <Link
@@ -118,12 +91,7 @@ export function HighestVolume() {
                 className='-m-2 block rounded-md p-2 transition-colors hover:bg-gray-900'
               >
                 <div className='flex gap-3'>
-                  <Avatar className='h-8 w-8 overflow-hidden rounded-full'>
-                    <AvatarImage src={poolData?.post?.image_url || '/trump.jpeg'} alt='Trump' />
-                    <AvatarFallback>
-                      <Image src={'/trump.jpeg'} alt='Trump' width={32} height={32} />
-                    </AvatarFallback>
-                  </Avatar>
+                  <PoolImage imageUrl={pool.imageUrl} width={32} height={32} />
                   <div className='flex-1'>
                     <p className='mb-1 line-clamp-2 text-sm'>{pool.question}</p>
                     <div className='mb-2 flex items-center gap-2'>
