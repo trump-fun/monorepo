@@ -34,7 +34,7 @@ export async function generateXQueries(state: GraderState): Promise<Partial<Grad
     
           IMPORTANT TWITTER/X QUERY FORMATTING RULES:
           - Each query must use Twitter's search operators correctly
-          - Do NOT prefix queries with "twitter" or similar terms
+          - Do NOT prefix queries with "x" or similar terms
           - Do NOT include explanations within the queries themselves
           - Each query should be a single line in proper Twitter search syntax
           
@@ -98,7 +98,7 @@ export async function generateXQueries(state: GraderState): Promise<Partial<Grad
           poolId,
           {
             ...pendingPool,
-            twitterSearchQueries: result.twitter_search_queries,
+            xSearchQueries: result.twitter_search_queries,
           },
         ];
       } catch (error) {

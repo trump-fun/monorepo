@@ -28,16 +28,16 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
     // Skip pools that have failed or don't have Twitter search queries
     if (
       pendingPool.failed ||
-      !pendingPool.twitterSearchQueries ||
-      pendingPool.twitterSearchQueries.length === 0
+      !pendingPool.xSearchQueries ||
+      pendingPool.xSearchQueries.length === 0
     ) {
       console.log(`Skipping pool ${poolId} - failed or no Twitter search queries`);
       updatedPendingPools[poolId] = {
         ...pendingPool,
         failed:
           pendingPool.failed ||
-          !pendingPool.twitterSearchQueries ||
-          pendingPool.twitterSearchQueries.length === 0,
+          !pendingPool.xSearchQueries ||
+          pendingPool.xSearchQueries.length === 0,
       };
       continue;
     }
@@ -76,7 +76,7 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
     ]);
 
     // Process Twitter search queries for this pool
-    for (const query of pendingPool.twitterSearchQueries) {
+    for (const query of pendingPool.xSearchQueries) {
       try {
         console.log(`Searching Twitter/X for pool ${poolId} with query: ${query}`);
 
@@ -147,7 +147,7 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
             question: pendingPool.pool.question,
             options: pendingPool.pool.options,
             query: query,
-            url: `https://twitter.com/${tweet.username}/status/${tweet.tweet_id}`,
+            url: `https://x.com/${tweet.username}/status/${tweet.tweet_id}`,
             content: tweet.text,
             author: `@${tweet.username} ${tweet.verified ? '(Verified)' : ''} - Followers: ${tweet.followers_count}`,
             engagement: `Likes: ${tweet.favorite_count}, Retweets: ${tweet.retweet_count}, Replies: ${tweet.reply_count}`,

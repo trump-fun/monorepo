@@ -29,7 +29,7 @@ export type PendingPool = {
   contractUpdated: boolean;
   txHash: string;
   failed: boolean;
-  twitterSearchQueries?: string[];
+  xSearchQueries?: string[];
   xEvidence?: Array<{
     url: string;
     summary: string;

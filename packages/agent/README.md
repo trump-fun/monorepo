@@ -98,7 +98,7 @@ The agents use a directed graph architecture with:
 
 ## Social Media
 
-- Twitter: [@realTrumpFun](https://x.com/realTrumpFun)
+- X: [@realTrumpFun](https://x.com/realTrumpFun)
 - Truth Social: [@realDonaldTrump](https://truthsocial.com/@realDonaldTrump)
 - Telegram: [trump_fun_bot](https://t.me/trump_fun_bot)
 
