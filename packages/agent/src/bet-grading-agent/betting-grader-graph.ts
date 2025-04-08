@@ -5,6 +5,8 @@ import { DEFAULT_CHAIN_ID, config } from '../config';
 import { callGradePoolContract } from './tools/call-grade-pool-contract';
 import { fetchPendingPools } from './tools/fetch-pending-pools';
 import { gatherEvidence } from './tools/gather-evidence';
+import { generateXQueries } from './tools/generate-x-queries';
+import { gatherXEvidence } from './tools/gather-x-evidence';
 import { generateEvidenceQueries } from './tools/generate-evidence-queries';
 import { gradeBettingPoolIdea } from './tools/grade-betting-pool-idea';
 import { type Pool } from '@trump-fun/common';
@@ -27,6 +29,12 @@ export type PendingPool = {
   contractUpdated: boolean;
   txHash: string;
   failed: boolean;
+  twitterSearchQueries?: string[];
+  xEvidence?: Array<{
+    url: string;
+    summary: string;
+    search_query: string;
+  }>;
 };
 
 // State annotation for the grader graph
@@ -55,7 +63,9 @@ const builder = new StateGraph(GraderStateAnnotation);
 // Add nodes to the graph
 builder
   .addNode('fetch_pending_pools', fetchPendingPools)
+  .addNode('generate_x_queries', generateXQueries)
   .addNode('generate_evidence_queries', generateEvidenceQueries)
+  .addNode('gather_x_evidence', gatherXEvidence)
   .addNode('gather_evidence', gatherEvidence)
   .addNode('grade_betting_pool_idea', gradeBettingPoolIdea)
   .addNode('call_grade_pool_contract', callGradePoolContract)

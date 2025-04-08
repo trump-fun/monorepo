@@ -211,6 +211,7 @@ if (
 export const config = {
   tavilyApiKey: requireEnv('TAVILY_API_KEY'),
   newsApiKey: requireEnv('NEWS_API_KEY'),
+  daturaApiKey: requireEnv('DATURA_API_KEY'),
   truthSocialApiUrl: process.env.TRUTH_SOCIAL_API_URL || 'https://truthsocial.com/api/v1',
   trumpTruthSocialId: process.env.TRUMP_TRUTH_SOCIAL_ID || '107780257626128497',
   small_llm,
