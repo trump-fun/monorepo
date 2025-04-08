@@ -78,4 +78,4 @@ typechain-types
 cache
 
 # Docker volumes
-data/
+packages/graph/data/*
