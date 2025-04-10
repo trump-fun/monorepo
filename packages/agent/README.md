@@ -7,6 +7,7 @@ AI agents for pool creation and bet grading on the Trump.fun prediction market p
 ## Overview
 
 The Trump.fun AI Agent system consists of two primary components:
+
 1. **Pool Creation Agent**: Monitors Trump's Truth Social posts and creates relevant betting pools
 2. **Bet Grading Agent**: Monitors news and Trump's activities to automatically resolve bets
 
@@ -29,6 +30,7 @@ These agents power the core functionality of Trump.fun - an AI-powered predictio
 ## Environment Setup
 
 Refer to the project Notion for detailed environment variable setup instructions. Required variables include:
+
 - API keys for language models
 - Blockchain connection details
 - Truth Social monitoring credentials
@@ -43,6 +45,7 @@ bun run run-pool-creation-agent.ts
 ```
 
 This agent:
+
 1. Monitors Truth Social for new posts by Trump
 2. Analyzes post content for potential betting opportunities
 3. Creates appropriate betting markets with options
@@ -55,6 +58,7 @@ bun run run-bet-grading-agent.ts
 ```
 
 This agent:
+
 1. Monitors active betting markets approaching resolution
 2. Analyzes news sources and social media for outcome information
 3. Determines the winning option based on verifiable events
@@ -69,6 +73,7 @@ The agents are deployed to a server and run on a schedule via cron jobs:
 ```
 
 To check the current cron configuration:
+
 ```bash
 crontab -e
 ```
@@ -91,6 +96,7 @@ You can also use LangGraph Studio to visualize agent workflows locally, though n
 ## Agent Architecture
 
 The agents use a directed graph architecture with:
+
 - State management for tracking agent progress
 - Multiple specialized tools for different tasks
 - Error handling and retry mechanisms
@@ -98,8 +104,7 @@ The agents use a directed graph architecture with:
 
 ## Social Media
 
-- Twitter: [@realTrumpFun](https://x.com/realTrumpFun)
-- Truth Social: [@realDonaldTrump](https://truthsocial.com/@realDonaldTrump)
+- X: [@realTrumpFun](https://x.com/realTrumpFun)
 - Telegram: [trump_fun_bot](https://t.me/trump_fun_bot)
 
 ## Contributing

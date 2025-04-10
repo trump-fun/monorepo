@@ -1,48 +1,32 @@
-/**
- *
- * IMPORTANT: THIS TOOL IS NOT BEING USED RIGHT NOW, DO NOT MODIFY IF YOU'RE DEALING WITH A PRODUCTION ISSUE
- * IT'S A STARTING POINT TO TRAIN OTHER TEAM MEMBERS ON THE AGENT CODE
- * Learning session scheduled for Mar. 26th.
- * Please remove this comment after the single research subgraph is fully implemented
- */
 import axios from 'axios';
-import config from '../../config';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
+import config from '../../config';
 
+// Interface for NewsAPI parameters
 interface NewsApiParams {
-  q: string; // Search query
-  from?: string; // Start date, format YYYY-MM-DD
-  to?: string; // End date, format YYYY-MM-DD
-  language?: string; // Article language
-  sortBy?: 'relevancy' | 'popularity' | 'publishedAt'; // Sorting method
-  pageSize?: number; // Number of results to return per page (max 100)
-  page?: number; // Page number
+  q: string;
+  from?: string;
+  to?: string;
+  language?: string;
+  sortBy?: string;
+  pageSize?: number;
+  domains?: string;
 }
 
 /**
- * Get yesterday and today dates in YYYY-MM-DD format
+ * Gets default date range for news search (last 7 days)
  */
-function getDefaultDates(): { from: string; to: string } {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const formatDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+function getDefaultDates() {
+  const currentDate = new Date();
+  const pastDate = new Date();
+  pastDate.setDate(currentDate.getDate() - 7); // Default to 7 days in the past
 
   return {
-    from: formatDate(yesterday),
-    to: formatDate(today),
+    from: pastDate.toISOString().split('T')[0],
+    to: currentDate.toISOString().split('T')[0],
   };
 }
 
-/**
- * Function to call the News API for a single research item
- */
 export async function newsApiSearchFunctionSingle(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
@@ -78,34 +62,92 @@ export async function newsApiSearchFunctionSingle(
   try {
     const defaultDates = getDefaultDates();
 
-    const params: NewsApiParams = {
-      q: researchItem.news_search_query,
-      from: defaultDates.from,
-      to: defaultDates.to,
-      language: 'en',
-      sortBy: 'publishedAt',
-      pageSize: 10,
-    };
+    // Use alternative queries if the main one fails
+    const queries = [researchItem.news_search_query];
+    if (
+      researchItem.alternative_search_queries &&
+      Array.isArray(researchItem.alternative_search_queries)
+    ) {
+      queries.push(...researchItem.alternative_search_queries.slice(0, 2));
+    }
 
-    const response = await axios.get('https://newsapi.org/v2/everything', {
-      params: {
-        ...params,
-        apiKey: config.newsApiKey,
-      },
-    });
-    console.log('response', response.request?.path);
+    // Add a fallback query that's more general
+    if (researchItem.news_search_query.length > 10) {
+      const fallbackQuery = researchItem.news_search_query.split(' ').slice(0, 3).join(' ');
+      queries.push(fallbackQuery);
+    }
 
-    console.log('newsApiSearch response status:', response.status);
+    let articles: any[] = [];
+    let successfulQuery = '';
 
-    // Extract article titles from the response
-    const articles = response.data.articles || [];
+    // Try each query in sequence until we get results
+    for (const query of queries) {
+      try {
+        const params: NewsApiParams = {
+          q: query,
+          from: defaultDates.from,
+          to: defaultDates.to,
+          language: 'en',
+          sortBy: 'publishedAt',
+          pageSize: 10,
+        };
+
+        // Add domain restrictions if specified
+        if (
+          researchItem.search_domains &&
+          Array.isArray(researchItem.search_domains) &&
+          researchItem.search_domains.length > 0
+        ) {
+          params.domains = researchItem.search_domains.join(',');
+        }
+
+        const response = await axios.get('https://newsapi.org/v2/everything', {
+          params: {
+            ...params,
+            apiKey: config.newsApiKey,
+          },
+          timeout: 10000, // 10 second timeout
+        });
+
+        console.log('newsApiSearch response status:', response.status);
+
+        // Extract article titles from the response
+        const responseArticles = response.data.articles || [];
+        if (responseArticles.length > 0) {
+          articles = responseArticles;
+          successfulQuery = query;
+          console.log(`Found ${articles.length} articles with query: ${query}`);
+          break; // Stop trying more queries
+        } else {
+          console.log(`No articles found with query: ${query}, trying next query`);
+        }
+      } catch (queryError) {
+        const errorMessage = queryError instanceof Error ? queryError.message : 'Unknown error';
+        console.log(`Query "${query}" failed:`, errorMessage);
+        // Continue to next query
+      }
+    }
+
+    // Process the articles
     const articleTitles = articles.map((article: any) => article.title);
+    const articleUrls = articles.map((article: any) => article.url);
+
+    // Get article snippets where available
+    const articleSnippets = articles.map((article: any) => {
+      if (article.description) {
+        return `${article.title} - ${article.description}`;
+      }
+      return article.title;
+    });
 
     console.log('articleTitles', articleTitles);
     return {
       research: {
         ...researchItem,
         related_news: articleTitles,
+        related_news_urls: articleUrls,
+        related_news_search_results: articleSnippets,
+        successful_news_query: successfulQuery || researchItem.news_search_query,
       },
     };
   } catch (error) {

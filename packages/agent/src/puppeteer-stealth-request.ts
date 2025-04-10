@@ -48,10 +48,23 @@ export async function fetchWithPuppeteer(url: string) {
         console.log(`Response status from event: ${response.status()}`);
         if (response.status() === 200) {
           try {
-            const data = await response.json();
-            responseData = data;
+            const contentType = response.headers()['content-type'] || '';
+            // Handle JSON response
+            if (contentType.includes('application/json')) {
+              const data = await response.json();
+              responseData = data;
+            } else {
+              // Handle text response
+              const text = await response.text();
+              try {
+                // Try to parse as JSON even if content-type is not JSON
+                responseData = JSON.parse(text);
+              } catch (e) {
+                responseData = { text };
+              }
+            }
           } catch (e) {
-            console.error('Error parsing response JSON from event:', e);
+            console.error('Error parsing response from event:', e);
           }
         }
       }
@@ -72,13 +85,21 @@ export async function fetchWithPuppeteer(url: string) {
         try {
           // If we already have data from the event, use that
           if (!responseData) {
-            responseData = await response.json();
-            // console.log("\nAPI Response Data:");
-            // console.log(JSON.stringify(responseData, null, 2));
+            const contentType = response.headers()['content-type'] || '';
+            if (contentType.includes('application/json')) {
+              responseData = await response.json();
+            } else {
+              const text = await response.text();
+              try {
+                responseData = JSON.parse(text);
+              } catch (e) {
+                responseData = { text };
+              }
+            }
           }
           return responseData;
         } catch (e) {
-          console.error('Error parsing response JSON:', e);
+          console.error('Error parsing response:', e);
         }
       } else {
         console.error(`Error: ${statusCode} ${response.statusText()}`);
@@ -98,23 +119,6 @@ export async function fetchWithPuppeteer(url: string) {
     }
   }
 }
-
-// Run the function if this file is executed directly
-// if (require.main === module) {
-//   const trumpAccountUrl = `${config.truthSocialApiUrl}/accounts/${config.trumpTruthSocialId}/statuses`;
-//   console.log(`Starting fetching data...`);
-
-//   fetchWithPuppeteer(trumpAccountUrl)
-//     .then((responseData) => {
-//       if (responseData) {
-//         console.log("\nRequest completed successfully");
-//         console.log(`Retrieved ${responseData.length || 0} posts`);
-//       } else {
-//         console.error("\nRequest failed: No response data received");
-//       }
-//     })
-//     .catch((error) => console.error("\nRequest failed:", error));
-// }
 
 // Export the fetchWithPuppeteer function as default
 export default { fetchWithPuppeteer };

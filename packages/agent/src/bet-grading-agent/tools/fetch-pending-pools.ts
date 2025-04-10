@@ -12,8 +12,6 @@ const fetchPendingPoolsQuery = gql`
       question
       options
       betsCloseAt
-      closureCriteria
-      closureInstructions
       usdcBetTotals
       pointsBetTotals
       originalTruthSocialPostId

@@ -56,8 +56,6 @@ export async function processTrumpReplies() {
                 question
                 options
                 betsCloseAt
-                closureCriteria
-                closureInstructions
                 usdcBetTotals
                 pointsBetTotals
                 originalTruthSocialPostId

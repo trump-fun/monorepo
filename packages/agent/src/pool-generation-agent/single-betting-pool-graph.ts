@@ -14,14 +14,14 @@ import type { BaseMessage } from '@langchain/core/messages';
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
 import type { BettingChainConfig } from '../config';
 import { DEFAULT_CHAIN_ID, config } from '../config';
-import type { ResearchItem } from '../types/research-item';
+import type { SingleResearchItem } from '../types/research-item';
 import { createBettingPool } from './tools/create-betting-pool';
 import { generateBettingPoolIdea } from './tools/generate-betting-pool-idea';
 import { generateImage } from './tools/generate-image';
 import { newsApiSearchFunctionSingle } from './tools/news-api';
 import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-external-link';
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
-import { tavilySearchFunction } from './tools/tavily-search';
+import { tavilySearchFunctionSingle } from './tools/tavily-search';
 import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
@@ -30,7 +30,7 @@ export const SingleResearchItemAnnotation = Annotation.Root({
     value: (curr, update) => update,
     default: () => config.chainConfig[DEFAULT_CHAIN_ID],
   }),
-  research: Annotation<ResearchItem>({
+  research: Annotation<SingleResearchItem>({
     reducer: (curr, update) => {
       // If current item is empty, return the update
       if (!curr.truth_social_post?.id) return update;
@@ -138,7 +138,7 @@ builder
   .addNode('extract_search_query', extractSearchQueryFunctionSingle)
   .addNode('check_external_link', extractAndScrapeExternalLink)
   .addNode('news_api_search', newsApiSearchFunctionSingle)
-  .addNode('tavily_search', tavilySearchFunction)
+  .addNode('tavily_search', tavilySearchFunctionSingle)
   .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
   .addNode('generate_image', generateImage)
   .addNode('create_betting_pool', createBettingPool)

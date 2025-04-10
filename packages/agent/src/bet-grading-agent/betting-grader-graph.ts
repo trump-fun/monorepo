@@ -5,6 +5,8 @@ import { DEFAULT_CHAIN_ID, config } from '../config';
 import { callGradePoolContract } from './tools/call-grade-pool-contract';
 import { fetchPendingPools } from './tools/fetch-pending-pools';
 import { gatherEvidence } from './tools/gather-evidence';
+import { generateXQueries } from './tools/generate-x-queries';
+import { gatherXEvidence } from './tools/gather-x-evidence';
 import { generateEvidenceQueries } from './tools/generate-evidence-queries';
 import { gradeBettingPoolIdea } from './tools/grade-betting-pool-idea';
 import { type Pool } from '@trump-fun/common';
@@ -27,6 +29,12 @@ export type PendingPool = {
   contractUpdated: boolean;
   txHash: string;
   failed: boolean;
+  xSearchQueries?: string[];
+  xEvidence?: Array<{
+    url: string;
+    summary: string;
+    search_query: string;
+  }>;
 };
 
 // State annotation for the grader graph
@@ -55,13 +63,18 @@ const builder = new StateGraph(GraderStateAnnotation);
 // Add nodes to the graph
 builder
   .addNode('fetch_pending_pools', fetchPendingPools)
-  .addNode('generate_evidence_queries', generateEvidenceQueries)
-  .addNode('gather_evidence', gatherEvidence)
-  .addNode('grade_betting_pool_idea', gradeBettingPoolIdea)
+  .addNode('generate_x_queries', generateXQueries, { ends: ['gather_x_evidence'] })
+  .addNode('generate_evidence_queries', generateEvidenceQueries, { ends: ['gather_evidence'] })
+  .addNode('gather_x_evidence', gatherXEvidence, { ends: ['gather_evidence'] })
+  .addNode('gather_evidence', gatherEvidence, { ends: ['grade_betting_pool_idea'] })
+  .addNode('grade_betting_pool_idea', gradeBettingPoolIdea, { ends: ['call_grade_pool_contract'] })
   .addNode('call_grade_pool_contract', callGradePoolContract)
   .addEdge(START, 'fetch_pending_pools')
+  .addEdge('fetch_pending_pools', 'generate_x_queries')
+  .addEdge('generate_x_queries', 'gather_x_evidence')
   .addEdge('fetch_pending_pools', 'generate_evidence_queries')
   .addEdge('generate_evidence_queries', 'gather_evidence')
+  .addEdge('gather_x_evidence', 'gather_evidence')
   .addEdge('gather_evidence', 'grade_betting_pool_idea')
   .addEdge('grade_betting_pool_idea', 'call_grade_pool_contract')
   .addEdge('call_grade_pool_contract', END);

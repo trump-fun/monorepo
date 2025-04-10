@@ -54,13 +54,7 @@ export async function generateEvidenceQueries(state: GraderState): Promise<Parti
           OPTIONS:
           {options}
 
-          CLOSURE CRITERIA:
-          {closureCriteria}
-
-          CLOSURE INSTRUCTIONS:
-          {closureInstructions}
-
-          Please generate search queries that will help find evidence to verify these conditions.`,
+          Please generate search queries that will help find evidence to verify the outcome.`,
         ],
       ]);
 
@@ -74,8 +68,6 @@ export async function generateEvidenceQueries(state: GraderState): Promise<Parti
         const formattedPrompt = await evidenceSearchPrompt.formatMessages({
           question: pendingPool.pool.question,
           options: pendingPool.pool.options,
-          closureCriteria: pendingPool.pool.closureCriteria,
-          closureInstructions: pendingPool.pool.closureInstructions,
         });
 
         // Call the LLM with the formatted prompt
