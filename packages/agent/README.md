@@ -6,9 +6,15 @@ AI agents for pool creation and bet grading on the Trump.fun prediction market p
 
 ## Overview
 
-The Trump.fun AI Agent system consists of two primary components:
+The Trump.fun AI Agent system consists of several primary components:
+
 1. **Pool Creation Agent**: Monitors Trump's Truth Social posts and creates relevant betting pools
 2. **Bet Grading Agent**: Monitors news and Trump's activities to automatically resolve bets
+3. **Source Tracing Agent**: Traces information back to original sources through reference chains
+4. **Prediction Market Intelligence Tools**:
+   - **Prediction Finder**: Discovers X posts containing predictions on specific topics
+   - **Predictor Profile Builder**: Analyzes X accounts for their prediction history and style
+   - **Prediction Verification**: Verifies predictions against real-world outcomes with evidence
 
 These agents power the core functionality of Trump.fun - an AI-powered prediction market platform centered around President Trump's actions and statements, allowing users to place bets using either cryptocurrency (USDC) or our platform's native FREEDOM tokens.
 
@@ -18,6 +24,29 @@ These agents power the core functionality of Trump.fun - an AI-powered predictio
 - **Market Formation**: Creates betting markets with appropriate options
 - **Automated Grading**: Monitors real-world events to determine bet outcomes
 - **Trump-Style Responses**: Generates responses to user comments in Trump's distinctive style
+- **Source Verification**: Traces information back to primary sources through reference chains
+- **Prediction Intelligence**: Finds, profiles, and verifies predictions from social media
+
+### Hackathon Agents
+
+This project includes three specialized agents developed for hackathon bounties:
+
+#### 1. Source Finder Agent
+
+Traces information back to its original source through reference chains (blog → news → press report → primary source).
+
+- Analyzes content recursively through multiple layers
+- Identifies primary vs. secondary sources
+- Evaluates information credibility through the reference chain
+- Provides confidence scores for information pathways
+
+#### 2. Prediction Swarm Agents
+
+A set of tools for prediction market intelligence:
+
+- **Prediction Finder**: Discovers X/Twitter posts containing explicit or implicit predictions related to specific topics
+- **Predictor Profile Builder**: Analyzes X/Twitter accounts for prediction history and style metrics
+- **Prediction Verification**: Verifies if predictions have matured (proven right or wrong) and collects supporting evidence
 
 ## Tech Stack
 
@@ -25,14 +54,17 @@ These agents power the core functionality of Trump.fun - an AI-powered predictio
 - LangChain/LangGraph for agent workflows
 - LangSmith for tracing and debugging
 - Integration with blockchain for market creation and resolution
+- Datura API for X/Twitter and AI search integration
 
 ## Environment Setup
 
 Refer to the project Notion for detailed environment variable setup instructions. Required variables include:
+
 - API keys for language models
 - Blockchain connection details
 - Truth Social monitoring credentials
 - LangSmith API keys
+- Datura API key for X/Twitter integration
 
 ## Running the Agents
 
@@ -43,6 +75,7 @@ bun run run-pool-creation-agent.ts
 ```
 
 This agent:
+
 1. Monitors Truth Social for new posts by Trump
 2. Analyzes post content for potential betting opportunities
 3. Creates appropriate betting markets with options
@@ -55,10 +88,71 @@ bun run run-bet-grading-agent.ts
 ```
 
 This agent:
+
 1. Monitors active betting markets approaching resolution
 2. Analyzes news sources and social media for outcome information
 3. Determines the winning option based on verifiable events
 4. Triggers the resolution process on the blockchain
+
+### Source Tracing Agent
+
+```bash
+bun run source-tracing <url>
+```
+
+This agent:
+
+1. Takes a URL as input (news article, blog post, social media, etc.)
+2. Follows references and citations through multiple layers
+3. Attempts to identify original primary sources
+4. Evaluates the credibility of the information chain
+5. Provides a confidence score for the source chain
+
+Example:
+
+```bash
+# Trace a news article back to primary sources
+bun run source-tracing https://example.com/news-article
+
+# Trace a social media post with an external link
+bun run source-tracing https://twitter.com/username/status/1234567890
+```
+
+### Prediction Market Intelligence Tools
+
+```bash
+# Find predictions on a topic
+bun run find-predictions --topic "Biden approval rating" --limit 10
+bun run find-predictions --topic "Tesla stock price" --limit 20 --output predictions.json
+
+# Build predictor profile
+bun run build-profile --username "ElonMusk"
+bun run build-profile --username "naval" --output naval-predictions.json
+
+# Verify a prediction
+bun run verify-prediction \
+  --prediction "Tesla stock will reach $300 by end of 2023" \
+  --date "2023-01-15" \
+  --username "ElonMusk" \
+  --source "https://twitter.com/elonmusk/status/1234567890"
+
+# Batch verify predictions from file
+bun run prediction-tools batch-verify --file predictions.json --output results.json
+```
+
+These tools work together to form a complete prediction intelligence system:
+
+1. **Find Predictions**: Discovers both explicit and implicit predictions on X/Twitter related to specific topics
+2. **Build Predictor Profile**: Analyzes an X/Twitter account's prediction history and generates metrics on style, accuracy, and expertise
+3. **Verify Predictions**: Determines if predictions have come true or false with supporting evidence
+
+You can use these tools individually or build workflows that combine them, such as:
+
+- Finding predictions on a topic, then verifying each one
+- Building profiles of predictors, then comparing their accuracy scores
+- Batch verifying predictions from multiple sources to identify trends
+
+````
 
 ## Deployment
 
@@ -66,9 +160,10 @@ The agents are deployed to a server and run on a schedule via cron jobs:
 
 ```bash
 ./deploy.sh
-```
+````
 
 To check the current cron configuration:
+
 ```bash
 crontab -e
 ```
@@ -91,6 +186,7 @@ You can also use LangGraph Studio to visualize agent workflows locally, though n
 ## Agent Architecture
 
 The agents use a directed graph architecture with:
+
 - State management for tracking agent progress
 - Multiple specialized tools for different tasks
 - Error handling and retry mechanisms

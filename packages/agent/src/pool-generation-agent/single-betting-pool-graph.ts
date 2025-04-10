@@ -23,6 +23,8 @@ import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-ex
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
 import { tavilySearchFunctionSingle } from './tools/tavily-search';
 import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
+// Import the new source tracing tool
+import { traceSourceChain } from '../source-tracing-agent/tools/trace-source-chain';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,
@@ -129,16 +131,30 @@ function shouldContinueProcessing(state: SingleResearchItemState): 'continue' | 
   return 'continue';
 }
 
+// Function to check if source tracing should be performed
+function shouldTraceSource(state: SingleResearchItemState): 'trace' | 'skip' {
+  if (!state.research || state.research.should_process === false) return 'skip';
+  if (state.research.source_tracing_complete === true) return 'skip';
+
+  // Skip source tracing if there's no external link and no related news
+  const hasExternalContent =
+    state.research.external_link_url ||
+    (state.research.related_news_urls && state.research.related_news_urls.length > 0) ||
+    state.research.truth_social_post.card?.url;
+
+  return hasExternalContent ? 'trace' : 'skip';
+}
+
 // Create the graph
 const builder = new StateGraph(SingleResearchItemAnnotation);
 
-//TODO if the item should not be processed, we can still to end. Adding additional conditional edges to this could speed up the graph.
 // Add nodes to the graph
 builder
   .addNode('extract_search_query', extractSearchQueryFunctionSingle)
   .addNode('check_external_link', extractAndScrapeExternalLink)
   .addNode('news_api_search', newsApiSearchFunctionSingle)
   .addNode('tavily_search', tavilySearchFunctionSingle)
+  .addNode('trace_source_chain', traceSourceChain) // Add the new node
   .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
   .addNode('generate_image', generateImage)
   .addNode('create_betting_pool', createBettingPool)
@@ -155,12 +171,17 @@ builder
   })
   // After scraping external link, proceed to tavily search
   .addEdge('check_external_link', 'tavily_search')
-  .addEdge('tavily_search', 'generate_betting_pool_idea')
+  // After tavily search, conditionally trace sources
+  .addConditionalEdges('tavily_search', shouldTraceSource, {
+    trace: 'trace_source_chain',
+    skip: 'generate_betting_pool_idea',
+  })
+  // After source tracing, generate betting pool idea
+  .addEdge('trace_source_chain', 'generate_betting_pool_idea')
   .addConditionalEdges('generate_betting_pool_idea', shouldContinueProcessing, {
     continue: 'generate_image',
     stop: END,
   })
-  // TODO we need to upsert the truth social post after generate image because image generation is extremely expensive.
   .addConditionalEdges('generate_image', shouldContinueProcessing, {
     continue: 'create_betting_pool',
     stop: END,

@@ -121,7 +121,7 @@ export async function extractAndScrapeExternalLink(
       try {
         console.log('Attempting to fetch URL with Firecrawl');
         const response = await axios.post(
-          'https://api.mindfulflakes.com/api/v1/crawler/crawl',
+          'https://api.firecrawl.dev/v1/crawl',
           { url: externalLink },
           {
             headers: {

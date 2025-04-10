@@ -16,7 +16,12 @@
     "build": "bun build index.ts --target=bun --outdir=dist",
     "bet-grading": "bun run-bet-grading-agent.ts",
     "pool-creation": "bun run-pool-creation-agent.ts",
-    "deploy": "sh deploy.sh"
+    "source-tracing": "bun run run-source-tracing.ts",
+    "deploy": "sh deploy.sh",
+    "prediction-tools": "bun run run-prediction-market-tools.ts",
+    "find-predictions": "bun run run-prediction-market-tools.ts find-predictions",
+    "build-profile": "bun run run-prediction-market-tools.ts build-profile",
+    "verify-prediction": "bun run run-prediction-market-tools.ts verify-prediction"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -58,6 +63,7 @@
     "undici": "^7.6.0",
     "uuid": "^11.1.0",
     "viem": "^2.24.1",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "commander": "^11.0.0"
   }
 }
