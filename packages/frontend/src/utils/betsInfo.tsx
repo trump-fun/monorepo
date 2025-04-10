@@ -88,7 +88,7 @@ export const getBetTotals = (
  */
 export const calculateOptionPercentages = (
   pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
-  tokenType?: TokenType
+  tokenType: TokenType
 ): number[] => {
   if (!pool) return [];
 

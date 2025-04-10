@@ -26,7 +26,7 @@ export function ProfileSidebar({
   tokenType: TokenType;
   betWithdrawals?: any[]; // Replace with actual type
 }) {
-  const { formattedBalance, tokenLogo } = useTokenBalance();
+  const { tokenLogo, symbol } = useTokenBalance();
 
   const {
     formattedWithdrawableBalance,
@@ -45,7 +45,7 @@ export function ProfileSidebar({
             {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not Connected'}
           </div>
         </div>
-        <TokenDisplay tokenType={tokenType} tokenLogo={tokenLogo} value={formattedBalance} />
+        <TokenDisplay />
 
         {/* Betting Statistics */}
         <BettingStats userStats={userStats} tokenLogo={tokenLogo} tokenType={tokenType} />
@@ -53,11 +53,15 @@ export function ProfileSidebar({
 
       {/* Token Actions */}
       <div className='space-y-3'>
-        <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div>
+        {/* <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div> */}
 
-        <p className='text-sm text-gray-500 dark:text-gray-400'>
-          Withdrawable Balance: {tokenLogo}
-          {formattedWithdrawableBalance}
+        <p className='text-md text-center text-gray-500 dark:text-gray-400'>
+          <p className='font-bold'>Your winnings</p>
+          <div className='flex items-center justify-center gap-2 text-center'>
+            <p>{tokenLogo}</p>
+            <p>{formattedWithdrawableBalance.toFixed(0).toLocaleString()}</p>
+            <p>{symbol}</p>
+          </div>
         </p>
 
         <div className='mb-2'>

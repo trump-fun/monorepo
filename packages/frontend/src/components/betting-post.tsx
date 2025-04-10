@@ -4,6 +4,7 @@ import { isPoolFactsd, savePoolFacts } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
 import { PoolStatus } from '@/types/__generated__/graphql';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -149,7 +150,7 @@ export function BettingPost({
 
   // Format bet amount for display
   const formatBetAmount = (amount: string) => {
-    const value = parseInt(amount, 10);
+    const value = parseInt(amount, 10) / USDC_DECIMALS;
     return value >= 1000000
       ? `${(value / 1000000).toFixed(1)}M`
       : value >= 1000

@@ -25,7 +25,7 @@ export function MobileProfileSection({
   };
   tokenType: TokenType;
 }) {
-  const { formattedBalance, tokenLogo } = useTokenBalance();
+  const { tokenLogo } = useTokenBalance();
 
   const {
     formattedWithdrawableBalance,
@@ -43,18 +43,18 @@ export function MobileProfileSection({
           {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not Connected'}
         </div>
       </div>
-      <TokenDisplay tokenLogo={tokenLogo} tokenType={tokenType} value={formattedBalance} />
+      <TokenDisplay />
 
       {/* Mobile betting stats */}
       <BettingStats userStats={userStats} tokenLogo={tokenLogo} tokenType={tokenType} />
 
       {/* Mobile withdrawal panel */}
       <div className='w-full space-y-3'>
-        <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div>
+        {/* <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div> */}
 
         <p className='text-sm text-gray-500 dark:text-gray-400'>
           Withdrawable Balance: {tokenLogo}
-          {formattedWithdrawableBalance}
+          {formattedWithdrawableBalance.toFixed(0)}
         </p>
 
         <div className='mb-2'>

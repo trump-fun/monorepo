@@ -104,6 +104,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
         variables: {
           filter: {
             user: account.address.toLowerCase(),
+            tokenType,
             poolId: id,
           },
           orderDirection: OrderDirection.Desc,
@@ -117,7 +118,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     } catch (error) {
       console.error('Error fetching user bets:', error);
     }
-  }, [apolloClient, account.address, id]);
+  }, [account.address, apolloClient, tokenType, id]);
 
   const fetchBetPlaced = useCallback(async () => {
     try {
@@ -280,7 +281,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
 
   const isActive = pool.status === PoolStatus.Pending || pool.status === PoolStatus.None;
   const totalVolume = getVolumeForTokenType(pool, tokenType);
-  const percentages = calculateOptionPercentages(pool);
+  const percentages = calculateOptionPercentages(pool, tokenType);
 
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>

@@ -25,9 +25,10 @@ export function useWithdraw() {
 
   const formattedWithdrawableBalance = useMemo((): number => {
     if (!balance) return 0;
-    return tokenType === TokenType.Usdc
-      ? Number(balance) / USDC_DECIMALS
-      : Number(balance) / POINTS_DECIMALS;
+
+    return (
+      Number(balance) / Math.pow(10, tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS)
+    );
   }, [balance, tokenType]);
 
   const handleWithdraw = async () => {

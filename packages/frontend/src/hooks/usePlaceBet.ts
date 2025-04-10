@@ -1,10 +1,10 @@
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
+import { bettingContractAbi, freedomAbi, USDC_DECIMALS } from '@trump-fun/common';
 import { PublicClient } from 'viem';
+import { UseWriteContractReturnType } from 'wagmi';
 import { useApprovalAmount } from './useApprovalAmount';
 import { useNetwork } from './useNetwork';
-import { bettingContractAbi, freedomAbi, USDC_DECIMALS } from '@trump-fun/common';
-import { UseWriteContractReturnType } from 'wagmi';
 
 interface UsePlaceBetProps {
   writeContract: UseWriteContractReturnType['writeContract'];
@@ -32,7 +32,6 @@ export function usePlaceBet({
   accountAddress,
   tokenAddress,
   tokenType,
-  isConfirmed,
   resetBettingForm,
   symbol,
 }: UsePlaceBetProps) {
@@ -54,11 +53,9 @@ export function usePlaceBet({
     }
 
     try {
-      const amount = parseInt(betAmount, 10);
-      const tokenAmount = BigInt(amount) * BigInt(10 ** USDC_DECIMALS);
-
-      const needsApproval = !approvedAmount || parseFloat(approvedAmount) < amount;
-      if (needsApproval && !isConfirmed) {
+      const tokenAmount = BigInt(betAmount) * BigInt(10 ** USDC_DECIMALS);
+      const needsApproval = !approvedAmount || approvedAmount < tokenAmount;
+      if (needsApproval) {
         const { request: approveRequest } = await publicClient.simulateContract({
           abi: freedomAbi,
           address: tokenAddress,

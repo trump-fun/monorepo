@@ -19,7 +19,6 @@ contract GradePoolSimpleScript is Script {
 
     // Log current state
     console2.log("BettingContract address:", address(bettingContract));
-    console2.log("Next pool ID:", bettingContract.nextPoolId());
   }
 
   function run(uint256 poolId, uint256 responseOption) public {

@@ -33,7 +33,9 @@ export function TokenSwitch() {
               )}
             >
               <span>{tokenLogo}</span>
-              <span className='ml-1 hidden sm:inline'>{tokenType}</span>
+              <span className='ml-1 hidden sm:inline'>
+                {tokenType === TokenType.Points ? 'FREEDOM' : 'USDC'}
+              </span>
             </Badge>
           </Tooltip.Trigger>
           <Tooltip.Content>

@@ -1,4 +1,3 @@
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import { Bet } from '../types/__generated__/graphql';
 
 export function calculateVolume(bets: Bet[]) {
@@ -9,13 +8,10 @@ export function calculateVolume(bets: Bet[]) {
     try {
       const betAmount = parseFloat(bet.amount);
       if (!isNaN(betAmount)) {
-        const decimals = Number(bet.tokenType) === 0 ? USDC_DECIMALS : POINTS_DECIMALS;
-        const normalizedAmount = betAmount / decimals;
-
-        totalVolume += normalizedAmount;
+        totalVolume += betAmount;
 
         if (bet.pool.status === 'PENDING') {
-          activeVolume += normalizedAmount;
+          activeVolume += betAmount;
         }
       }
     } catch (error) {
@@ -31,6 +27,7 @@ export function formatTokenAmount(amount: string | number, tokenType: number) {
 
   if (isNaN(numericAmount)) return '0';
 
-  const decimals = tokenType === 0 ? USDC_DECIMALS : POINTS_DECIMALS;
-  return (numericAmount / Math.pow(10, decimals)).toLocaleString();
+  // const decimals = tokenType === 0 ? USDC_DECIMALS : POINTS_DECIMALS;
+  // return (numericAmount / Math.pow(10, decimals)).toLocaleString();
+  return numericAmount.toLocaleString();
 }

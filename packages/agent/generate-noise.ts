@@ -1,4 +1,4 @@
-import { bettingContractAbi, freedomAbi } from '@trump-fun/common';
+import { bettingContractAbi, CHAIN_CONFIG, DEFAULT_CHAIN_ID, freedomAbi } from '@trump-fun/common';
 import dotenv from 'dotenv';
 import 'dotenv/config';
 import { GraphQLClient, gql } from 'graphql-request';
@@ -8,6 +8,7 @@ import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { baseSepolia } from 'viem/chains';
 
+console.log('Starting noise generation...');
 dotenv.config({ path: path.join(__dirname, '.env') });
 console.log(path.join(__dirname, '.env'));
 // GraphQL query to get pools
@@ -69,7 +70,7 @@ const SUBGRAPH_URL = process.env.BASE_SEPOLIA_SUBGRAPH_URL as string;
 const SUBGRAPH_API_KEY = process.env.BASE_SEPOLIA_SUBGRAPH_API_KEY as string;
 
 // Freedom token address
-const FREEDOM_TOKEN_ADDRESS = '0x634AFEA4d8cbE4C1Deb5b5fDe992f92E92AD4214' as `0x${string}`;
+const FREEDOM_TOKEN_ADDRESS = CHAIN_CONFIG[DEFAULT_CHAIN_ID].freedomAddress as `0x${string}`;
 
 // Setup accounts
 const PRIVATE_KEYS = [
@@ -323,7 +324,13 @@ const placeBet = async (poolId: bigint, account: ReturnType<typeof privateKeyToA
       // Wait for transaction receipt to check for success
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
-      return hash;
+      if (receipt.status === 'success') {
+        console.log(`Bet placed successfully on pool ${poolId} with hash ${hash}`);
+        return hash;
+      } else {
+        console.error(`Bet failed on pool ${poolId} with hash ${hash}`);
+        return null;
+      }
     } catch (error: any) {
       // Check for specific error types
       if (error.message && error.message.includes('InsufficientBalance')) {

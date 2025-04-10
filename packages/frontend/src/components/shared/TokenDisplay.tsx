@@ -1,24 +1,15 @@
-import { TokenType } from '@/types';
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { useTokenBalance } from '@/hooks/useTokenBalance';
 interface TokenDisplayProps {
-  value: number | string;
-  tokenType: TokenType;
-  tokenLogo: React.ReactNode;
   className?: string;
 }
 
-export function TokenDisplay({ value, tokenType, tokenLogo, className = '' }: TokenDisplayProps) {
-  const formattedValue = typeof value === 'string' ? Number(value) : value;
-
-  const displayValue =
-    tokenType === TokenType.Usdc
-      ? (formattedValue / Math.pow(10, USDC_DECIMALS)).toLocaleString()
-      : Math.floor(formattedValue / Math.pow(10, POINTS_DECIMALS)).toLocaleString();
+export function TokenDisplay({ className = '' }: TokenDisplayProps) {
+  const { formattedBalance, tokenLogo } = useTokenBalance();
 
   return (
     <div className={`flex items-center gap-1 ${className}`}>
       {tokenLogo}
-      <span>{displayValue}</span>
+      <span>{formattedBalance}</span>
     </div>
   );
 }

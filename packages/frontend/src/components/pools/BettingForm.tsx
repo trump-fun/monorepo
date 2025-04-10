@@ -191,12 +191,12 @@ export const BettingForm = ({
         </Button>
       </div>
 
-      {selectedOption !== null && betAmount && betAmount !== '0' && (
+      {/* {selectedOption !== null && betAmount && betAmount !== '0' && (
         <p className='mb-4 text-xs text-gray-400'>
           You are betting {betAmount} <span className='mx-1'>{tokenLogo}</span> {symbol} on &quot;
           {pool.options[selectedOption]}&quot;
         </p>
-      )}
+      )} */}
     </div>
   );
 };
