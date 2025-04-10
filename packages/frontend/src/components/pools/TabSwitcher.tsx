@@ -2,11 +2,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GetBetPlacedQuery, GetPoolQuery } from '@/types/__generated__/graphql';
+import { RefetchOptions } from '@tanstack/react-query';
 import { Tables } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
-import { RefetchOptions } from '@tanstack/react-query';
+import { Related } from '../Related';
 
 interface TabSwitcherProps {
   selectedTab: string;
@@ -51,6 +52,9 @@ export const TabSwitcher = ({
         </TabsTrigger>
         <TabsTrigger value='activity' className='flex-1'>
           Activity
+        </TabsTrigger>
+        <TabsTrigger value='related' className='flex-1'>
+          Related
         </TabsTrigger>
       </TabsList>
 
@@ -118,6 +122,10 @@ export const TabSwitcher = ({
             <p className='text-muted-foreground'>No betting activity yet.</p>
           </div>
         )}
+      </TabsContent>
+
+      <TabsContent value='related' className='pt-4'>
+        <Related question={pool.question} />
       </TabsContent>
     </Tabs>
   );

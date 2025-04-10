@@ -24,7 +24,7 @@ export function PrivyLoginButton({
 }: PrivyLoginButtonProps) {
   const { ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
-  const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
+  const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
   const { refetch: fetchBalance } = useTokenBalance();
   const { chainId } = useNetwork();
 
@@ -52,7 +52,7 @@ export function PrivyLoginButton({
   }, [ready, authenticated, embeddedWallet, fetchBalance, chainId]);
 
   const { login } = useLogin({
-    onError: error => {
+    onError: (error) => {
       console.error('Login error:', error);
     },
 
@@ -62,7 +62,7 @@ export function PrivyLoginButton({
         chainId,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       fetchBalance();
     },
@@ -78,7 +78,7 @@ export function PrivyLoginButton({
       variant={buttonVariant}
       disabled={disableLogin}
       onClick={() => login()}
-      className={`h-12 w-full text-lg font-semibold md:max-w-48 ${className}`}
+      className={className}
     >
       <LogIn className='mr-2 h-4 w-4' />
       Connect

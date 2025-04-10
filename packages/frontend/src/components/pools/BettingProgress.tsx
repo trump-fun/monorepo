@@ -1,5 +1,7 @@
 import { ProgressBar } from '@/components/ui/progress-bar';
+import { useTokenContext } from '@/hooks/useTokenContext';
 import { GetPoolQuery, GetPoolsQuery } from '@/types';
+import { getBetTotals } from '@/utils/betsInfo';
 
 interface BettingProgressProps {
   percentages: number[];
@@ -14,6 +16,7 @@ export const BettingProgress = ({
   totalVolume,
   compact = false,
 }: BettingProgressProps) => {
+  const { tokenType } = useTokenContext();
   const isZeroState = totalVolume === '$0' || totalVolume === '0 pts' || percentages[0] === 0;
 
   if (!pool) {
@@ -39,7 +42,7 @@ export const BettingProgress = ({
                   : 'text-red-600 dark:text-red-400'
               }
             >
-              {option} {percentages[index]}%
+              {option} {percentages[index]}% ({getBetTotals(pool, tokenType, index)})
             </span>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import CountdownTimer from '@/components/Timer';
+import { useTokenContext } from '@/hooks/useTokenContext';
 import { GetPoolQuery } from '@/types';
 import { calculateBettors } from '@/utils/calculateBettors';
 import { Clock, TrendingUp, Users } from 'lucide-react';
@@ -9,6 +10,7 @@ interface PoolStatsProps {
 }
 
 export const PoolStats = ({ pool, totalVolume }: PoolStatsProps) => {
+  const { tokenLogo } = useTokenContext();
   if (!pool) {
     return null;
   }
@@ -20,9 +22,12 @@ export const PoolStats = ({ pool, totalVolume }: PoolStatsProps) => {
           <TrendingUp className='text-green-500' size={20} />
         </div>
         <p className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
-          Total Vol
+          Total Volume
         </p>
-        <p className='mt-1 text-xl font-bold'>{totalVolume}</p>
+        <div className='flex items-center gap-2'>
+          {tokenLogo}
+          <p className='text-xl font-bold'>{totalVolume.toLocaleString()}</p>
+        </div>
       </div>
 
       {/* Time Left Card */}

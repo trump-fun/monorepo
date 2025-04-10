@@ -1,6 +1,6 @@
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import { Pool } from '@/types';
-import { fetchPool } from '@/utils/fetchPool';
+import { fetchPoolWithRequest } from '@/utils/fetchPoolWithRequest';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
@@ -30,7 +30,17 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }
 
-    const pool = await fetchPool(poolId);
+    const indexerApiKey = process.env.NEXT_PUBLIC_INDEXER_API_KEY;
+
+    if (!indexerApiKey) {
+      return NextResponse.json({ error: 'Missing API key configuration' }, { status: 500 });
+    }
+
+    const pool = await fetchPoolWithRequest(poolId, {
+      headers: {
+        Authorization: `Bearer ${indexerApiKey}`,
+      },
+    });
 
     if (!pool) {
       return NextResponse.json({ error: 'Pool not found' }, { status: 404 });
@@ -65,6 +75,7 @@ Please ensure:
 - Length stays under 200 characters per comment
 - Comments reference potential outcomes and reasoning
 - Include realistic crypto/prediction market terminology where appropriate
+- Comment should be at least somewhat related to the betting pool topic, which is: "${pool.question}"
 
 Return ONLY a JSON object with a 'comments' array formatted exactly like this:
 {"comments": ["First comment", "Second comment", ..., "Tenth comment"]}`;
@@ -73,6 +84,7 @@ Return ONLY a JSON object with a 'comments' array formatted exactly like this:
     model: 'gpt-4-turbo',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
+    temperature: 0.7,
   });
 
   const responseContent = completion.choices[0]?.message?.content;

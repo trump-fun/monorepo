@@ -8,12 +8,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { LogOut, Plus, Wallet } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { PrivyLoginButton } from './login-button';
 
-export function AuthButton() {
+interface AuthButtonProps {
+  className?: string;
+}
+
+export function AuthButton({ className }: AuthButtonProps) {
   const { authenticated, ready: authReady, createWallet, logout } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
   const { address } = useAccount();
@@ -21,8 +26,8 @@ export function AuthButton() {
   // Only check authReady initially
   if (!authReady) {
     return (
-      <div className='flex gap-2 w-full'>
-        <Button size='lg' disabled className='h-12 w-full max-w-48 bg-gray-400'>
+      <div className='flex w-full gap-2'>
+        <Button size='lg' disabled className={cn('h-12 w-full bg-gray-400', className)}>
           Loading Auth...
         </Button>
       </div>
@@ -32,10 +37,13 @@ export function AuthButton() {
   // If not authenticated, show login options
   if (!authenticated) {
     return (
-      <div className='flex gap-2'>
+      <div className='flex w-full gap-2'>
         <PrivyLoginButton
           variant='outlined'
-          className='bg-background/0 border-2 border-orange-500 text-orange-500 hover:bg-orange-50'
+          className={cn(
+            'h-12 w-full border-2 border-orange-500 text-lg font-semibold text-orange-500 hover:bg-orange-50',
+            className
+          )}
         />
       </div>
     );
@@ -48,7 +56,7 @@ export function AuthButton() {
         <Button
           size='lg'
           disabled
-          className='h-12 w-full max-w-48 bg-gray-400 text-lg font-semibold'
+          className={cn('h-12 w-full bg-gray-400 text-lg font-semibold', className)}
         >
           Loading Wallets...
         </Button>
@@ -63,7 +71,10 @@ export function AuthButton() {
         <Button
           size='lg'
           onClick={() => createWallet()}
-          className='h-12 w-full bg-orange-500 text-lg font-semibold hover:bg-orange-600 md:max-w-48'
+          className={cn(
+            'h-12 w-full bg-orange-500 text-lg font-semibold hover:bg-orange-600',
+            className
+          )}
         >
           <Plus className='mr-2 h-4 w-4' />
           Create Wallet with Passkey
@@ -74,12 +85,15 @@ export function AuthButton() {
 
   // If authenticated and has wallets, show wallet menu and explore button
   return (
-    <div className='flex gap-2'>
+    <div className='flex w-full gap-2'>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant='outline'
-            className='bg-background/0 h-12 w-full border-2 border-orange-500 text-lg font-semibold text-orange-500 hover:bg-orange-50 md:max-w-48'
+            className={cn(
+              'h-12 w-full border-2 border-orange-500 text-lg font-semibold text-orange-500 hover:bg-orange-50',
+              className
+            )}
           >
             <Wallet className='mr-2 h-4 w-4' />
             {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Wallet'}

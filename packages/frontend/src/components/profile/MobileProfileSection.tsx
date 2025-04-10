@@ -50,11 +50,11 @@ export function MobileProfileSection({
 
       {/* Mobile withdrawal panel */}
       <div className='w-full space-y-3'>
-        <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div>
+        {/* <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div> */}
 
         <p className='text-sm text-gray-500 dark:text-gray-400'>
           Withdrawable Balance: {tokenLogo}
-          {formattedWithdrawableBalance}
+          {formattedWithdrawableBalance.toFixed(0)}
         </p>
 
         <div className='mb-2'>

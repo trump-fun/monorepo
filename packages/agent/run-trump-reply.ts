@@ -75,7 +75,7 @@ export async function processTrumpReplies() {
 
           console.log(response);
 
-          // @ts-ignore
+          // @ts-expect-error: GraphQL response typing is not properly defined
           subgraphPoolData = response.pool;
         } catch (subgraphError) {
           console.error(`Error fetching subgraph data for pool ${comment.pool_id}:`, subgraphError);

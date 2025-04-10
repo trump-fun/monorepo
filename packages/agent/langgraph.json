@@ -4,6 +4,7 @@
   "dependencies": ["."],
   "graphs": {
     "pool-creation-agent": "./src/pool-generation-agent/betting-pool-graph.ts:bettingPoolGeneratorGraph",
+    "pool-creation-agent-part-2": "./src/pool-generation-agent/single-betting-pool-graph.ts:singleBettingPoolGraph",
     "bet-grading-agent": "./src/bet-grading-agent/betting-grader-graph.ts:bettingGraderGraph"
   },
   "env": ".env"

@@ -1,10 +1,10 @@
 'use client';
 
+import { Pool } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { type FC } from 'react';
 import { PoolCard } from './pools/pool-card';
-import { Pool } from '@/types';
 
 interface RelatedProps {
   question: string;
@@ -23,6 +23,7 @@ export const Related: FC<RelatedProps> = ({ question }) => {
     enabled: !!question,
   });
 
+  console.log('data', data);
   if (isLoading) {
     return (
       <div>
@@ -35,7 +36,7 @@ export const Related: FC<RelatedProps> = ({ question }) => {
     return <div>Error: {error.message}</div>;
   }
 
-  const pools = data.relatedPools.data.pools;
+  const pools = data.relatedPools.pools;
 
   if (pools) {
     return (

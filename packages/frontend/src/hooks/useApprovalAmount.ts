@@ -6,10 +6,11 @@ import { useNetwork } from './useNetwork';
 
 export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
   const { appAddress } = useNetwork();
-  const [approvedAmount, setApprovedAmount] = useState<string>('0');
+  const [approvedAmount, setApprovedAmount] = useState<bigint>(BigInt(0));
   const account = useAccount();
   const publicClient = usePublicClient();
 
+  console.log('Checking approval amount for', tokenAddress, hash);
   useEffect(() => {
     const fetchApprovedAmount = async () => {
       if (!account.address || !publicClient) return;
@@ -17,15 +18,15 @@ export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
       try {
         if (!tokenAddress) return;
 
-        const tokenAddressHex = tokenAddress as `0x${string}`;
         const allowance = await publicClient.readContract({
           abi: freedomAbi,
-          address: tokenAddressHex,
+          address: tokenAddress,
           functionName: 'allowance',
           args: [account.address as `0x${string}`, appAddress],
         });
 
-        setApprovedAmount(allowance.toString());
+        console.log('allowance', allowance);
+        setApprovedAmount(allowance);
       } catch (error) {
         console.error('Error fetching approved amount:', error);
       }
