@@ -83,8 +83,11 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
   // Process each non-failed pool concurrently
   const pendingPoolsPromises = Object.entries(state.pendingPools).map(
     async ([poolId, pendingPool]) => {
-      // Skip pools that have failed or don't have evidence
-      if (pendingPool.failed || pendingPool.evidence.length === 0) {
+      // Skip pools that have failed or don't have any evidence (both web and Twitter)
+      const hasWebEvidence = pendingPool.evidence && pendingPool.evidence.length > 0;
+      const hasXEvidence = pendingPool.xEvidence && pendingPool.xEvidence.length > 0;
+
+      if (pendingPool.failed || (!hasWebEvidence && !hasXEvidence)) {
         console.log(`Skipping pool ${poolId} - failed or no evidence`);
         return [
           poolId,
@@ -98,10 +101,21 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
       // Handle different options formats safely
       const poolOptions = pendingPool.pool.options;
 
+      // Prepare evidence sections
+      const webEvidenceSection = hasWebEvidence
+        ? `WEB SEARCH EVIDENCE:\n${JSON.stringify(pendingPool.evidence, null, 2)}`
+        : 'WEB SEARCH EVIDENCE: None available';
+
+      const xEvidenceSection = hasXEvidence
+        ? `TWITTER/X EVIDENCE:\n${JSON.stringify(pendingPool.xEvidence, null, 2)}`
+        : 'TWITTER/X EVIDENCE: None available';
+
       //TODO One of the few places where we have a limit to number of options hardcoded in a prompt
       const gradingUserMsg = new HumanMessage(
         `EVIDENCE PROVIDED:
-        ${JSON.stringify(pendingPool.evidence, null, 2)}
+        ${webEvidenceSection}
+        
+        ${xEvidenceSection}
 
         BETTING POOL DETAILS:
         Question: ${pendingPool.pool.question}
@@ -109,12 +123,6 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
         
         Option A corresponds to: ${poolOptions[0] || ''}
         Option B corresponds to: ${poolOptions[1] || ''}
-        
-        CLOSURE CRITERIA:
-        ${pendingPool.pool.closureCriteria}
-        
-        CLOSURE INSTRUCTIONS:
-        ${pendingPool.pool.closureInstructions}
         
         CLOSURE DATETIME: ${new Date(pendingPool.pool.betsCloseAt * 1000).toISOString()}
         CURRENT DATETIME: ${new Date().toISOString()}`

@@ -43,6 +43,7 @@ async function uploadImageToSupabase(buffer: Buffer, filepath: string): Promise<
   return publicUrlData.publicUrl;
 }
 
+// Enhanced interface definitions for API responses
 interface VeniceTextResponse {
   choices: Array<{
     message: {
@@ -54,6 +55,99 @@ interface VeniceTextResponse {
 interface VeniceImageResponse {
   result?: { image_url: string };
   images?: string[];
+  request?: {
+    format?: string;
+  };
+  status?: string;
+  error?: string;
+}
+
+interface GoogleGenerativeImageResponse {
+  media?: {
+    data?: string[];
+  };
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        data?: string;
+        inlineData?: {
+          data?: string;
+          mimeType?: string;
+        };
+      }>;
+    };
+  }>;
+}
+
+/**
+ * Parses and normalizes Venice AI image response
+ */
+function parseVeniceImageResponse(response: any): {
+  url?: string;
+  base64Data?: string;
+  error?: string;
+} {
+  console.log('Parsing Venice image response structure:', Object.keys(response));
+
+  // Check for errors
+  if (response.error) {
+    return { error: response.error };
+  }
+
+  // Check various response formats
+  if (response.result && response.result.image_url) {
+    return { url: response.result.image_url };
+  }
+
+  if (response.images && Array.isArray(response.images) && response.images.length > 0) {
+    const imageData = response.images[0];
+    // Check if the data is already a complete data URL
+    if (imageData.startsWith('data:')) {
+      return { base64Data: imageData };
+    }
+    // Otherwise assume it's just the base64 part
+    return { base64Data: imageData };
+  }
+
+  return { error: 'Unable to parse image response' };
+}
+
+/**
+ * Parses and normalizes Google Generative AI image response
+ */
+function parseGoogleImageResponse(response: any): {
+  url?: string;
+  base64Data?: string;
+  error?: string;
+} {
+  console.log('Parsing Google Generative AI image response structure:', Object.keys(response));
+
+  // Handle candidates format
+  if (response.candidates && Array.isArray(response.candidates) && response.candidates.length > 0) {
+    const candidate = response.candidates[0];
+    if (candidate.content && candidate.content.parts) {
+      for (const part of candidate.content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          return { base64Data: part.inlineData.data };
+        }
+        if (part.data) {
+          return { base64Data: part.data };
+        }
+      }
+    }
+  }
+
+  // Handle media format
+  if (
+    response.media &&
+    response.media.data &&
+    Array.isArray(response.media.data) &&
+    response.media.data.length > 0
+  ) {
+    return { base64Data: response.media.data[0] };
+  }
+
+  return { error: 'Unable to parse Google Generative AI image response' };
 }
 
 /**
