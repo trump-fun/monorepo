@@ -262,7 +262,7 @@ async function identifyPredictionInPost(post: any): Promise<PredictionResult | n
     ],
     [
       'human',
-      `Post: "${postText}"
+      `Post: "{post_text}"
       
       Does this post contain a prediction? If so, analyze it.`,
     ],
@@ -288,7 +288,7 @@ async function identifyPredictionInPost(post: any): Promise<PredictionResult | n
     );
 
     // Format the messages and call the LLM
-    const formattedPrompt = await predictionPrompt.formatMessages({});
+    const formattedPrompt = await predictionPrompt.formatMessages({ post_text: postText });
     const result = await structuredLlm.invoke(formattedPrompt);
 
     // If not a prediction, return null
@@ -385,7 +385,10 @@ async function analyzePredictionStyle(
       }),
     });
     // Format the messages and call the LLM
-    const formattedPrompt = await analysisPrompt.formatMessages({});
+    const formattedPrompt = await analysisPrompt.formatMessages({
+      userBio,
+      predictionTexts,
+    });
     const result = await structuredLlm.invoke(formattedPrompt);
 
     // Calculate verified accuracy if available
