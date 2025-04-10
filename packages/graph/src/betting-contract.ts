@@ -20,7 +20,6 @@ import {
   Withdrawal,
 } from '../generated/schema';
 
-// @ts-expect-error-next-line
 const networkNameToChainId = (networkName: string): i32 => {
   if (networkName == 'base-sepolia') return 84532;
   if (networkName == 'base') return 8453;
