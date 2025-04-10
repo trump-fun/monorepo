@@ -26,7 +26,7 @@ export function ProfileSidebar({
   tokenType: TokenType;
   betWithdrawals?: any[]; // Replace with actual type
 }) {
-  const { formattedBalance, tokenLogo, symbol } = useTokenBalance();
+  const { tokenLogo, symbol } = useTokenBalance();
 
   const {
     formattedWithdrawableBalance,
@@ -45,7 +45,7 @@ export function ProfileSidebar({
             {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not Connected'}
           </div>
         </div>
-        <TokenDisplay tokenType={tokenType} tokenLogo={tokenLogo} value={formattedBalance} />
+        <TokenDisplay />
 
         {/* Betting Statistics */}
         <BettingStats userStats={userStats} tokenLogo={tokenLogo} tokenType={tokenType} />

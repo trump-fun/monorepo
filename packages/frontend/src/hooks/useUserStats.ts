@@ -3,12 +3,19 @@
 import { Bet, PayoutClaimed } from '@/types/__generated__/graphql';
 import { calculateVolume } from '@/utils/betsCalculations';
 import { useMemo } from 'react';
+import { useUserBetsData } from './useUserBetsData';
 
 export function useUserStats(bets?: Bet[], payoutClaimeds?: PayoutClaimed[]) {
+  const { betsData } = useUserBetsData('won');
+
   return useMemo(() => {
     const allBets = bets || [];
     const totalBets = allBets.length;
-    const wonBets = payoutClaimeds?.length || 0;
+
+    const wonBets =
+      betsData.payoutClaimeds.length +
+      betsData.bets.filter((bet) => bet.pool.status === 'GRADED' && bet.isWithdrawn).length;
+
     const lostBets = allBets.filter(
       (bet) => bet.pool.status === 'GRADED' && !bet.isWithdrawn
     ).length;
@@ -30,5 +37,5 @@ export function useUserStats(bets?: Bet[], payoutClaimeds?: PayoutClaimed[]) {
       winRate: winRate.toFixed(1),
       avgBetSize: avgBetSize.toFixed(0),
     };
-  }, [bets, payoutClaimeds]);
+  }, [bets, betsData.bets, betsData.payoutClaimeds.length]);
 }

@@ -10,7 +10,6 @@ export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
   const account = useAccount();
   const publicClient = usePublicClient();
 
-  console.log('Checking approval amount for', tokenAddress, hash);
   useEffect(() => {
     const fetchApprovedAmount = async () => {
       if (!account.address || !publicClient) return;
@@ -25,7 +24,6 @@ export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
           args: [account.address as `0x${string}`, appAddress],
         });
 
-        console.log('allowance', allowance);
         setApprovedAmount(allowance);
       } catch (error) {
         console.error('Error fetching approved amount:', error);

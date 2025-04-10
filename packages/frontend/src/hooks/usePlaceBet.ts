@@ -32,7 +32,6 @@ export function usePlaceBet({
   accountAddress,
   tokenAddress,
   tokenType,
-  isConfirmed,
   resetBettingForm,
   symbol,
 }: UsePlaceBetProps) {
@@ -54,7 +53,6 @@ export function usePlaceBet({
     }
 
     try {
-      console.log('Running approve');
       const tokenAmount = BigInt(betAmount) * BigInt(10 ** USDC_DECIMALS);
       const needsApproval = !approvedAmount || approvedAmount < tokenAmount;
       if (needsApproval) {
@@ -77,13 +75,6 @@ export function usePlaceBet({
         return showSuccessToast(`Approving ${betAmount} ${symbol}...`);
       }
 
-      console.log('Running placeBet', [
-        BigInt(poolId),
-        BigInt(selectedOption),
-        tokenAmount,
-        accountAddress as `0x${string}`,
-        tokenTypeC,
-      ]);
       const { request } = await publicClient.simulateContract({
         abi: bettingContractAbi,
         address: appAddress,

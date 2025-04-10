@@ -23,7 +23,6 @@ export const Related: FC<RelatedProps> = ({ question }) => {
     enabled: !!question,
   });
 
-  console.log('data', data);
   if (isLoading) {
     return (
       <div>

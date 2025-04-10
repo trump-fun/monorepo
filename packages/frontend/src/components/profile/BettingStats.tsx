@@ -1,5 +1,6 @@
+import { TokenType } from '@/types/__generated__/graphql';
 import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
-import { TokenType } from '@/types';
+
 export function BettingStats({
   userStats,
   tokenLogo,
@@ -55,7 +56,7 @@ function StatItem({
   );
 }
 
-function formatAmount(amount: string | number, tokenType: TokenType) {
+export function formatAmount(amount: string | number, tokenType: TokenType) {
   return tokenType === TokenType.Usdc
     ? `${(Number(amount) / Math.pow(10, USDC_DECIMALS)).toLocaleString()}`
     : `${Math.floor(Number(amount) / Math.pow(10, POINTS_DECIMALS)).toLocaleString()}`;

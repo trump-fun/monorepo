@@ -115,7 +115,9 @@ export function UserBettingPost({
               </Badge>
             )}
             <span className='text-muted-foreground text-xs'>
-              {formatDistanceToNow(new Date(time * 1000), { addSuffix: true })}
+              {time
+                ? formatDistanceToNow(new Date(time * 1000), { addSuffix: true })
+                : 'Unknown time'}
             </span>
             {truthSocialId && <TruthSocial postId={truthSocialId} />}
           </div>
