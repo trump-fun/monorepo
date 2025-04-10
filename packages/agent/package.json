@@ -11,12 +11,17 @@
     "test:node": "source .env && bun run test-trump-agent.ts",
     "dev": "bun --watch index.ts",
     "generate-noise": "bun run generate-noise.ts",
-    "generate-pool": "bun run generate-pool.ts",
-    "reply-to-trump": "bun run reply-to-trump.ts",
+    "generate-pool": "bun run run-single-pool-creation.ts",
+    "reply-to-trump": "bun run run-trump-reply.ts",
     "build": "bun build index.ts --target=bun --outdir=dist",
     "bet-grading": "bun run-bet-grading-agent.ts",
     "pool-creation": "bun run-pool-creation-agent.ts",
-    "deploy": "sh deploy.sh"
+    "source-tracing": "bun run run-source-tracing.ts",
+    "deploy": "sh deploy.sh",
+    "prediction-tools": "bun run run-prediction-market-tools.ts",
+    "find-predictions": "bun run run-prediction-market-tools.ts find-predictions",
+    "build-profile": "bun run run-prediction-market-tools.ts build-profile",
+    "verify-prediction": "bun run run-prediction-market-tools.ts verify-prediction"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -58,6 +63,7 @@
     "undici": "^7.6.0",
     "uuid": "^11.1.0",
     "viem": "^2.24.1",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "commander": "^11.0.0"
   }
 }
