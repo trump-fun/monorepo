@@ -63,15 +63,18 @@ const builder = new StateGraph(GraderStateAnnotation);
 // Add nodes to the graph
 builder
   .addNode('fetch_pending_pools', fetchPendingPools)
-  .addNode('generate_x_queries', generateXQueries)
-  .addNode('generate_evidence_queries', generateEvidenceQueries)
-  .addNode('gather_x_evidence', gatherXEvidence)
-  .addNode('gather_evidence', gatherEvidence)
-  .addNode('grade_betting_pool_idea', gradeBettingPoolIdea)
+  .addNode('generate_x_queries', generateXQueries, { ends: ['gather_x_evidence'] })
+  .addNode('generate_evidence_queries', generateEvidenceQueries, { ends: ['gather_evidence'] })
+  .addNode('gather_x_evidence', gatherXEvidence, { ends: ['gather_evidence'] })
+  .addNode('gather_evidence', gatherEvidence, { ends: ['grade_betting_pool_idea'] })
+  .addNode('grade_betting_pool_idea', gradeBettingPoolIdea, { ends: ['call_grade_pool_contract'] })
   .addNode('call_grade_pool_contract', callGradePoolContract)
   .addEdge(START, 'fetch_pending_pools')
+  .addEdge('fetch_pending_pools', 'generate_x_queries')
+  .addEdge('generate_x_queries', 'gather_x_evidence')
   .addEdge('fetch_pending_pools', 'generate_evidence_queries')
   .addEdge('generate_evidence_queries', 'gather_evidence')
+  .addEdge('gather_x_evidence', 'gather_evidence')
   .addEdge('gather_evidence', 'grade_betting_pool_idea')
   .addEdge('grade_betting_pool_idea', 'call_grade_pool_contract')
   .addEdge('call_grade_pool_contract', END);

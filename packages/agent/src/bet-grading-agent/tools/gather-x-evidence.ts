@@ -7,6 +7,7 @@ import type { Evidence } from './gather-evidence';
 
 /**
  * Gathers evidence from Twitter/X search queries for all non-failed pools
+ * Uses a combination of basic and AI-powered search for more comprehensive results
  */
 export async function gatherXEvidence(state: GraderState): Promise<Partial<GraderState>> {
   console.log('Gathering evidence from Twitter/X queries for all pools');
@@ -21,6 +22,12 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
     url: z.string(),
     summary: z.string(),
     search_query: z.string(),
+    isCredible: z.boolean(),
+    credibilityReasoning: z.string(),
+    canGradeBet: z.boolean(),
+    gradingRelevance: z.string(),
+    aiGeneratedLikelihood: z.number().min(0).max(1),
+    supportingLinks: z.array(z.string()),
   });
 
   const updatedPendingPools: Record<string, PendingPool> = {};
@@ -59,7 +66,13 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
         - Only include tweets that provide substantive information about the outcome
         - Summarize the key points from the tweet in 2-3 sentences
         - Consider the credibility of the tweet author (verified status, follower count, expertise)
-        - Note any links to external sources or data that supports the tweet's claims`,
+        - Note any links to external sources or data that supports the tweet's claims
+        - Explicitly evaluate the credibility of the source (true/false)
+        - Provide reasoning for your credibility assessment in one sentence
+        - Evaluate whether this tweet contains information that can help determine the bet outcome (true/false)
+        - Explain in one sentence why this tweet is or isn't relevant for grading this bet
+        - Estimate the likelihood this content was AI-generated (0 to 1 scale)
+        - Extract any links or references from the tweet that support its claims`,
       ],
       [
         'human',
@@ -71,101 +84,193 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
         
         AUTHOR: {author}
         
-        ENGAGEMENT: {engagement}`,
+        ENGAGEMENT: {engagement}
+        
+        In your JSON response, include:
+        - A summary of the tweet
+        - Whether this is a credible source (isCredible: true/false)
+        - One sentence explaining your credibility assessment (credibilityReasoning)
+        - Whether this tweet can help grade the bet (canGradeBet: true/false)
+        - One sentence explaining its relevance to grading (gradingRelevance)
+        - The likelihood this was AI-generated from 0 to 1 (aiGeneratedLikelihood)
+        - An array of any supporting links mentioned (supportingLinks)`,
       ],
     ]);
 
-    // Process Twitter search queries for this pool
+    // Process Twitter search queries for this pool using both standard and AI-powered search
     for (const query of pendingPool.xSearchQueries) {
       try {
         console.log(`Searching Twitter/X for pool ${poolId} with query: ${query}`);
+        let searchResults: any[] = [];
 
-        // Initiate the Twitter/X search
-        const searchResponse = await axios.post(
-          'https://api.datura.ai/v1/x/searches',
-          {
-            query: query,
-            count: 5, // Get 5 tweets per query
-          },
-          {
+        // Try basic search first (faster and less expensive)
+        try {
+          const basicSearchResponse = await axios.get('https://apis.datura.ai/twitter', {
+            params: {
+              query: query,
+              count: 5, // Get 5 tweets per query
+              sort: 'Top', // Get most relevant tweets first
+              min_retweets: 5, // Set minimum engagement for better quality results
+            },
             headers: {
               Authorization: `Bearer ${config.daturaApiKey}`,
               'Content-Type': 'application/json',
             },
-          }
-        );
+          });
 
-        // Get the search ID from the response
-        const searchId = searchResponse.data.search_id;
-        console.log(`Initiated Twitter/X search with ID: ${searchId}`);
+          // Check if the basic search returned results
+          if (Array.isArray(basicSearchResponse.data) && basicSearchResponse.data.length > 0) {
+            searchResults = basicSearchResponse.data;
+            console.log(`Basic search returned ${searchResults.length} tweets for query: ${query}`);
+          } else if (basicSearchResponse.data && basicSearchResponse.data.search_id) {
+            // If response contains a search_id, it's using the async API pattern
+            const searchId = basicSearchResponse.data.search_id;
+            console.log(`Initiated Twitter/X search with ID: ${searchId}`);
 
-        // Poll for results (in a real implementation, you might want to add a timeout/retry logic)
-        let searchResults;
-        let attempts = 0;
-        const maxAttempts = 10;
+            // Wait a reasonable time for the search to complete
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
-        while (attempts < maxAttempts) {
-          attempts++;
-
-          // Wait before checking results
-          await new Promise(resolve => setTimeout(resolve, 2000));
-
-          // Get search results
-          const resultsResponse = await axios.get(
-            `https://api.datura.ai/v1/x/searches/${searchId}`,
-            {
+            // Get search results
+            const resultsResponse = await axios.get(`https://apis.datura.ai/twitter/${searchId}`, {
               headers: {
                 Authorization: `Bearer ${config.daturaApiKey}`,
               },
+            });
+
+            if (resultsResponse.data.status === 'completed' && resultsResponse.data.tweets) {
+              searchResults = resultsResponse.data.tweets;
+              console.log(`Retrieved ${searchResults.length} tweets from search ID: ${searchId}`);
             }
-          );
-
-          // Check if search is complete
-          if (resultsResponse.data.status === 'completed') {
-            searchResults = resultsResponse.data.tweets;
-            console.log(`Found ${searchResults.length} tweets for query: ${query}`);
-            break;
           }
-
-          console.log(`Search status: ${resultsResponse.data.status}, waiting...`);
+        } catch (error: any) {
+          console.warn(
+            `Basic search failed for query '${query}', falling back to AI search: ${error.message}`
+          );
         }
 
-        if (!searchResults) {
-          console.error(`Failed to get Twitter/X search results after ${maxAttempts} attempts`);
+        // If basic search returned no results, try AI-powered search
+        if (searchResults.length === 0) {
+          try {
+            const aiSearchResponse = await axios.post(
+              'https://apis.datura.ai/desearch/ai/search/links/twitter',
+              {
+                prompt: `${query} - relevant to: ${pendingPool.pool.question}`,
+                model: 'NOVA', // Using NOVA model as specified in the docs
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${config.daturaApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+
+            if (
+              aiSearchResponse.data &&
+              aiSearchResponse.data.miner_tweets &&
+              Array.isArray(aiSearchResponse.data.miner_tweets) &&
+              aiSearchResponse.data.miner_tweets.length > 0
+            ) {
+              searchResults = aiSearchResponse.data.miner_tweets;
+              console.log(`AI search returned ${searchResults.length} tweets for query: ${query}`);
+            }
+          } catch (error: any) {
+            console.error(`AI search failed for query '${query}': ${error.message}`);
+          }
+        }
+
+        // Early termination if no results found from either search method
+        if (searchResults.length === 0) {
+          console.log(`No tweets found for query: ${query}. Moving to next query.`);
           continue;
         }
 
         // Process each tweet
         for (const tweet of searchResults) {
-          // Create structured LLM
-          const structuredLlm = config.cheap_large_llm.withStructuredOutput(xEvidenceSchema, {
-            name: 'gatherXEvidence',
-          });
+          try {
+            // Create structured LLM
+            const structuredLlm = config.cheap_large_llm.withStructuredOutput(xEvidenceSchema, {
+              name: 'gatherXEvidence',
+            });
 
-          // Format the prompt with the tweet information
-          const formattedPrompt = await xEvidencePrompt.formatMessages({
-            question: pendingPool.pool.question,
-            options: pendingPool.pool.options,
-            query: query,
-            url: `https://x.com/${tweet.username}/status/${tweet.tweet_id}`,
-            content: tweet.text,
-            author: `@${tweet.username} ${tweet.verified ? '(Verified)' : ''} - Followers: ${tweet.followers_count}`,
-            engagement: `Likes: ${tweet.favorite_count}, Retweets: ${tweet.retweet_count}, Replies: ${tweet.reply_count}`,
-          });
+            // Extract tweet data (handling different API response formats)
+            const username = tweet.username || (tweet.user ? tweet.user.username : 'unknown');
+            const tweetId = tweet.tweet_id || tweet.id;
+            const tweetText = tweet.text;
+            const verified =
+              tweet.verified ||
+              (tweet.user ? tweet.user.verified || tweet.user.is_blue_verified : false);
+            const followersCount =
+              tweet.followers_count || (tweet.user ? tweet.user.followers_count : 0);
+            const favoriteCount =
+              tweet.favorite_count ||
+              tweet.like_count ||
+              (tweet.metrics ? tweet.metrics.like_count : 0);
+            const retweetCount =
+              tweet.retweet_count || (tweet.metrics ? tweet.metrics.retweet_count : 0);
+            const replyCount = tweet.reply_count || (tweet.metrics ? tweet.metrics.reply_count : 0);
 
-          // Call the LLM with the formatted prompt
-          const result = await structuredLlm.invoke(formattedPrompt);
-          console.log(
-            `Tweet summary for @${tweet.username}: ${result.summary.substring(0, 100)}...`
-          );
+            // Format the prompt with the tweet information
+            const formattedPrompt = await xEvidencePrompt.formatMessages({
+              question: pendingPool.pool.question,
+              options: pendingPool.pool.options,
+              query: query,
+              url: `https://x.com/${username}/status/${tweetId}`,
+              content: tweetText,
+              author: `@${username} ${verified ? '(Verified)' : ''} - Followers: ${followersCount || 'unknown'}`,
+              engagement: `Likes: ${favoriteCount || 'unknown'}, Retweets: ${retweetCount || 'unknown'}, Replies: ${replyCount || 'unknown'}`,
+            });
 
-          // Add the search query
-          result.search_query = query;
+            // Call the LLM with the formatted prompt
+            const result = await structuredLlm.invoke(formattedPrompt);
+            console.log(
+              `Tweet summary for @${username}: ${result.summary.substring(0, 100)}... (Credible: ${result.isCredible}, Can Grade: ${result.canGradeBet})`
+            );
 
-          xEvidenceList.push(result);
+            // Add the search query
+            result.search_query = query;
+
+            // Only add evidence if it comes from a credible source AND can help grade the bet
+            if (result.isCredible && result.canGradeBet) {
+              // Check for duplicates before adding
+              const isDuplicate = xEvidenceList.some(evidence => evidence.url === result.url);
+
+              if (!isDuplicate) {
+                xEvidenceList.push(result);
+              } else {
+                console.log(`Skipping duplicate evidence from URL: ${result.url}`);
+              }
+            } else if (!result.isCredible) {
+              console.log(
+                `Skipping non-credible evidence from @${username}: ${result.credibilityReasoning}`
+              );
+            } else {
+              console.log(
+                `Skipping irrelevant tweet from @${username}: ${result.gradingRelevance}`
+              );
+            }
+          } catch (error: any) {
+            console.error(`Error processing tweet: ${error.message}`);
+            continue;
+          }
         }
-      } catch (error) {
-        console.error(`Error processing Twitter/X query '${query}' for pool ${poolId}:`, error);
+      } catch (error: any) {
+        // Distinguish between bad requests and other errors for the search initiation
+        if (error.response && error.response.status === 400) {
+          console.error(
+            `Bad request error for query '${query}'. Query may be invalid:`,
+            error.response.data
+          );
+          // Don't retry bad queries
+        } else if (error.response && error.response.status === 429) {
+          // Handle rate limiting
+          const retryAfter = error.response.headers['retry-after'] || 60;
+          console.warn(`Rate limited on Twitter/X search. Retry after ${retryAfter} seconds.`);
+          // Wait and retry could be implemented here
+        } else {
+          console.error(`Error processing Twitter/X query '${query}' for pool ${poolId}:`, error);
+          // For other errors, we might retry in a future grading cycle
+        }
         continue;
       }
     }

@@ -1,66 +1,131 @@
-import { TavilySearchResults } from '@langchain/community/tools/tavily_search';
-import config from '../../config';
+import { tavily } from '@tavily/core';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
+import config from '../../config';
+
+// Initialize tavily client
+const tavilyClient = tavily({
+  apiKey: config.tavilyApiKey,
+});
 
 /**
- * Uses Tavily to perform a web search based on the search query in the research item
- * This helps gather additional context for betting pool creation
+ * Performs a search using Tavily API to gather relevant information
+ * Enhanced with error handling and search optimization
  */
-export async function tavilySearchFunction(
+export async function tavilySearchFunctionSingle(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  // Get the research item from state
+  console.log('tavilySearchFunctionSingle', state.research?.tavily_search_query);
+
   const researchItem = state.research;
-
-  // If there's no research item, return early
   if (!researchItem) {
-    console.log('No research item available');
+    console.log('No research item to search for');
+    return {
+      research: undefined,
+    };
+  }
+
+  // Check if item should be processed
+  if (researchItem.should_process === false) {
+    console.log('Item marked as should not process, skipping Tavily search');
     return {
       research: researchItem,
     };
   }
 
-  // Use the tavily_search_query if available, otherwise fall back to the post content
-  const searchQuery = researchItem.tavily_search_query || researchItem.truth_social_post?.content;
-
-  // If there's no search query, return early
-  if (!searchQuery) {
-    console.log('No search query available in the research item');
+  if (!researchItem.tavily_search_query) {
+    console.log('No search query available for Tavily search');
     return {
-      research: researchItem,
+      research: {
+        ...researchItem,
+        should_process: false,
+        skip_reason: 'no_tavily_search_query',
+      },
     };
   }
-
-  console.log(`Performing Tavily search for: "${searchQuery}"`);
-
-  const tavilySearchTool = new TavilySearchResults({
-    apiKey: config.tavilyApiKey,
-    maxResults: 5,
-    // searchDepth: "deep",
-    includeAnswer: true,
-    includeRawContent: true,
-  });
 
   try {
-    const results = await tavilySearchTool.invoke({
-      input: searchQuery,
+    // Enhanced search parameters for better results
+    const searchParams = {
+      query: researchItem.tavily_search_query,
+      search_depth: 'advanced',
+      max_results: 5,
+      include_domains: [
+        'cnn.com',
+        'foxnews.com',
+        'bbc.com',
+        'nytimes.com',
+        'wsj.com',
+        'reuters.com',
+        'apnews.com',
+        'bloomberg.com',
+        'cnbc.com',
+        'politico.com',
+      ],
+      include_answer: false,
+      include_raw_content: false,
+    };
+
+    console.log('Searching Tavily with query:', researchItem.tavily_search_query);
+    const response = await tavilyClient.search(researchItem.tavily_search_query, searchParams);
+    console.log('Tavily search response:', response);
+
+    const searchResults = response.results;
+
+    // Extract readable search results
+    const formattedResults = searchResults.map(result => {
+      return `${result.title}\nURL: ${result.url}\nSnippet: ${result.content.substring(0, 200)}...`;
     });
 
-    console.log('Tavily search results:', results);
-
-    // Update the research item with the search results
-    const updatedResearchItem = {
-      ...researchItem,
-      related_search_results: results,
-    };
+    console.log(`Found ${formattedResults.length} search results from Tavily`);
 
     return {
-      research: updatedResearchItem,
+      research: {
+        ...researchItem,
+        related_tavily_search_results: formattedResults,
+      },
     };
   } catch (error) {
-    console.error('Error performing Tavily search:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Error calling Tavily API: ${errorMessage}`);
+
+    // Retry with a more generalized query if error seems to be query-related
+    if (errorMessage.includes('query') || errorMessage.includes('invalid')) {
+      try {
+        const generalizedQuery = researchItem.tavily_search_query
+          .replace(/"/g, '') // Remove quotes that might cause issues
+          .split(' ')
+          .slice(0, 5) // Take just the first 5 words
+          .join(' ');
+
+        console.log(`Retrying Tavily search with generalized query: ${generalizedQuery}`);
+        const retryResponse = await tavilyClient.search(generalizedQuery, {
+          max_results: 3,
+        });
+
+        const retryResults = retryResponse.results.map(result => {
+          return `${result.title}\nURL: ${result.url}\nSnippet: ${result.content.substring(0, 200)}...`;
+        });
+
+        if (retryResults.length > 0) {
+          console.log(`Retry successful, found ${retryResults.length} results`);
+          return {
+            research: {
+              ...researchItem,
+              related_tavily_search_results: retryResults,
+            },
+          };
+        }
+      } catch (retryError) {
+        console.error('Retry also failed:', retryError);
+      }
+    }
+
+    // Search failed, but we can continue with the process
     return {
-      research: researchItem, // Tavily search is non-fatal.
+      research: {
+        ...researchItem,
+        tavily_search_failed: true,
+      },
     };
   }
 }

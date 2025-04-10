@@ -124,12 +124,6 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
         Option A corresponds to: ${poolOptions[0] || ''}
         Option B corresponds to: ${poolOptions[1] || ''}
         
-        CLOSURE CRITERIA:
-        ${pendingPool.pool.closureCriteria}
-        
-        CLOSURE INSTRUCTIONS:
-        ${pendingPool.pool.closureInstructions}
-        
         CLOSURE DATETIME: ${new Date(pendingPool.pool.betsCloseAt * 1000).toISOString()}
         CURRENT DATETIME: ${new Date().toISOString()}`
       );
