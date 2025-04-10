@@ -120,20 +120,22 @@ export async function extractAndScrapeExternalLink(
     if (config.firecrawlApiKey) {
       try {
         console.log('Attempting to fetch URL with Firecrawl');
-        const response = await axios.post(
-          'https://api.firecrawl.dev/v1/crawl',
-          { url: externalLink },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${config.firecrawlApiKey}`,
-            },
-          }
-        );
+        const response = await axios.get('https://api.firecrawl.dev/v1/crawl', {
+          params: { url: externalLink },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.firecrawlApiKey}`,
+          },
+          timeout: 30000, // 30 second timeout
+        });
 
         if (response.data.content) {
           content = response.data.content;
           console.log('Successfully fetched content with Firecrawl');
+        } else if (response.data.text) {
+          content = response.data.text;
+        } else if (response.data.html) {
+          content = response.data.html;
         } else {
           throw new Error('No content returned from Firecrawl');
         }

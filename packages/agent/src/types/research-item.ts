@@ -56,6 +56,7 @@ export interface SourceReference {
   content_summary: string;
   is_primary_source: boolean;
   verification_status: 'verified' | 'partially_verified' | 'unverified';
+  key_claims: string[];
 }
 
 export interface SingleResearchItem {

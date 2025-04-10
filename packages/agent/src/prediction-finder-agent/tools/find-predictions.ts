@@ -18,11 +18,21 @@ const _predictionSchema = z.object({
     .max(1)
     .describe('How relevant the prediction is to the given topic (0-1)'),
   timeframe: z
-    .string()
-    .describe('Predicted timeframe for the event (immediate, days, weeks, months, years)'),
+    .enum(['immediate', 'days', 'weeks', 'months', 'years', 'decades', 'uncertain'])
+    .describe('Predicted timeframe for the event'),
   has_condition: z
     .boolean()
     .describe('Whether the prediction has conditional elements (if X then Y)'),
+  prediction_sentiment: z
+    .enum(['positive', 'negative', 'neutral'])
+    .optional()
+    .describe('The sentiment expressed in the prediction'),
+  probability_stated: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe('Explicit probability mentioned in prediction (0-1)'),
 });
 
 export type PredictionResult = z.infer<typeof _predictionSchema> & {
@@ -110,65 +120,151 @@ async function generatePredictionSearchQueries(topic: string): Promise<string[]>
 }
 
 /**
+ * Interface for Twitter Scraper Media from Datura API
+ */
+interface TwitterScraperMedia {
+  media_url: string;
+  type: string;
+}
+
+/**
+ * Interface for Twitter Scraper User from Datura API
+ */
+interface TwitterScraperUser {
+  id?: string | null;
+  url?: string | null;
+  name?: string | null;
+  username?: string | null;
+  created_at?: string | null;
+  description?: string | null;
+  favourites_count?: number | null;
+  followers_count?: number | null;
+  listed_count?: number | null;
+  media_count?: number | null;
+  profile_image_url?: string | null;
+  statuses_count?: number | null;
+  verified?: boolean | null;
+  is_blue_verified?: boolean | null;
+  entities?: Record<string, any> | null;
+  can_dm?: boolean | null;
+  can_media_tag?: boolean | null;
+  location?: string | null;
+}
+
+/**
+ * Interface for Twitter Scraper Tweet from Datura API
+ */
+interface TwitterScraperTweet {
+  user?: TwitterScraperUser | null;
+  id?: string | null;
+  text?: string | null;
+  reply_count?: number | null;
+  retweet_count?: number | null;
+  like_count?: number | null;
+  view_count?: number | null;
+  quote_count?: number | null;
+  impression_count?: number | null;
+  bookmark_count?: number | null;
+  url?: string | null;
+  created_at?: string | null;
+  media?: TwitterScraperMedia[] | null;
+  is_quote_tweet?: boolean | null;
+  is_retweet?: boolean | null;
+}
+
+/**
  * Searches for posts using the generated queries
  */
-async function searchForPredictionPosts(queries: string[], limit: number): Promise<any[]> {
-  const allResults: any[] = [];
+async function searchForPredictionPosts(
+  queries: string[],
+  limit: number
+): Promise<TwitterScraperTweet[]> {
+  const allResults: TwitterScraperTweet[] = [];
   const postsPerQuery = Math.ceil(limit / queries.length);
 
   for (const query of queries) {
     try {
       console.log(`Searching X/Twitter with query: ${query}`);
 
-      // Search using Datura Twitter API
+      // Modified API call to match the OpenAPI spec exactly
       const searchResponse = await axios.get('https://apis.datura.ai/twitter', {
         params: {
           query: query,
-          count: postsPerQuery, // Adjust based on limit
-          sort: 'Popular', // Get most popular results first
+          count: Math.min(postsPerQuery, 100), // API maximum is 100
+          sort: 'Top', // Must be 'Top' or 'Latest' according to API spec
+          lang: 'en', // Language code for English
         },
         headers: {
           Authorization: `Bearer ${config.daturaApiKey}`,
           'Content-Type': 'application/json',
         },
+        validateStatus: status => status < 500, // Handle HTTP errors gracefully
       });
 
-      if (Array.isArray(searchResponse.data) && searchResponse.data.length > 0) {
-        console.log(`Found ${searchResponse.data.length} results for query "${query}"`);
-        allResults.push(...searchResponse.data);
-      } else if (searchResponse.data && searchResponse.data.search_id) {
-        // If response contains a search_id, it's using the async API pattern
-        const searchId = searchResponse.data.search_id;
-        console.log(`Initiated Twitter/X search with ID: ${searchId}`);
-
-        // Wait for search to complete
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
-        // Get search results
-        const resultsResponse = await axios.get(`https://apis.datura.ai/twitter/${searchId}`, {
-          headers: { Authorization: `Bearer ${config.daturaApiKey}` },
-        });
-
-        if (resultsResponse.data.status === 'completed' && resultsResponse.data.tweets) {
-          console.log(
-            `Retrieved ${resultsResponse.data.tweets.length} tweets from search ID: ${searchId}`
-          );
-          allResults.push(...resultsResponse.data.tweets);
+      if (searchResponse.status === 200) {
+        // Success - process the returned tweets
+        if (Array.isArray(searchResponse.data) && searchResponse.data.length > 0) {
+          console.log(`Found ${searchResponse.data.length} results for query "${query}"`);
+          allResults.push(...searchResponse.data);
         }
+      } else if (searchResponse.status === 422) {
+        // Validation error - simplify the query and try again
+        console.error(`Validation error for query "${query}":`, searchResponse.data.detail);
+
+        // Create a simplified version of the query without special operators
+        const simplifiedQuery = query
+          .split(' ')
+          .filter(term => !term.includes(':') && !term.includes('"'))
+          .slice(0, 3)
+          .join(' ');
+
+        console.log(`Trying simplified query: ${simplifiedQuery}`);
+
+        // Try the simplified query
+        try {
+          const retryResponse = await axios.get('https://apis.datura.ai/twitter', {
+            params: {
+              query: simplifiedQuery,
+              count: Math.min(postsPerQuery, 100),
+              sort: 'Top',
+            },
+            headers: {
+              Authorization: `Bearer ${config.daturaApiKey}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (Array.isArray(retryResponse.data) && retryResponse.data.length > 0) {
+            console.log(`Found ${retryResponse.data.length} results for simplified query`);
+            allResults.push(...retryResponse.data);
+          }
+        } catch (retryError) {
+          console.error(`Error with simplified query:`, retryError);
+        }
+      } else if (searchResponse.status === 429) {
+        // Rate limiting - wait before trying next query
+        const retryAfter = searchResponse.data.detail?.retry_after || 60;
+        console.warn(`Rate limited. Waiting ${retryAfter} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+      } else {
+        console.error(
+          `API error ${searchResponse.status} for query "${query}":`,
+          searchResponse.data
+        );
       }
-    } catch (error) {
-      console.error(`Error searching with query "${query}":`, error);
+    } catch (error: any) {
+      console.error(`Error searching with query "${query}":`, error.message || error);
     }
 
     // Small delay between queries to avoid rate limiting
     if (queries.indexOf(query) < queries.length - 1) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
 
   // Remove duplicates based on tweet ID
   const uniqueResults = allResults.filter(
-    (post, index, self) => index === self.findIndex(p => p.id === post.id)
+    (post, index, self) => post.id && index === self.findIndex(p => p.id === post.id)
   );
 
   console.log(`Found ${uniqueResults.length} unique posts across all queries`);
@@ -179,7 +275,7 @@ async function searchForPredictionPosts(queries: string[], limit: number): Promi
  * Analyzes posts to identify which ones contain predictions
  */
 async function analyzePredictionCandidates(
-  posts: any[],
+  posts: TwitterScraperTweet[],
   topic: string
 ): Promise<PredictionResult[]> {
   console.log(`Analyzing ${posts.length} posts for predictions on topic: ${topic}`);
@@ -218,12 +314,15 @@ async function analyzePredictionCandidates(
  * Analyzes a single post to determine if it contains a prediction
  * Returns null if the post doesn't contain a prediction
  */
-async function analyzeSinglePost(post: any, topic: string): Promise<PredictionResult | null> {
+async function analyzeSinglePost(
+  post: TwitterScraperTweet,
+  topic: string
+): Promise<PredictionResult | null> {
   // Extract relevant fields from the post
-  const postText = post.text || post.full_text || '';
-  const postId = post.id || post.tweet_id;
-  const username = post.user?.username || post.username || 'unknown';
-  const authorName = post.user?.name || post.name || username;
+  const postText = post.text || '';
+  const postId = post.id || '';
+  const username = post.user?.username || 'unknown';
+  const authorName = post.user?.name || username;
   const postDate = post.created_at || new Date().toISOString();
   const postUrl = post.url || `https://x.com/${username}/status/${postId}`;
 
@@ -288,13 +387,47 @@ async function analyzeSinglePost(post: any, topic: string): Promise<PredictionRe
       return null;
     }
 
+    // Normalize the timeframe to match our expected values
+    let normalizedTimeframe: string = result.timeframe.toLowerCase();
+    const validTimeframes = [
+      'immediate',
+      'days',
+      'weeks',
+      'months',
+      'years',
+      'decades',
+      'uncertain',
+    ];
+
+    if (!validTimeframes.includes(normalizedTimeframe)) {
+      // Map non-standard timeframes to the closest match
+      if (normalizedTimeframe.includes('day') || normalizedTimeframe.includes('tomorrow')) {
+        normalizedTimeframe = 'days';
+      } else if (normalizedTimeframe.includes('week')) {
+        normalizedTimeframe = 'weeks';
+      } else if (normalizedTimeframe.includes('month')) {
+        normalizedTimeframe = 'months';
+      } else if (normalizedTimeframe.includes('year')) {
+        normalizedTimeframe = 'years';
+      } else if (
+        normalizedTimeframe.includes('decade') ||
+        normalizedTimeframe.includes('century')
+      ) {
+        normalizedTimeframe = 'decades';
+      } else if (normalizedTimeframe.includes('now') || normalizedTimeframe.includes('current')) {
+        normalizedTimeframe = 'immediate';
+      } else {
+        normalizedTimeframe = 'uncertain';
+      }
+    }
+
     // Return the prediction with metadata
     return {
       prediction_text: result.prediction_text,
       confidence_score: result.confidence_score,
       implicit: result.implicit,
       topic_relevance: result.topic_relevance,
-      timeframe: result.timeframe,
+      timeframe: normalizedTimeframe as any,
       has_condition: result.has_condition,
       post_id: postId,
       post_url: postUrl,

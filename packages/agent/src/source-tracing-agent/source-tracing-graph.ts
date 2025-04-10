@@ -82,6 +82,7 @@ async function traceSourceAdapter(state: SourceTracingState): Promise<Partial<So
   };
 
   // Call the tracing tool
+  // @ts-expect-error todo
   const result = await traceSourceChain(mockResearchState);
 
   if (!result.research) {

@@ -174,6 +174,182 @@ export async function traceSourceChain(
 }
 
 /**
+ * Fetches content from a URL using available methods
+ */
+async function fetchContentFromUrl(url: string): Promise<string> {
+  try {
+    // Normalize URL to handle edge cases
+    url = normalizeUrl(url);
+
+    // Try with Firecrawl API if configured
+    if (config.firecrawlApiKey) {
+      try {
+        console.log('Fetching with Firecrawl:', url);
+
+        // Make a direct GET request to the Firecrawl API
+        const response = await axios.get(`https://api.firecrawl.dev/v1/crawl`, {
+          params: { url: url },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.firecrawlApiKey}`,
+          },
+          timeout: 30000, // 30 second timeout
+        });
+
+        if (response.data?.content) {
+          console.log(
+            `Successfully retrieved content from Firecrawl (${response.data.content.length} chars)`
+          );
+          return response.data.content;
+        } else if (response.data?.text) {
+          return response.data.text;
+        } else if (response.data?.html) {
+          return response.data.html;
+        }
+
+        // If we get here, we didn't find usable content
+        console.log('Firecrawl response had no usable content format.');
+      } catch (firecrawlError: any) {
+        console.error(`Firecrawl fetch failed for ${url}: ${firecrawlError.message}`);
+      }
+    }
+
+    // Special handling for common document types
+    if (url.match(/\.(pdf|docx?|xlsx?|pptx?|csv)($|\?)/i)) {
+      return await fetchDocumentContent(url);
+    }
+
+    // Fallback to puppeteer
+    console.log('Fetching with Puppeteer:', url);
+    const puppeteerResult = await fetchWithPuppeteer(url);
+
+    if (puppeteerResult) {
+      if (typeof puppeteerResult === 'object' && puppeteerResult.text) {
+        return puppeteerResult.text;
+      } else if (typeof puppeteerResult === 'string') {
+        return puppeteerResult;
+      }
+      return JSON.stringify(puppeteerResult);
+    }
+
+    throw new Error('Failed to fetch content with all available methods');
+  } catch (error) {
+    console.error(`Error fetching content from ${url}:`, error);
+    return '';
+  }
+}
+
+/**
+ * Fetches and extracts content from document types (PDF, DOC, etc.)
+ */
+async function fetchDocumentContent(url: string): Promise<string> {
+  // This is a placeholder for document extraction
+  // In a real implementation, you might use a document parsing service or library
+  console.log(`Document URL detected (${url}). This would require special handling.`);
+
+  // For now, we'll use puppeteer as a fallback
+  return await fetchWithPuppeteer(url).then(result => {
+    if (typeof result === 'object' && result.text) {
+      return result.text;
+    } else if (typeof result === 'string') {
+      return result;
+    }
+    return `Document at ${url} could not be processed directly.`;
+  });
+}
+
+/**
+ * Normalize URL to handle edge cases
+ */
+function normalizeUrl(url: string): string {
+  try {
+    // Try to parse the URL to normalize it
+    const parsedUrl = new URL(url);
+    return parsedUrl.toString();
+  } catch (e) {
+    // If URL parsing fails, try to fix common issues
+    if (!url.match(/^https?:\/\//)) {
+      return `https://${url}`;
+    }
+    return url;
+  }
+}
+
+/**
+ * Prioritize URLs that are likely to be primary sources
+ */
+function prioritizeUrls(urls: string[]): string[] {
+  // Define patterns that might indicate primary sources
+  const primarySourcePatterns = [
+    // Government and official sites
+    /\.(gov|mil|edu)\//,
+    /\/press-release/i,
+    /\/statement/i,
+    /\/official/i,
+    // News organizations
+    /\.(reuters|ap|apnews|nytimes|washingtonpost|wsj|bbc)\.com/,
+    // Primary research
+    /\/research/i,
+    /\/publication/i,
+    /\/report/i,
+    // Document types often containing primary sources
+    /\.(pdf|doc|docx)($|\?)/i,
+    // Court/legal documents
+    /\/court/i,
+    /\/legal/i,
+    /\/filing/i,
+    // Data sources
+    /\/data/i,
+    /\/statistics/i,
+    // Evidence of original content
+    /\/original/i,
+    /\/source/i,
+    /\/primary/i,
+  ];
+
+  // Define patterns for unreliable sources
+  const unreliableSourcePatterns = [
+    /\.(wordpress|blogspot|medium)\.com/,
+    /\/blog\//i,
+    /\/opinion/i,
+    /\/commentary/i,
+  ];
+
+  // Score each URL
+  const scoredUrls = urls.filter(Boolean).map(url => {
+    let score = 0;
+
+    // Start with base score
+    score = 5;
+
+    // Check for primary source patterns (boost)
+    primarySourcePatterns.forEach(pattern => {
+      if (pattern.test(url)) score += 10;
+    });
+
+    // Check for unreliable source patterns (reduce)
+    unreliableSourcePatterns.forEach(pattern => {
+      if (pattern.test(url)) score -= 5;
+    });
+
+    // Prefer shorter URLs (often closer to source)
+    score -= Math.min(url.length / 100, 5);
+
+    // Prefer URLs with fewer path segments
+    const pathSegments = (url.match(/\//g) || []).length - 2;
+    score -= Math.min(pathSegments, 3);
+
+    return { url, score };
+  });
+
+  // Sort by score (highest first)
+  scoredUrls.sort((a, b) => b.score - a.score);
+
+  // Return just the URLs
+  return scoredUrls.map(item => item.url);
+}
+
+/**
  * Recursively follows a reference chain from a starting URL
  */
 async function followReferenceChain(
@@ -197,8 +373,8 @@ async function followReferenceChain(
   }
 
   // Check if this URL is already in the chain to prevent cycles
-  if (chain.sources.some(source => source.url === url)) {
-    console.log(`URL ${url} is already in the chain, skipping to prevent cycles`);
+  if (chain.sources.some(source => new URL(source.url).hostname === new URL(url).hostname)) {
+    console.log(`URL from same domain ${url} is already in the chain, skipping to prevent cycles`);
     return {
       chain,
       primarySourceFound: false,
@@ -210,13 +386,18 @@ async function followReferenceChain(
   try {
     // Fetch and analyze the content
     const content = await fetchContentFromUrl(url);
-    if (!content) {
-      console.log(`Failed to fetch content from ${url}`);
+    if (!content || content.length < 100) {
+      console.log(`Failed to fetch meaningful content from ${url}`);
       return { chain, primarySourceFound: false };
     }
 
     // Extract source information
     const sourceInfo = await extractSourceInformation(url, content);
+
+    // Log the source type we found
+    console.log(
+      `Source type for ${url}: ${sourceInfo.source_type} (primary: ${sourceInfo.is_primary_source})`
+    );
 
     // Add to the chain
     chain.sources.push({
@@ -228,13 +409,14 @@ async function followReferenceChain(
       is_primary_source: sourceInfo.is_primary_source,
       publication_date: sourceInfo.publication_date,
       verification_status: sourceInfo.verification_status,
+      key_claims: sourceInfo.key_claims,
     });
 
     // If this is a primary source, mark the chain as complete
     if (sourceInfo.is_primary_source) {
       console.log(`Found primary source: ${url}`);
       chain.is_complete = true;
-      chain.confidence_score = 1.0;
+      chain.confidence_score = calculateSourceConfidence(sourceInfo);
       return {
         chain,
         primarySourceFound: true,
@@ -249,19 +431,33 @@ async function followReferenceChain(
     let primarySourceSummary = '';
 
     // Sort referenced URLs to prioritize likely primary sources
-    const prioritizedUrls = prioritizeUrls(sourceInfo.referenced_urls);
+    const prioritizedUrls = prioritizeUrls([
+      ...sourceInfo.referenced_urls,
+      ...extractDeepLinksFromContent(content),
+    ]).slice(0, 5); // Consider up to 5 most promising URLs
 
-    // Only follow the first 2 referenced URLs to avoid excessive branching
-    for (const refUrl of prioritizedUrls.slice(0, 2)) {
+    console.log(`Found ${prioritizedUrls.length} potentially useful referenced URLs`);
+
+    // Follow promising paths, but implement a breadth-first approach for level 0
+    // This helps us evaluate multiple starting points before going deeper
+    const maxUrlsToFollow = depth === 0 ? 3 : 2;
+
+    // Only follow the most promising URLs to avoid excessive branching
+    for (const refUrl of prioritizedUrls.slice(0, maxUrlsToFollow)) {
       if (!refUrl) continue;
 
-      const result = await followReferenceChain(refUrl, chain, depth + 1);
+      try {
+        const result = await followReferenceChain(refUrl, chain, depth + 1);
 
-      if (result.primarySourceFound) {
-        primarySourceFound = true;
-        primarySourceUrl = result.primarySourceUrl || '';
-        primarySourceSummary = result.primarySourceSummary || '';
-        break; // Stop once we've found a primary source
+        if (result.primarySourceFound) {
+          primarySourceFound = true;
+          primarySourceUrl = result.primarySourceUrl || '';
+          primarySourceSummary = result.primarySourceSummary || '';
+          break; // Stop once we've found a primary source
+        }
+      } catch (error) {
+        console.error(`Error following reference to ${refUrl}:`, error);
+        // Continue to next URL on error
       }
     }
 
@@ -280,6 +476,109 @@ async function followReferenceChain(
     console.error(`Error analyzing source at ${url}:`, error);
     return { chain, primarySourceFound: false };
   }
+}
+
+/**
+ * Calculate confidence in a specific source
+ */
+function calculateSourceConfidence(sourceInfo: z.infer<typeof sourceExtractionSchema>): number {
+  let score = 0.5; // Base score
+
+  // Adjust based on source type
+  switch (sourceInfo.source_type) {
+    case 'primary':
+      score += 0.3;
+      break;
+    case 'official':
+      score += 0.25;
+      break;
+    case 'news':
+      score += 0.2;
+      break;
+    case 'secondary':
+      score += 0.1;
+      break;
+    case 'blog':
+    case 'social_media':
+      score -= 0.1;
+      break;
+  }
+
+  // Adjust based on verification status
+  switch (sourceInfo.verification_status) {
+    case 'verified':
+      score += 0.2;
+      break;
+    case 'partially_verified':
+      score += 0.1;
+      break;
+    case 'unverified':
+      score -= 0.1;
+      break;
+  }
+
+  // Date recency could be considered
+  if (sourceInfo.publication_date) {
+    try {
+      const pubDate = new Date(sourceInfo.publication_date);
+      const now = new Date();
+      const monthsAgo = (now.getTime() - pubDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      // Newer information gets a small boost, but not too much
+      if (monthsAgo < 1) score += 0.05;
+      else if (monthsAgo > 36) score -= 0.05; // Very old info gets a small penalty
+    } catch (e) {
+      // Ignore date parsing errors
+    }
+  }
+
+  return Math.min(Math.max(score, 0.1), 1.0);
+}
+
+/**
+ * Extract deep links that may not be in standard <a> tags
+ */
+function extractDeepLinksFromContent(content: string): string[] {
+  const urls: string[] = [];
+
+  // Look for URLs in text with regex - different patterns
+  const urlPatterns = [
+    /https?:\/\/[^\s"'<>()]+/g, // Basic URL pattern
+    /Source:\s+(?:https?:\/\/)?[^\s"'<>()]+/gi, // Following "Source:" text
+    /Reference:\s+(?:https?:\/\/)?[^\s"'<>()]+/gi, // Following "Reference:" text
+    /from\s+(?:https?:\/\/)?[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}[^\s]*/gi, // "from domain.com" pattern
+  ];
+
+  urlPatterns.forEach(pattern => {
+    const matches = content.match(pattern) || [];
+    matches.forEach(match => {
+      // Clean up the match to extract just the URL
+      let url = match;
+      if (!url.startsWith('http')) {
+        // Try to extract domain from patterns like "from example.com/page"
+        const domainMatch = url.match(
+          /(?:from\s+)?((?:https?:\/\/)?[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}[^\s]*)/i
+        );
+        if (domainMatch && domainMatch[1]) {
+          url = domainMatch[1];
+          if (!url.startsWith('http')) {
+            url = 'https://' + url;
+          }
+        }
+      }
+
+      try {
+        // Validate it's really a URL
+        new URL(url);
+        if (!urls.includes(url)) {
+          urls.push(url);
+        }
+      } catch (e) {
+        // Invalid URL, ignore
+      }
+    });
+  });
+
+  return urls;
 }
 
 /**
@@ -350,53 +649,6 @@ async function extractSourceInformation(
 }
 
 /**
- * Fetches content from a URL using available methods
- */
-async function fetchContentFromUrl(url: string): Promise<string> {
-  try {
-    // Try with Firecrawl API if configured
-    if (config.firecrawlApiKey) {
-      try {
-        console.log('Fetching with Firecrawl:', url);
-        const response = await axios.post(
-          'https://api.firecrawl.dev/v1/crawl',
-          { url },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${config.firecrawlApiKey}`,
-            },
-          }
-        );
-
-        if (response.data && response.data.content) {
-          return response.data.content;
-        }
-        throw new Error('No content returned from Firecrawl');
-      } catch (firecrawlError) {
-        console.error('Firecrawl fetch failed:', firecrawlError);
-      }
-    }
-
-    // Fallback to puppeteer
-    console.log('Fetching with Puppeteer:', url);
-    const puppeteerResult = await fetchWithPuppeteer(url);
-
-    if (puppeteerResult) {
-      if (typeof puppeteerResult === 'object' && puppeteerResult.text) {
-        return puppeteerResult.text;
-      }
-      return JSON.stringify(puppeteerResult);
-    }
-
-    throw new Error('Failed to fetch content with puppeteer');
-  } catch (error) {
-    console.error(`Error fetching content from ${url}:`, error);
-    return '';
-  }
-}
-
-/**
  * Extract URLs from HTML content
  */
 function extractUrlsFromHtml(html: string): string[] {
@@ -446,46 +698,6 @@ function getBasicTitle(content: string): string {
   } catch {
     return '';
   }
-}
-
-/**
- * Prioritize URLs that are likely to be primary sources
- */
-function prioritizeUrls(urls: string[]): string[] {
-  // Define patterns that might indicate primary sources
-  const primarySourcePatterns = [
-    /gov\//,
-    /\.gov\//, // Government sites
-    /\/press-release\//,
-    /\/statement\//, // Press releases
-    /\/official\//,
-    /\/primary\//, // Official/primary indicators
-    /\/original\//,
-    /\/source\//, // Original source indicators
-    /pdf$/,
-    /\.pdf\?/, // PDF documents often contain primary info
-  ];
-
-  // Score each URL
-  const scoredUrls = urls.map(url => {
-    let score = 0;
-
-    // Check for primary source patterns
-    primarySourcePatterns.forEach(pattern => {
-      if (pattern.test(url)) score += 5;
-    });
-
-    // Prefer shorter URLs (often closer to source)
-    score -= url.length / 100;
-
-    return { url, score };
-  });
-
-  // Sort by score (highest first)
-  scoredUrls.sort((a, b) => b.score - a.score);
-
-  // Return just the URLs
-  return scoredUrls.map(item => item.url);
 }
 
 /**
