@@ -3,7 +3,13 @@
 import { BettingProgress } from '@/components/pools/BettingProgress';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { GET_POOLS } from '@/lib/queries';
-import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@/types/__generated__/graphql';
+import {
+  GetPoolsQuery,
+  OrderDirection,
+  Pool_OrderBy,
+  PoolStatus,
+  TokenType,
+} from '@/types/__generated__/graphql';
 import { calculateOptionPercentages, calculateRelativeVolumePercentages } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import { TrendingUp } from 'lucide-react';
@@ -19,7 +25,7 @@ export function HighestVolume() {
     data: volumePools,
     loading,
     previousData,
-  } = useQuery(GET_POOLS, {
+  } = useQuery<GetPoolsQuery>(GET_POOLS as import('@apollo/client').DocumentNode, {
     variables: {
       filter: {
         status: PoolStatus.Pending,

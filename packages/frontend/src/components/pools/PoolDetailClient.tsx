@@ -14,10 +14,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
-import { GET_BET_PLACEDS_SERVER, GET_BETS, GET_POOL } from '@/lib/queries';
+import { GET_POOL } from '@/lib/queries';
+import { gql as apolloGql } from '@apollo/client';
+import { GET_BET_PLACED_STRING, GET_BETS_STRING } from '@trump-fun/common/src/graphql/queries';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
-import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
+import { POLLING_INTERVALS, Tables } from '@trump-fun/common';
 
 import { useBettingForm } from '@/hooks/useBettingForm';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
@@ -31,10 +33,10 @@ import { PoolStats } from '@/components/pools/PoolStats';
 import { TabSwitcher } from '@/components/pools/TabSwitcher';
 import { UserBets } from '@/components/pools/UserBets';
 import {
+  Bet,
   Bet_OrderBy,
+  BetPlaced,
   BetPlaced_OrderBy,
-  GetBetPlacedQuery,
-  GetBetsQuery,
   OrderDirection,
   PoolStatus,
 } from '@/types/__generated__/graphql';
@@ -53,10 +55,10 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   const apolloClient = useApolloClient();
 
   const [selectedTab, setSelectedTab] = useState<string>('comments');
-  const [userBetsData, setUserBetsData] = useState<GetBetsQuery['bets']>([]);
-  const [betPlacedData, setBetPlacedData] = useState<GetBetPlacedQuery['betPlaceds']>([]);
-  const [isDataLoading, setIsDataLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
+  const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
+  const [_isDataLoading, _setIsDataLoading] = useState(false);
+  const [_error, _setError] = useState<string | null>(null);
 
   const { data: hash, isPending, writeContract } = useWriteContract();
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
@@ -100,7 +102,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
 
     try {
       const { data } = await apolloClient.query({
-        query: GET_BETS,
+        query: apolloGql(GET_BETS_STRING),
         variables: {
           filter: {
             user: account.address.toLowerCase(),
@@ -123,7 +125,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   const fetchBetPlaced = useCallback(async () => {
     try {
       const { data } = await apolloClient.query({
-        query: GET_BET_PLACEDS_SERVER,
+        query: apolloGql(GET_BET_PLACED_STRING),
         variables: {
           filter: {
             poolId: id,
@@ -252,6 +254,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
           width={100}
           height={100}
           className='z-50 size-40 h-auto w-auto animate-spin rounded-full'
+          unoptimized
         />
       </div>
     );
@@ -346,13 +349,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
             </div>
           )}
 
-          <UserBets
-            placedBets={userBetsData}
-            pool={pool}
-            USDC_DECIMALS={USDC_DECIMALS}
-            tokenLogo={tokenLogo}
-            symbol={symbol}
-          />
+          <UserBets placedBets={userBetsData} pool={pool} tokenLogo={tokenLogo} symbol={symbol} />
 
           <TabSwitcher
             selectedTab={selectedTab}

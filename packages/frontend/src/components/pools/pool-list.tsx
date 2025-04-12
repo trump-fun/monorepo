@@ -31,7 +31,7 @@ export function PoolList() {
     first: 9,
   };
 
-  const { data, loading, error, networkStatus } = useQuery(GET_POOLS, {
+  const { data, loading, error, networkStatus } = useQuery<GetPoolsQuery>(GET_POOLS, {
     variables,
     context: { name: 'mainSearch' },
     notifyOnNetworkStatusChange: true,

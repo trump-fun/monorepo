@@ -1,50 +1,9 @@
 import { graphqlClient } from '@/lib/graphql-client';
 import { OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
+import { GET_POOLS_STRING } from '@trump-fun/common/src/graphql/queries';
 import OpenAI from 'openai';
 const openaiClient = new OpenAI();
-
-// Define the query string directly instead of using Apollo
-const GET_POOLS_QUERY = `
-  query GetPoolsServerRelated(
-    $filter: Pool_filter!
-    $orderBy: Pool_orderBy!
-    $orderDirection: OrderDirection!
-    $first: Int
-  ) {
-    pools(
-      where: $filter
-      orderBy: $orderBy
-      orderDirection: $orderDirection
-      first: $first
-    ) {
-        id
-        poolId
-        question
-        options
-        status
-        chainId
-        chainName
-        createdAt
-        imageUrl
-        createdBlockNumber
-        createdBlockTimestamp
-        createdTransactionHash
-        lastUpdatedBlockNumber
-        lastUpdatedBlockTimestamp
-        lastUpdatedTransactionHash
-        gradedBlockNumber
-        gradedBlockTimestamp
-        gradedTransactionHash
-        betsCloseAt
-        usdcBetTotals
-        pointsBetTotals
-        usdcVolume
-        pointsVolume
-        originalTruthSocialPostId
-    }
-  }
-`;
 
 // Define interfaces for the GraphQL response types
 interface Pool {
@@ -57,7 +16,11 @@ interface Pool {
   chainName: string;
   createdAt: string;
   imageUrl?: string;
-  [key: string]: any; // For other properties we don't explicitly need to reference
+  // Additional optional properties that might be present in the Pool object
+  bets?: unknown[];
+  usdcVolume?: string;
+  pointsVolume?: string;
+  betsCloseAt?: number;
 }
 
 interface PoolsResponse {
@@ -71,8 +34,8 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Missing "question" parameter' }, { status: 400 });
     }
 
-    // Get pools using graphql-request
-    const data = await graphqlClient.request<PoolsResponse>(GET_POOLS_QUERY, {
+    // Get pools using graphql-request with centralized query
+    const data = await graphqlClient.request<PoolsResponse>(GET_POOLS_STRING, {
       filter: {
         status: PoolStatus.Pending,
       },
@@ -102,8 +65,8 @@ export const GET = async (request: NextRequest) => {
 
     const relatedPoolIds = JSON.parse(responseContent);
 
-    // Get related pools using graphql-request
-    const relatedPools = await graphqlClient.request<PoolsResponse>(GET_POOLS_QUERY, {
+    // Get related pools using graphql-request with centralized query
+    const relatedPools = await graphqlClient.request<PoolsResponse>(GET_POOLS_STRING, {
       filter: {
         id_in: relatedPoolIds,
       },

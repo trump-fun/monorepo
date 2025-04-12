@@ -22,7 +22,7 @@ export function calculateVolume(bets: Bet[]) {
   return { totalVolume, activeVolume };
 }
 
-export function formatTokenAmount(amount: string | number, tokenType: number) {
+export function formatTokenAmount(amount: string | number, _tokenType: number) {
   const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
   if (isNaN(numericAmount)) return '0';

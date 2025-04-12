@@ -1,9 +1,9 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GetBetPlacedQuery, GetPoolQuery } from '@/types/__generated__/graphql';
+import { BetPlaced, Pool, TokenType } from '@/types/__generated__/graphql';
 import { RefetchOptions } from '@tanstack/react-query';
-import { Tables } from '@trump-fun/common';
+import { Tables, formatTokenAmount, getTokenName } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
@@ -12,12 +12,12 @@ import { Related } from '../Related';
 interface TabSwitcherProps {
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
-  pool: GetPoolQuery['pool']; // Replace with proper typing
-  bets: GetBetPlacedQuery['betPlaceds']; // Replace with proper typing
+  pool: Pool;
+  bets: BetPlaced[];
   comments: Tables<'comments'>[];
   isCommentsLoading: boolean;
-  commentsError: any;
-  onCommentsUpdated: (options?: RefetchOptions | undefined) => Promise<any>;
+  commentsError: Error | null;
+  onCommentsUpdated: (options?: RefetchOptions | undefined) => Promise<unknown>;
 }
 
 export const TabSwitcher = ({
@@ -88,12 +88,20 @@ export const TabSwitcher = ({
                       <span> bet on </span>
                       <span
                         className={
-                          bet.optionIndex === '0'
+                          ('option' in bet && typeof bet.option === 'number'
+                            ? bet.option
+                            : Number(bet.optionIndex)) === 0
                             ? 'font-medium text-green-500'
                             : 'font-medium text-red-500'
                         }
                       >
-                        {pool.options[parseInt(bet.optionIndex)]}
+                        {
+                          pool.options[
+                            ('option' in bet && typeof bet.option === 'number'
+                              ? bet.option
+                              : Number(bet.optionIndex)) as number
+                          ]
+                        }
                       </span>
                     </div>
                     <span className='text-muted-foreground text-xs'>
@@ -106,8 +114,11 @@ export const TabSwitcher = ({
                   </div>
                 </div>
                 <div className='font-medium'>
-                  {(Number(bet.amount) / 10 ** 6).toLocaleString()}{' '}
-                  {bet.tokenType === 0 ? 'USDC' : 'FREEDOM'}
+                  {formatTokenAmount(
+                    bet.amount,
+                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Points
+                  )}{' '}
+                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Points)}
                 </div>
               </div>
             ))}
