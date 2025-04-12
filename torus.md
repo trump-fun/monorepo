@@ -4,7 +4,7 @@
 
 Prediction Swarm Agents provides Torus with a comprehensive prediction intelligence ecosystem that discovers, tracks, analyzes, and verifies predictions across social media, focusing primarily on X/Twitter.
 
-### Core Components:
+### Core Components
 
 1. **[Prediction Discovery](./packages/agent/src/prediction-finder-agent/tools/find-predictions.ts)** - Identifies explicit and implicit predictions using advanced NLP to distinguish genuine predictions from general commentary.
 2. **[Predictor Profiling](./packages/agent/src/predictor-profile-agent/tools/build-predictor-profile.ts)** - Generates analytics on prediction makers, tracking expertise areas, prediction style, confidence levels, and historical accuracy.
@@ -14,30 +14,46 @@ Prediction Swarm Agents provides Torus with a comprehensive prediction intellige
 
 ## System Architecture
 
-![System Architecture](https://i.imgur.com/placeholder.png)
+### Technical Requirements
+
+- Node.js 22+
+- Bun runtime
+- 4GB RAM minimum
+- API keys for language models, Datura, and Tavily
 
 ### Key Components
 
-#### Prediction Finder
+#### [Prediction Finder](./packages/agent/src/prediction-finder-agent/tools/find-predictions.ts)
 
 - Discovers explicit/implicit predictions on X/Twitter
 - Uses NLP to detect indirectly phrased predictions
 - Filters for relevance with confidence scoring
 - Categorizes by timeframe and conditions
 
-#### Predictor Profile Builder
+#### [Predictor Profile Builder](./packages/agent/src/predictor-profile-agent/tools/build-predictor-profile.ts)
 
 - Analyzes prediction history and style metrics
 - Identifies expertise areas and patterns
 - Grades user's prediction style, accuracy, and consistency to influence later grading
 - Tracks verified predictions for accuracy records
 
-#### Prediction Verification
+#### [Prediction Verification](./packages/agent/src/prediction-verification-agent/tools/verify-prediction.ts)
 
 - Determines prediction outcomes with supporting evidence
 - Searches multiple reliable sources for verification
 - Provides confidence scores and evidence links
 - Categorizes outcomes (correct, partially correct, incorrect, unverifiable)
+
+#### [Trust & Accountability](./packages/agent/src/predictor-profile-agent/tools/build-predictor-profile.ts)
+
+- Establishes objective metrics for predictor accuracy
+- Reduces misinformation by highlighting consistently reliable voices
+
+#### [Prediction Market Agent](./packages/agent/src/prediction-market-agent/prediction-market-agent.ts)
+
+- Aggregates prediction data from multiple sources
+- Tracks market trends and patterns
+- Provides insights for prediction market operators
 
 ### Implementation
 
@@ -153,40 +169,29 @@ bun run prediction-tools batch-verify --file predictions.json --output results.j
 
 ### Phase 1: Core Functionality (Completed)
 
-✅ Prediction Finder tool
-✅ Predictor Profile Builder tool
-✅ Prediction Verification tool
-✅ X/Twitter integration via Datura API
-✅ Command line interface
+- ✅ Prediction Finder tool
+- ✅ Predictor Profile Builder tool
+- ✅ Prediction Verification tool
+- ✅ X/Twitter integration via Datura API
+- ✅ Command line interface
 
 ### Phase 2: Enhanced Capabilities (Next 2 Months)
 
-🔲 Fine-tuned prediction detection models
-🔲 Multi-language support
-🔲 Batch processing for large-scale analysis
-🔲 Visualization components for trends
+- 🔲 Fine-tuned prediction detection models
+- 🔲 Multi-language support
+- 🔲 Batch processing for large-scale analysis
+- 🔲 Visualization components for trends
 
 ### Phase 3: Integration & Expansion (3-6 Months)
 
-🔲 REST API for third-party integration
-🔲 Historical prediction database
-🔲 Web dashboard interface
-🔲 Additional platform support (Reddit, Threads)
+- 🔲 REST API for third-party integration
+- 🔲 Historical prediction database
+- 🔲 Web dashboard interface
+- 🔲 Additional platform support (Reddit, Threads)
 
 ### Phase 4: Advanced Features (6-12 Months)
 
-🔲 Real-time prediction monitoring
-🔲 Prediction correlation analysis
-🔲 Automated intelligence reports
-🔲 Predictor accuracy leaderboards
-
-## Technical Requirements
-
-- Node.js 20+
-- Bun runtime
-- 4GB RAM minimum
-- API keys for language models, Datura, and Tavily
-
-## Conclusion
-
-Prediction Swarm Agents provides unprecedented transparency in social media predictions by identifying claims, analyzing predictors, and verifying outcomes. As social media increasingly influences markets, politics, and public opinion, our system delivers objective prediction tracking with a flexible, extensible architecture that meets all bounty requirements.
+- 🔲 Real-time prediction monitoring
+- 🔲 Prediction correlation analysis
+- 🔲 Automated intelligence reports
+- 🔲 Predictor accuracy leaderboards
