@@ -1,21 +1,35 @@
-import { PoolStatus } from '@trump-fun/common';
+import {
+  PoolStatus,
+  formatUSDC,
+  formatFreedom,
+  formatDate as formatDateCommon,
+} from '@trump-fun/common';
 
-// Format numbers with commas and limit decimal places
+/**
+ * Format a USDC amount with $ sign
+ * @param value Raw USDC value with decimals
+ * @returns Formatted string with $ sign
+ */
 export const formatUSD = (value: string) => {
-  // Convert from wei (assuming 6 decimals for USDC)
-  const dollars = parseInt(value) / 1_000_000;
-  return `$${dollars.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+  return formatUSDC(value);
 };
 
+/**
+ * Format a FREEDOM token amount
+ * @param value Raw FREEDOM value with decimals
+ * @returns Formatted string
+ */
 export const formatPoints = (value: string) => {
-  // Convert from wei (assuming 18 decimals for points)
-  const points = parseInt(value) / 1_000_000_000_000_000_000;
-  return points.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  return formatFreedom(value);
 };
 
-// Format timestamp to readable date
+/**
+ * Format a timestamp as a locale string
+ * @param timestamp Unix timestamp
+ * @returns Formatted date string
+ */
 export const formatDate = (timestamp: string) => {
-  return new Date(parseInt(timestamp) * 1000).toLocaleString();
+  return formatDateCommon(timestamp);
 };
 
 // Format status with emoji

@@ -1,9 +1,10 @@
 'use client';
 
-import { GET_BETS } from '@/lib/queries';
+import { gql as apolloGql } from '@apollo/client';
+import { GET_BETS_STRING } from '@trump-fun/common/src/graphql/queries';
 import { Bet, Bet_OrderBy, Pool } from '@/types';
 import { useQuery } from '@apollo/client';
-import { POINTS_DECIMALS } from '@trump-fun/common';
+import { formatTokenAmount, getTokenName } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowUpRight, Clock, Loader2 } from 'lucide-react';
 import { type FC, useEffect, useState } from 'react';
@@ -24,20 +25,23 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
     threshold: 0,
   });
 
-  const { data, loading, error, fetchMore } = useQuery<{ bets: Bet[] }>(GET_BETS, {
-    variables: {
-      filter: {
-        poolId,
+  const { data, loading, error, fetchMore } = useQuery<{ bets: Bet[] }>(
+    apolloGql(GET_BETS_STRING),
+    {
+      variables: {
+        filter: {
+          poolId,
+        },
+        first: pageSize,
+        skip: 0,
+        orderBy: Bet_OrderBy.CreatedAt,
+        orderDirection: 'desc',
       },
-      first: pageSize,
-      skip: 0,
-      orderBy: Bet_OrderBy.CreatedAt,
-      orderDirection: 'desc',
-    },
-    context: { name: 'userBets' },
-    notifyOnNetworkStatusChange: true,
-    fetchPolicy: 'network-only',
-  });
+      context: { name: 'userBets' },
+      notifyOnNetworkStatusChange: true,
+      fetchPolicy: 'network-only',
+    }
+  );
 
   useEffect(() => {
     if (data?.bets) {
@@ -94,8 +98,8 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
-  const getOptionLabel = (optionIndex: string | bigint): string => {
-    const index = Number(optionIndex);
+  const getOptionLabel = (option: number | string | bigint): string => {
+    const index = Number(option);
     if (pool.options && pool.options[index]) {
       return pool.options[index];
     }
@@ -153,13 +157,13 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
                 <div className='flex flex-wrap items-center gap-4'>
                   <div className='flex flex-col items-end'>
                     <span className='text-primary group-hover:text-primary/90 text-xl font-bold transition-colors'>
-                      {parseFloat(bet.amount) / 10 ** POINTS_DECIMALS} {bet.tokenType}
+                      {formatTokenAmount(bet.amount, bet.tokenType)} {getTokenName(bet.tokenType)}
                     </span>
                     <span className='text-xs text-gray-500 dark:text-gray-400'>placed on</span>
                   </div>
 
                   <div className='rounded-full bg-gray-100 px-4 py-1.5 text-sm font-medium shadow-sm dark:bg-gray-800 dark:text-gray-200'>
-                    {getOptionLabel(bet.option)}
+                    {getOptionLabel('option' in bet ? bet.option : (bet as any).optionIndex)}
                   </div>
 
                   <div

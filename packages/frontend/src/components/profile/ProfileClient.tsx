@@ -22,8 +22,10 @@ export function ProfileClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const { address } = useWalletAddress();
   const { tokenType } = useTokenContext();
-  const { betsData, isLoading, isError } = useUserBetsData(activeFilter);
+  const { betsData, isLoading, isError, error } = useUserBetsData(activeFilter);
   const withdrawalProps = useWithdraw();
+
+  console.log(error);
 
   // Use memoized values from the GraphQL queries
   const memoizedBets = useMemo(() => betsData.bets as Bet[], [betsData.bets]);

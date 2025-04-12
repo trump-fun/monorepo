@@ -1,5 +1,11 @@
 import { GET_POOLS } from '@/lib/queries';
-import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@/types/__generated__/graphql';
+import {
+  GetPoolsQuery,
+  OrderDirection,
+  Pool_OrderBy,
+  PoolStatus,
+  TokenType,
+} from '@/types/__generated__/graphql';
 import { useQuery } from '@apollo/client';
 import { useMemo, useState } from 'react';
 
@@ -58,7 +64,7 @@ export function usePools(tokenType: TokenType) {
     loading: isLoading,
     fetchMore,
     refetch: refetchPools,
-  } = useQuery(GET_POOLS, {
+  } = useQuery<GetPoolsQuery>(GET_POOLS, {
     variables: {
       filter: activeConfig.filter,
       orderBy: activeConfig.orderBy,

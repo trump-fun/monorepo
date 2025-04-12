@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { TokenType } from '@/types';
+import { UserStats } from '@/types/interfaces';
 import { ArrowUpFromLine } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 import { BettingStats } from './BettingStats';
@@ -15,7 +16,7 @@ export function MobileProfileSection({
   tokenType,
 }: {
   address: string;
-  userStats: any;
+  userStats: UserStats;
   withdrawalProps: {
     formattedWithdrawableBalance: number;
     withdrawAmount: number;

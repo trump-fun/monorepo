@@ -1,8 +1,10 @@
-import { Pool, PoolStatus } from '@/types';
-import { DEFAULT_CHAIN_ID } from '@trump-fun/common';
+import { Pool, PoolStatus, TokenType } from '@/types';
+import { DEFAULT_CHAIN_ID, USDC_DECIMALS, toDecimal } from '@trump-fun/common';
+
+// Re-export constants from common package
+export { USDC_DECIMALS };
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-export const USDC_DECIMALS = 6;
 
 export enum FrontendPoolStatus {
   Pending = 'pending',
@@ -42,31 +44,30 @@ export function generateRandomColor(isLight: boolean) {
   return hslToHex(hue, saturation, lightness);
 }
 
+/**
+ * Convert USDC amount to dollars (without currency symbol)
+ * @param amount Raw USDC amount with decimals
+ * @returns Formatted string without $ prefix
+ */
 export function usdcAmountToDollars(amount: number | string): string {
-  let amountValue;
-  if (typeof amount === 'string') {
-    amountValue = parseInt(amount);
-  } else {
-    amountValue = amount;
-  }
-  const formattedAmount = (amountValue / Math.pow(10, USDC_DECIMALS)).toFixed(0);
-  // We're handling the currency prefix separately with renderUsdcPrefix
-  // so we'll just return the formatted amount
-  return formattedAmount;
+  return toDecimal(amount, TokenType.Usdc).toFixed(0);
 }
 
-//TODO Redundant
+/**
+ * Convert USDC amount to dollars as a number
+ * @param amount Raw USDC amount with decimals
+ * @param alreadyFormatted Whether the amount is already formatted
+ * @returns Number value
+ * @deprecated Use toDecimal from common package instead
+ */
 export function usdcAmountToDollarsNumber(
   amount: number | string,
   alreadyFormatted: boolean = false
 ): number {
-  let amountValue;
-  if (typeof amount === 'string') {
-    amountValue = parseInt(amount);
-  } else {
-    amountValue = amount;
+  if (alreadyFormatted) {
+    return typeof amount === 'string' ? parseInt(amount) : amount;
   }
-  return alreadyFormatted ? amountValue : Math.round(amountValue / Math.pow(10, USDC_DECIMALS));
+  return Math.round(toDecimal(amount, TokenType.Usdc));
 }
 
 export const bigintToHexString = (n: bigint) => {

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { TokenType } from '@/types';
+import { UserStats, WithdrawalData } from '@/types/interfaces';
 import { ArrowUpFromLine, History } from 'lucide-react';
 import { BettingStats } from './BettingStats';
 import { RecentWithdrawals } from './RecentWithdrawals';
@@ -21,10 +22,16 @@ export function ProfileSidebar({
   address?: string;
   activeFilter: string;
   handleFilterChange: (filter: string) => void;
-  userStats: any; // Replace with actual type
-  withdrawalProps: any; // Replace with actual type
+  userStats: UserStats;
+  withdrawalProps: {
+    formattedWithdrawableBalance: number;
+    withdrawAmount: number;
+    setWithdrawAmount: (amount: number) => void;
+    handleWithdraw: () => void;
+    isPending: boolean;
+  };
   tokenType: TokenType;
-  betWithdrawals?: any[]; // Replace with actual type
+  betWithdrawals?: WithdrawalData[];
 }) {
   const { tokenLogo, symbol } = useTokenBalance();
 

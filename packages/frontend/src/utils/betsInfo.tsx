@@ -64,7 +64,7 @@ export const calculateVolume = (
 export const getBetTotals = (
   pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
   tokenType: TokenType | string,
-  optionIndex: number
+  option: number
 ): string => {
   if (!pool) return tokenType === TokenType.Usdc ? '$0' : '0';
 
@@ -74,7 +74,7 @@ export const getBetTotals = (
     if (!betTotals) return isUsdc ? '$0' : '0';
 
     const decimals = isUsdc ? USDC_DECIMALS : POINTS_DECIMALS;
-    const value = formatTokenAmount(betTotals[optionIndex], decimals, !isUsdc);
+    const value = formatTokenAmount(betTotals[option], decimals, !isUsdc);
 
     return value.toLocaleString();
   } catch (error) {

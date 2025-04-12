@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { GetPoolQuery, GetPoolsQuery, TokenBalance } from '@/types';
+
 import { ReactNode } from 'react';
 
 interface BettingFormProps {

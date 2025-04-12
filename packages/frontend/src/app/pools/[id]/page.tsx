@@ -1,12 +1,12 @@
 import { PoolDetailClient } from '@/components/pools/PoolDetailClient';
 import { supabaseAnonClient } from '@/lib/supabase';
-import { Metadata, ResolvingMetadata } from 'next';
+import { Metadata } from 'next';
 
 type Props = {
   params: Promise<{
     id: string;
   }>;
-  searchParams?: Promise<any>; //TODO Clean me up
+  searchParams?: Promise<Record<string, string | string[]>>; // Query params
 };
 
 export const revalidate = 60;
@@ -29,10 +29,7 @@ async function getPoolData(poolId: string) {
   }
 }
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const id = (await params).id;
 
   //TODO Below line triggers gql invariant, should fix later
