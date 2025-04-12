@@ -4,25 +4,36 @@
 SERVER="root@159.203.164.23"
 REMOTE_DIR="/root/trump-tg-bot"
 LOCAL_DIR="$(dirname "$0")"
+MONOREPO_ROOT="$(realpath "$LOCAL_DIR/../..")"
+COMMON_DIR="$MONOREPO_ROOT/packages/common"
 
+# Make sure common package is built
+echo "Building common package..."
+cd "$COMMON_DIR" && bun run build
 
-
-# No need to run a build step since Bun can run TypeScript files directly
+# No need to run a build step for the bot since Bun can run TypeScript files directly
 echo "Deploying to $SERVER:$REMOTE_DIR..."
 
-# Create the directory on the server if it doesn't exist
-ssh $SERVER "mkdir -p $REMOTE_DIR"
+# Create the directories on the server
+ssh $SERVER "mkdir -p $REMOTE_DIR $REMOTE_DIR/node_modules/@trump-fun"
 
-# Use rsync to transfer files, excluding those in .gitignore
+# Use rsync to transfer tg-bot files, excluding those in .gitignore
 rsync -avz --exclude-from=.gitignore \
   --exclude=".git/" \
   $LOCAL_DIR/ $SERVER:$REMOTE_DIR/
+
+# Create common package directory on the server
+ssh $SERVER "mkdir -p $REMOTE_DIR/node_modules/@trump-fun/common"
+
+# Transfer the common package (just the dist folder and package.json)
+rsync -avz "$COMMON_DIR/dist/" "$SERVER:$REMOTE_DIR/node_modules/@trump-fun/common/dist/"
+rsync -avz "$COMMON_DIR/package.json" "$SERVER:$REMOTE_DIR/node_modules/@trump-fun/common/"
 
 echo "Files transferred successfully!"
 
 # SSH into the server and install dependencies
 echo "Installing dependencies on the server..."
-ssh $SERVER "cd $REMOTE_DIR && /root/.nvm/versions/node/v23.10.0/bin/bun install"
+ssh $SERVER "cd $REMOTE_DIR && /root/.nvm/versions/node/v23.10.0/bin/bun install --no-save"
 
 
 # echo "Installing puppeteer dependencies..."
