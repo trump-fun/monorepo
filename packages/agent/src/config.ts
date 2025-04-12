@@ -208,7 +208,6 @@ if (
   throw new Error(`Invalid BFL_IMAGE_MODEL: ${BFL_IMAGE_MODEL}`);
 }
 
-console.log('DATURA_API_KEY', process.env.DATURA_API_KEY);
 // Export config object for convenience
 export const config = {
   tavilyApiKey: requireEnv('TAVILY_API_KEY'),

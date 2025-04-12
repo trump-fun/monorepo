@@ -42,6 +42,7 @@ export interface ReferenceChain {
 export interface SourceReference {
   url: string;
   title?: string;
+  // Keep source_type as a descriptor but not the definitive classifier
   source_type:
     | 'primary'
     | 'secondary'
@@ -54,7 +55,14 @@ export interface SourceReference {
   publication_date?: string;
   referenced_urls: string[]; // URLs referenced by this source
   content_summary: string;
-  is_primary_source: boolean;
+  // Replace is_primary_source with contains_original_information
+  contains_original_information: boolean; // Whether this contains original information/statements
+  // Add chain position markers
+  chain_distance_markers: {
+    has_no_references: boolean; // Potential chain endpoint (no further references)
+    is_directly_cited: boolean; // Whether this source is directly cited by others
+    cites_primary_sources: boolean; // Whether this source cites apparent primary sources
+  };
   verification_status: 'verified' | 'partially_verified' | 'unverified';
   key_claims: string[];
 }
