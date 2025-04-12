@@ -12,9 +12,10 @@ The Trump.fun AI Agent system consists of several primary components:
 2. **Bet Grading Agent**: Monitors news and Trump's activities to automatically resolve bets
 3. **Source Tracing Agent**: Traces information back to original sources through reference chains
 4. **Prediction Market Intelligence Tools**:
-   - **Prediction Finder**: Discovers X posts containing predictions on specific topics
-   - **Predictor Profile Builder**: Analyzes X accounts for their prediction history and style
-   - **Prediction Verification**: Verifies predictions against real-world outcomes with evidence
+   - **[Prediction Finder](./src/prediction-finder-agent/tools/find-predictions.ts)**: Discovers X posts containing predictions on specific topics
+   - **[Predictor Profile Builder](./src/predictor-profile-agent/tools/build-predictor-profile.ts)**: Analyzes X accounts for their prediction history and style
+   - **[Prediction Verification](./src/prediction-verification-agent/tools/verify-prediction.ts)**: Verifies predictions against real-world outcomes with evidence
+   - **[Prediction Market Agent](./src/prediction-market-agent/prediction-market-agent.ts)**: Aggregates prediction data and provides market insights
 
 These agents power the core functionality of Trump.fun - an AI-powered prediction market platform centered around President Trump's actions and statements, allowing users to place bets using either cryptocurrency (USDC) or our platform's native FREEDOM tokens.
 
@@ -42,29 +43,34 @@ Traces information back to its original source through reference chains (blog â†
 
 #### 2. Prediction Swarm Agents
 
-A set of tools for prediction market intelligence:
+A comprehensive prediction intelligence ecosystem that discovers, tracks, analyzes, and verifies predictions across social media:
 
-- **Prediction Finder**: Discovers X/Twitter posts containing explicit or implicit predictions related to specific topics
-- **Predictor Profile Builder**: Analyzes X/Twitter accounts for prediction history and style metrics
-- **Prediction Verification**: Verifies if predictions have matured (proven right or wrong) and collects supporting evidence
+- **[Prediction Finder](./src/prediction-finder-agent/tools/find-predictions.ts)**: Discovers explicit/implicit predictions on X/Twitter using NLP, filters for relevance, and categorizes by timeframe
+- **[Predictor Profile Builder](./src/predictor-profile-agent/tools/build-predictor-profile.ts)**: Analyzes prediction history, identifies expertise areas, grades prediction style/accuracy, and tracks verified predictions
+- **[Prediction Verification](./src/prediction-verification-agent/tools/verify-prediction.ts)**: Determines outcomes with supporting evidence, searches multiple sources, and categorizes results
+- **[Prediction Market Agent](./src/prediction-market-agent/prediction-market-agent.ts)**: Aggregates prediction data, tracks market trends, and provides insights for prediction market operators
 
 ## Tech Stack
 
-- Bun runtime for JavaScript/TypeScript
+- TypeScript + Bun runtime
 - LangChain/LangGraph for agent workflows
 - LangSmith for tracing and debugging
 - Integration with blockchain for market creation and resolution
-- Datura API for X/Twitter and AI search integration
+- Datura API for X/Twitter integration
+- Tavily for search and news intelligence
+- Commander for command-line interface
 
-## Environment Setup
+## Technical Requirements
 
-Refer to the project Notion for detailed environment variable setup instructions. Required variables include:
-
+- Node.js 22+
+- Bun runtime
+- 4GB RAM minimum
 - API keys for language models
 - Blockchain connection details
 - Truth Social monitoring credentials
 - LangSmith API keys
 - Datura API key for X/Twitter integration
+- Tavily API key
 
 ## Running the Agents
 
@@ -152,15 +158,13 @@ You can use these tools individually or build workflows that combine them, such 
 - Building profiles of predictors, then comparing their accuracy scores
 - Batch verifying predictions from multiple sources to identify trends
 
-````
-
 ## Deployment
 
 The agents are deployed to a server and run on a schedule via cron jobs:
 
 ```bash
 ./deploy.sh
-````
+```
 
 To check the current cron configuration:
 

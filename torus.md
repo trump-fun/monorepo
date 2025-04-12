@@ -9,8 +9,7 @@ Prediction Swarm Agents provides Torus with a comprehensive prediction intellige
 1. **[Prediction Discovery](./packages/agent/src/prediction-finder-agent/tools/find-predictions.ts)** - Identifies explicit and implicit predictions using advanced NLP to distinguish genuine predictions from general commentary.
 2. **[Predictor Profiling](./packages/agent/src/predictor-profile-agent/tools/build-predictor-profile.ts)** - Generates analytics on prediction makers, tracking expertise areas, prediction style, confidence levels, and historical accuracy.
 3. **[Prediction Verification](./packages/agent/src/prediction-verification-agent/tools/verify-prediction.ts)** - Validates outcomes by gathering evidence from multiple sources, creating a trusted record of prediction accuracy.
-4. **[Trust & Accountability](./packages/agent/src/predictor-profile-agent/tools/build-predictor-profile.ts)** - Establishes objective metrics for predictor accuracy, reducing misinformation by highlighting consistently reliable voices.
-5. **[Market Intelligence](./packages/agent/src/prediction-market-agent/prediction-market-agent.ts)** - Delivers aggregated data on emerging trends and prediction patterns to inform decision-making.
+4. **[Market Intelligence](./packages/agent/src/prediction-market-agent/prediction-market-agent.ts)** - Delivers aggregated data on emerging trends and prediction patterns to inform decision-making.
 
 ## System Architecture
 
@@ -43,11 +42,6 @@ Prediction Swarm Agents provides Torus with a comprehensive prediction intellige
 - Searches multiple reliable sources for verification
 - Provides confidence scores and evidence links
 - Categorizes outcomes (correct, partially correct, incorrect, unverifiable)
-
-#### [Trust & Accountability](./packages/agent/src/predictor-profile-agent/tools/build-predictor-profile.ts)
-
-- Establishes objective metrics for predictor accuracy
-- Reduces misinformation by highlighting consistently reliable voices
 
 #### [Prediction Market Agent](./packages/agent/src/prediction-market-agent/prediction-market-agent.ts)
 
