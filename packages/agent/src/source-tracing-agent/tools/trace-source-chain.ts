@@ -56,6 +56,288 @@ const sourceExtractionSchema = z.object({
 // Maximum depth to follow the reference chain
 const MAX_CHAIN_DEPTH = 5;
 
+// Common user agents for HTTP requests
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
+];
+
+/**
+ * Helper function to delay execution
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Helper function to poll a Firecrawl job for results
+ * @param jobId The ID of the Firecrawl job
+ * @returns The content if found, null otherwise
+ */
+/**
+ * Fetches content using a direct HTTP request
+ * @param url URL to fetch content from
+ * @returns Processed content or null if failed
+ */
+/**
+ * Fetches content using Firecrawl API with retries
+ * @param url URL to fetch content from
+ * @param maxRetries Maximum number of retries
+ * @param retryDelayMs Delay between retries in milliseconds
+ * @returns Content string or null if failed
+ */
+async function fetchWithFirecrawl(
+  url: string,
+  maxRetries: number,
+  retryDelayMs: number
+): Promise<string | null> {
+  if (!config.firecrawlApiKey) return null;
+
+  let attempts = 0;
+
+  while (attempts < maxRetries) {
+    try {
+      console.log(`Fetching with Firecrawl (attempt ${attempts + 1}):`, url);
+
+      // Make request to Firecrawl API
+      const response = await axios.post(
+        'https://api.firecrawl.dev/v1/crawl',
+        {
+          url: url,
+          scrapeOptions: {
+            // Request LLM-friendly markdown format when available
+            formats: ['markdown', 'html'],
+            onlyMainContent: true,
+            blockAds: true,
+            timeout: 45000, // 45 second timeout
+          },
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.firecrawlApiKey}`,
+          },
+          timeout: 60000, // Longer overall request timeout
+        }
+      );
+
+      // Handle async job scenario
+      if (response.data?.success && response.data?.id) {
+        const crawlId = response.data.id;
+        console.log(`Firecrawl job started with ID: ${crawlId}, waiting for results...`);
+
+        const resultContent = await pollFirecrawlJob(crawlId);
+        if (resultContent) return resultContent;
+
+        console.log('Failed to get content from Firecrawl crawl job after polling');
+      }
+      // Handle direct content response (backward compatibility)
+      else if (response.data?.content) {
+        console.log(
+          `Successfully retrieved content from Firecrawl (${response.data.content.length} chars)`
+        );
+        return response.data.content;
+      }
+      // No usable content found
+      else {
+        console.log('Firecrawl response had no usable content format.');
+      }
+
+      // Retry with delay
+      attempts++;
+      if (attempts < maxRetries) {
+        console.log(`Retrying in ${retryDelayMs / 1000} seconds...`);
+        await delay(retryDelayMs);
+      }
+    } catch (error: any) {
+      console.error(`Firecrawl fetch failed for ${url}: ${error.message}`);
+      attempts++;
+
+      // Check if we should retry based on error type
+      const shouldRetry =
+        error.response?.status === 429 || // Rate limiting
+        error.response?.status === 503 || // Service unavailable
+        error.code === 'ECONNRESET' ||
+        error.code === 'ETIMEDOUT';
+
+      if (shouldRetry && attempts < maxRetries) {
+        const backoffTime = retryDelayMs * attempts; // Exponential backoff
+        console.log(`Retrying in ${backoffTime / 1000} seconds...`);
+        await delay(backoffTime);
+      } else {
+        console.log('Moving to fallback methods after Firecrawl failures');
+        break;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Fetches content using a direct HTTP request
+ * @param url URL to fetch content from
+ * @returns Processed content or null if failed
+ */
+async function fetchWithDirectRequest(url: string): Promise<string | null> {
+  try {
+    console.log('Attempting direct HTTP request:', url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+      },
+      timeout: 20000,
+    });
+
+    if (response.data) {
+      // If we got HTML, parse with Cheerio to extract text
+      const $ = load(response.data);
+      // Remove script and style elements
+      $('script, style, meta, link').remove();
+      let text = $('body').text();
+      // Clean up whitespace
+      text = text.replace(/\s+/g, ' ').trim();
+      return text || response.data;
+    }
+  } catch (error: unknown) {
+    const axiosError = error as { message: string };
+    console.error('Direct HTTP request failed:', axiosError.message);
+  }
+
+  return null;
+}
+
+async function pollFirecrawlJob(jobId: string): Promise<string | null> {
+  let maxPolls = 10;
+  let pollInterval = 3000; // Start with 3 seconds
+  let content = null;
+
+  while (maxPolls > 0 && !content) {
+    try {
+      await delay(pollInterval);
+      const resultResponse = await axios.get(`https://api.firecrawl.dev/v1/crawl/${jobId}`, {
+        headers: {
+          Authorization: `Bearer ${config.firecrawlApiKey}`,
+        },
+      });
+
+      if (resultResponse.data?.status === 'completed') {
+        // Try to extract content from the response - the newest Firecrawl API structure
+        // has changed from previously using 'results' to now using 'data'
+
+        // First, try the new structure with data array
+        if (
+          resultResponse.data?.data &&
+          Array.isArray(resultResponse.data.data) &&
+          resultResponse.data.data.length > 0
+        ) {
+          // Look for content in the first item of data array
+          const dataItem = resultResponse.data.data[0];
+
+          if (dataItem) {
+            if (dataItem.markdown) {
+              content = dataItem.markdown;
+              console.log(
+                `Got markdown content from crawl job data array (${content.length} chars)`
+              );
+            } else if (dataItem.html) {
+              content = dataItem.html;
+              console.log(`Got HTML content from crawl job data array (${content.length} chars)`);
+            } else if (dataItem.text) {
+              content = dataItem.text;
+              console.log(`Got text content from crawl job data array (${content.length} chars)`);
+            } else if (dataItem.content) {
+              content = dataItem.content;
+              console.log(
+                `Got generic content from crawl job data array (${content.length} chars)`
+              );
+            }
+          }
+        }
+
+        // If not found in data array, try the old structure with results array
+        if (
+          !content &&
+          resultResponse.data?.results &&
+          Array.isArray(resultResponse.data.results) &&
+          resultResponse.data.results.length > 0
+        ) {
+          const firstResult = resultResponse.data.results[0];
+          if (firstResult) {
+            if (firstResult.markdown) {
+              content = firstResult.markdown;
+              console.log(`Got markdown content from crawl job results (${content.length} chars)`);
+            } else if (firstResult.html) {
+              content = firstResult.html;
+              console.log(`Got HTML content from crawl job results (${content.length} chars)`);
+            } else if (firstResult.text) {
+              content = firstResult.text;
+              console.log(`Got text content from crawl job results (${content.length} chars)`);
+            } else if (firstResult.content) {
+              content = firstResult.content;
+              console.log(`Got generic content from crawl job results (${content.length} chars)`);
+            }
+          }
+        }
+
+        // Try alternative content locations
+        if (!content && resultResponse.data?.data?.markdown) {
+          content = resultResponse.data.data.markdown;
+          console.log(`Got markdown from crawl job data object (${content.length} chars)`);
+        } else if (!content && resultResponse.data?.content) {
+          content = resultResponse.data.content;
+          console.log(`Got content from crawl job response (${content.length} chars)`);
+        } else if (!content && resultResponse.data?.text) {
+          content = resultResponse.data.text;
+          console.log(`Got text from crawl job response (${content.length} chars)`);
+        }
+
+        // If we still didn't get content despite completed status, log it and break
+        if (!content) {
+          console.log('Warning: Firecrawl returned completed status but no extractable content');
+          console.log(
+            'Response data:',
+            JSON.stringify(resultResponse.data).substring(0, 500) + '...'
+          );
+
+          // Last resort attempt to extract from the full response
+          const jsonString = JSON.stringify(resultResponse.data);
+          const markdownMatch = jsonString.match(/"markdown":"(.*?)"/);
+
+          if (markdownMatch && markdownMatch[1]) {
+            content = markdownMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+            console.log(`Extracted markdown content using regex (${content.length} chars)`);
+          }
+        }
+
+        // Always break the loop when status is completed, regardless of content
+        break;
+      } else if (resultResponse.data?.status === 'failed') {
+        console.log(`Crawl job failed: ${resultResponse.data?.error || 'Unknown error'}`);
+        break;
+      } else {
+        console.log(
+          `Crawl in progress (status: ${resultResponse.data?.status || 'unknown'}), polling again...`
+        );
+        // Increase poll interval with exponential backoff
+        pollInterval = Math.min(pollInterval * 1.5, 15000); // Cap at 15 seconds
+      }
+
+      maxPolls--;
+    } catch (pollError: any) {
+      console.error(`Error polling for crawl results: ${pollError.message}`);
+      maxPolls--;
+      pollInterval = Math.min(pollInterval * 2, 15000); // Increase backoff on errors
+    }
+  }
+
+  return content;
+}
+
 /**
  * Searches for relevant sources and references using Datura API
  * This provides a more comprehensive set of starting points for source tracing
@@ -78,7 +360,7 @@ async function searchForSources(topic: string, existingUrls: string[] = []): Pro
           },
           {
             headers: {
-              Authorization: `Bearer ${config.daturaApiKey}`,
+              Authorization: `${config.daturaApiKey}`,
               'Content-Type': 'application/json',
             },
           }
@@ -123,7 +405,7 @@ async function searchForSources(topic: string, existingUrls: string[] = []): Pro
           },
           {
             headers: {
-              Authorization: `Bearer ${config.daturaApiKey}`,
+              Authorization: `${config.daturaApiKey}`,
               'Content-Type': 'application/json',
             },
           }
@@ -350,68 +632,216 @@ async function extractContentWithDatura(url: string): Promise<string | null> {
   console.log(`Attempting to extract content with Datura API: ${url}`);
 
   try {
-    // Use Datura's AI search to get high-quality content extraction
-    const response = await axios.post(
-      'https://apis.datura.ai/desearch/ai/search',
-      {
-        prompt: `Extract and summarize the main content from this page: ${url}`,
-        tools: ['web'], // Only web tool needed for content extraction
-        model: 'NOVA', // Using their more powerful model for better extraction
-        streaming: false,
-        result_type: 'LINKS_WITH_SUMMARIES',
-      },
-      {
+    // Normalize URL to ensure it's properly formatted
+    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+
+    // Try multiple Datura endpoints in sequence for best results based on the official API docs
+
+    // 1. First try the web search - this is per the API documentation and should avoid 422 errors
+    try {
+      const webResponse = await axios.get('https://apis.datura.ai/web', {
+        params: {
+          query: `site:${new URL(normalizedUrl).hostname} ${new URL(normalizedUrl).pathname}`,
+          num: 5,
+          start: 1,
+        },
         headers: {
-          Authorization: `Bearer ${config.daturaApiKey}`,
+          Authorization: `${config.daturaApiKey}`,
           'Content-Type': 'application/json',
         },
-        timeout: 45000, // 45 second timeout
-      }
-    );
+        timeout: 30000, // 30 second timeout
+      });
 
-    let extractedContent = '';
+      let webContent = '';
 
-    // Try to get content from completion first (usually has the best summary)
-    if (response.data?.completion?.summary) {
-      extractedContent += response.data.completion.summary + '\n\n';
-    }
-
-    // Get content from text chunks if available
-    if (response.data?.text_chunks) {
-      const chunks = response.data.text_chunks;
-      if (Array.isArray(chunks)) {
-        for (const chunk of chunks) {
-          if (typeof chunk === 'string') {
-            extractedContent += chunk + '\n';
-          } else if (chunk.twitter_summary && Array.isArray(chunk.twitter_summary)) {
-            extractedContent += chunk.twitter_summary.join('\n') + '\n';
+      if (webResponse.data?.data && Array.isArray(webResponse.data.data)) {
+        for (const result of webResponse.data.data) {
+          if (result.snippet) {
+            webContent += result.snippet + '\n\n';
           }
-        }
-      } else if (typeof chunks === 'string') {
-        extractedContent += chunks;
-      }
-    }
-
-    // Look for search results that match our URL
-    if (response.data?.search_results?.organic_results) {
-      const results = response.data.search_results.organic_results;
-      for (const result of results) {
-        if ((result.link === url || url.includes(result.link)) && result.snippet) {
-          extractedContent += '\n' + result.snippet;
-          if (result.summary_description) {
-            extractedContent += '\n' + result.summary_description;
+          if (result.title) {
+            webContent = `# ${result.title}\n\n${webContent}`;
           }
         }
       }
+
+      if (webContent.length > 200) {
+        console.log(`Successfully extracted ${webContent.length} chars with Datura web search API`);
+        return webContent;
+      }
+    } catch (webError: any) {
+      console.log(`Datura web search failed: ${webError.message}, trying desearch`);
     }
 
-    if (extractedContent.length > 200) {
-      console.log(`Successfully extracted ${extractedContent.length} chars with Datura API`);
-      return extractedContent;
-    } else {
-      console.log('Datura API extraction returned insufficient content');
-      return null;
+    // 2. Try the desearch/ai/search endpoint with proper parameters
+    try {
+      const desearchResponse = await axios.post(
+        'https://apis.datura.ai/desearch/ai/search',
+        {
+          prompt: `Extract the main content from this URL: ${normalizedUrl}`,
+          tools: ['web'], // Required parameter per docs
+          model: 'NOVA',
+          date_filter: 'PAST_MONTH',
+          streaming: true,
+          result_type: 'LINKS_WITH_SUMMARIES',
+        },
+        {
+          headers: {
+            Authorization: `${config.daturaApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 45000, // 45 second timeout
+        }
+      );
+
+      let extractedContent = '';
+
+      // Try to get content from completion
+      if (desearchResponse.data?.completion?.summary) {
+        extractedContent += desearchResponse.data.completion.summary + '\n\n';
+      }
+
+      // Get content from text chunks if available
+      if (desearchResponse.data?.text_chunks) {
+        if (Array.isArray(desearchResponse.data.text_chunks)) {
+          for (const chunk of desearchResponse.data.text_chunks) {
+            if (typeof chunk === 'string') {
+              extractedContent += chunk + '\n';
+            } else if (chunk.twitter_summary && Array.isArray(chunk.twitter_summary)) {
+              extractedContent += chunk.twitter_summary.join('\n') + '\n';
+            }
+          }
+        } else if (typeof desearchResponse.data.text_chunks === 'string') {
+          extractedContent += desearchResponse.data.text_chunks;
+        }
+      }
+
+      if (extractedContent.length > 200) {
+        console.log(
+          `Successfully extracted ${extractedContent.length} chars with Datura AI search API`
+        );
+        return extractedContent;
+      }
+    } catch (desearchError: any) {
+      console.log(`Datura AI search failed: ${desearchError.message}, trying web links search`);
     }
+
+    // 3. Try the desearch/ai/search/links/web endpoint
+    try {
+      const linksResponse = await axios.post(
+        'https://apis.datura.ai/desearch/ai/search/links/web',
+        {
+          prompt: `Find content from this URL: ${normalizedUrl}`,
+          tools: ['web', 'wikipedia'], // Required parameter per docs
+          model: 'NOVA',
+        },
+        {
+          headers: {
+            Authorization: `${config.daturaApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 45000, // 45 second timeout
+        }
+      );
+
+      let linksContent = '';
+
+      // Process search results
+      if (linksResponse.data?.search_results?.organic_results) {
+        const results = linksResponse.data.search_results.organic_results;
+        for (const result of results) {
+          // Try to find exact match or closely related content
+          if (
+            result.link === normalizedUrl ||
+            normalizedUrl.includes(result.link) ||
+            result.link.includes(new URL(normalizedUrl).hostname)
+          ) {
+            if (result.snippet) {
+              linksContent += result.snippet + '\n\n';
+            }
+
+            if (result.summary_description) {
+              linksContent += result.summary_description + '\n\n';
+            }
+          }
+        }
+      }
+
+      // Check other sources too
+      const sourceTypes = [
+        'wikipedia_search_results',
+        'youtube_search_results',
+        'arxiv_search_results',
+        'reddit_search_results',
+        'hacker_news_search_results',
+      ];
+
+      for (const sourceType of sourceTypes) {
+        if (linksResponse.data?.[sourceType]?.organic_results) {
+          const results = linksResponse.data[sourceType].organic_results;
+          for (const result of results) {
+            if (result.snippet) {
+              linksContent += result.snippet + '\n\n';
+            }
+            if (result.summary_description) {
+              linksContent += result.summary_description + '\n\n';
+            }
+          }
+        }
+      }
+
+      if (linksContent.length > 200) {
+        console.log(
+          `Successfully extracted ${linksContent.length} chars with Datura links web API`
+        );
+        return linksContent;
+      }
+    } catch (linksError: any) {
+      console.log(`Datura links web search failed: ${linksError.message}`);
+    }
+
+    // 4. Try with Twitter/X search as final attempt
+    try {
+      const twitterResponse = await axios.post(
+        'https://apis.datura.ai/desearch/ai/search/links/twitter',
+        {
+          prompt: `Find information about ${normalizedUrl}`,
+          model: 'NOVA',
+        },
+        {
+          headers: {
+            Authorization: `${config.daturaApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000, // 30 second timeout
+        }
+      );
+
+      let twitterContent = '';
+
+      if (twitterResponse.data?.miner_tweets && Array.isArray(twitterResponse.data.miner_tweets)) {
+        for (const tweet of twitterResponse.data.miner_tweets) {
+          if (tweet.text) {
+            twitterContent += tweet.text + '\n\n';
+          }
+          if (tweet.summary_description) {
+            twitterContent += tweet.summary_description + '\n\n';
+          }
+        }
+      }
+
+      if (twitterContent.length > 200) {
+        console.log(
+          `Successfully extracted ${twitterContent.length} chars with Datura Twitter search API`
+        );
+        return twitterContent;
+      }
+    } catch (twitterError: any) {
+      console.log(`Datura Twitter search failed: ${twitterError.message}`);
+    }
+
+    console.log('All Datura API extraction attempts returned insufficient content');
+    return null;
   } catch (error: unknown) {
     const err = error as { message: string };
     console.error(`Error extracting content with Datura:`, err.message);
@@ -428,16 +858,9 @@ async function fetchContentFromUrl(url: string): Promise<string> {
   const MAX_FIRECRAWL_RETRIES = 3;
   // Backoff delay for retries (ms)
   const RETRY_DELAY_MS = 2000;
-  // Different user agents to rotate through for requests that need them
-  const USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
-  ];
+  // Using the module-level USER_AGENTS
 
-  // Helper function to delay execution
-  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  // Use the shared delay helper function
 
   try {
     // Normalize URL to handle edge cases
@@ -454,74 +877,9 @@ async function fetchContentFromUrl(url: string): Promise<string> {
     }
 
     // Second try: Firecrawl API if configured
-    if (config.firecrawlApiKey) {
-      let attempts = 0;
-      let firecrawlSucceeded = false;
-
-      while (attempts < MAX_FIRECRAWL_RETRIES && !firecrawlSucceeded) {
-        try {
-          console.log(`Fetching with Firecrawl (attempt ${attempts + 1}):`, url);
-
-          // Make a direct GET request to the Firecrawl API
-          const response = await axios.get(`https://api.firecrawl.dev/v1/crawl`, {
-            params: {
-              url: url,
-              // Request LLM-friendly markdown format when available
-              format: 'markdown',
-            },
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${config.firecrawlApiKey}`,
-            },
-            timeout: 45000, // 45 second timeout (increased from 30s)
-          });
-
-          if (response.data?.content) {
-            console.log(
-              `Successfully retrieved content from Firecrawl (${response.data.content.length} chars)`
-            );
-            content = response.data.content;
-            firecrawlSucceeded = true;
-          } else if (response.data?.text) {
-            content = response.data.text;
-            firecrawlSucceeded = true;
-          } else if (response.data?.html) {
-            content = response.data.html;
-            firecrawlSucceeded = true;
-          } else {
-            // If we get here, we didn't find usable content
-            console.log('Firecrawl response had no usable content format.');
-            attempts++;
-            if (attempts < MAX_FIRECRAWL_RETRIES) {
-              console.log(`Retrying in ${RETRY_DELAY_MS / 1000} seconds...`);
-              await delay(RETRY_DELAY_MS);
-            }
-          }
-        } catch (firecrawlError: any) {
-          console.error(`Firecrawl fetch failed for ${url}: ${firecrawlError.message}`);
-          attempts++;
-
-          // Check if we should retry based on error type
-          const shouldRetry =
-            firecrawlError.response?.status === 429 || // Rate limiting
-            firecrawlError.response?.status === 503 || // Service unavailable
-            firecrawlError.code === 'ECONNRESET' ||
-            firecrawlError.code === 'ETIMEDOUT';
-
-          if (shouldRetry && attempts < MAX_FIRECRAWL_RETRIES) {
-            const backoffTime = RETRY_DELAY_MS * attempts; // Exponential backoff
-            console.log(`Retrying in ${backoffTime / 1000} seconds...`);
-            await delay(backoffTime);
-          } else {
-            console.log('Moving to fallback methods after Firecrawl failures');
-            break;
-          }
-        }
-      }
-
-      if (firecrawlSucceeded && content) {
-        return content;
-      }
+    const firecrawlContent = await fetchWithFirecrawl(url, MAX_FIRECRAWL_RETRIES, RETRY_DELAY_MS);
+    if (firecrawlContent) {
+      return firecrawlContent;
     }
 
     // Special handling for common document types
@@ -549,30 +907,9 @@ async function fetchContentFromUrl(url: string): Promise<string> {
     }
 
     // Final fallback: try a direct axios get request
-    try {
-      console.log('Attempting direct HTTP request as last resort:', url);
-      const response = await axios.get(url, {
-        headers: {
-          'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
-          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-        },
-        timeout: 20000,
-      });
-
-      if (response.data) {
-        // If we got HTML, parse with Cheerio to extract text
-        const $ = load(response.data);
-        // Remove script and style elements
-        $('script, style, meta, link').remove();
-        let text = $('body').text();
-        // Clean up whitespace
-        text = text.replace(/\s+/g, ' ').trim();
-        return text || response.data;
-      }
-    } catch (error: unknown) {
-      const axiosError = error as { message: string };
-      console.error('Final direct HTTP request also failed:', axiosError.message);
+    const directContent = await fetchWithDirectRequest(url);
+    if (directContent) {
+      return directContent;
     }
 
     throw new Error('Failed to fetch content with all available methods');
@@ -1319,12 +1656,13 @@ async function extractSourceMetadataWithDatura(url: string): Promise<any | null>
         prompt: `Analyze this content: ${url}. Identify source type, publisher, publication date, and key topics.`,
         tools: ['web'],
         model: 'NOVA',
-        streaming: false,
-        result_type: 'LINKS_WITH_FINAL_SUMMARY',
+        date_filter: 'PAST_MONTH',
+        streaming: true,
+        result_type: 'LINKS_WITH_SUMMARIES',
       },
       {
         headers: {
-          Authorization: `Bearer ${config.daturaApiKey}`,
+          Authorization: `${config.daturaApiKey}`,
           'Content-Type': 'application/json',
         },
         timeout: 30000,
