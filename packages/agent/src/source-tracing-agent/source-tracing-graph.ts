@@ -9,7 +9,7 @@ import type { BaseMessage } from '@langchain/core/messages';
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
 import { v4 as uuidv4 } from 'uuid';
 import type { ReferenceChain } from '../types/research-item';
-import { traceSourceChain } from './tools/trace-source-chain';
+import { traceSourceChain } from './core/source-tracing';
 
 // Define source tracing state
 const SourceTracingAnnotation = Annotation.Root({

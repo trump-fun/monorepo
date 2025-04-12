@@ -38,7 +38,7 @@ async function runSourceTracing() {
         console.log(`\n  Source ${j + 1}: ${source.url}`);
         console.log(`  Title: ${source.title || 'Unknown'}`);
         console.log(`  Type: ${source.source_type}`);
-        console.log(`  Primary: ${source.is_primary_source}`);
+        console.log(`  Primary: ${source.contains_original_information}`);
         console.log(`  Verification: ${source.verification_status}`);
         console.log(`  Summary: ${source.content_summary.substring(0, 100)}...`);
       });

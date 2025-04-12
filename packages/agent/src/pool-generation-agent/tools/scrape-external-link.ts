@@ -1,9 +1,9 @@
-import axios from 'axios';
 import { load } from 'cheerio';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 import config from '../../config';
 import { fetchWithPuppeteer } from '../../puppeteer-stealth-request';
+import FirecrawlApp from '@mendable/firecrawl-js';
 
 /**
  * Extracts a URL from HTML content
@@ -116,28 +116,40 @@ export async function extractAndScrapeExternalLink(
   try {
     let content: string;
 
-    // First try with Firecrawl API if configured
+    // First try with Firecrawl SDK if configured
     if (config.firecrawlApiKey) {
       try {
-        console.log('Attempting to fetch URL with Firecrawl');
-        const response = await axios.get('https://api.firecrawl.dev/v1/crawl', {
-          params: { url: externalLink },
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${config.firecrawlApiKey}`,
-          },
-          timeout: 30000, // 30 second timeout
+        console.log('Attempting to fetch URL with Firecrawl SDK');
+        // Initialize the Firecrawl SDK with the API key
+        const firecrawl = new FirecrawlApp({ apiKey: config.firecrawlApiKey });
+        
+        // Use the scrapeUrl method to get the content as shown in the documentation
+        const scrapeResponse = await firecrawl.scrapeUrl(externalLink, {
+          formats: ['markdown', 'html']
         });
-
-        if (response.data.content) {
-          content = response.data.content;
-          console.log('Successfully fetched content with Firecrawl');
-        } else if (response.data.text) {
-          content = response.data.text;
-        } else if (response.data.html) {
-          content = response.data.html;
+        
+        // Check if the scrape was successful
+        if (!scrapeResponse.success) {
+          throw new Error(`Failed to scrape: ${scrapeResponse.error}`);
+        }
+        
+        // Extract content based on response structure
+        // Using type assertion with 'any' to access properties since TypeScript definitions may not match actual response
+        const response = scrapeResponse as any;
+        
+        if (response.formats?.markdown) {
+          content = response.formats.markdown;
+          console.log('Successfully fetched markdown content with Firecrawl SDK');
+        } else if (response.formats?.html) {
+          content = response.formats.html;
+          console.log('Successfully fetched HTML content with Firecrawl SDK');
+        } else if (response.content) {
+          content = response.content;
+          console.log('Successfully fetched content with Firecrawl SDK');
         } else {
-          throw new Error('No content returned from Firecrawl');
+          // Fallback to stringifying the response
+          content = JSON.stringify(response);
+          console.log('Using stringified Firecrawl response');
         }
       } catch (firecrawlError) {
         console.error('Firecrawl fetch failed:', firecrawlError);
