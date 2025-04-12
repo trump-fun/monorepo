@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd ../.. && bun install && cd packages/frontend && bun run build",
-  "outputDirectory": "packages/frontend/.next"
-}
