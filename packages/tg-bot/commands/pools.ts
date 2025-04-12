@@ -1,6 +1,12 @@
 import type { Context } from 'grammy';
 import { InlineKeyboard } from 'grammy';
-import { OrderDirection, Pool_OrderBy, PoolStatus, type Pool } from '@trump-fun/common';
+
+import type { Pool } from '@trump-fun/common/src/types/__generated__/graphql';
+import {
+  OrderDirection,
+  PoolStatus,
+  Pool_OrderBy,
+} from '@trump-fun/common/src/types/__generated__/graphql';
 import { apolloClient } from '../lib/apolloClient';
 import { GET_POOLS } from '../queries';
 

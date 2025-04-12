@@ -3,7 +3,8 @@ import { InlineKeyboard } from 'grammy';
 import { apolloClient } from '../lib/apolloClient';
 import { GET_BETS } from '../queries';
 import { getWallet } from '../utils/getWallet';
-import { PoolStatus, type Bet } from '@trump-fun/common';
+import type { Bet } from '@trump-fun/common/src/types/__generated__/graphql';
+import { PoolStatus } from '@trump-fun/common/src/types/__generated__/graphql';
 
 enum FilterType {
   ACTIVE = 'active',

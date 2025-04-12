@@ -4,7 +4,7 @@ import type { Context } from 'grammy';
 import { privy } from '../lib/privy';
 import { getWallet } from '../utils/getWallet';
 
-//TODO fix this
+//TODO fix this, shouldn't be hardcoded at all, have user provide network and load the relevant config
 const APP_ADDRESS = CHAIN_CONFIG[84532].appAddress as `0x${string}`;
 const POINTS_ADDRESS = CHAIN_CONFIG[84532].freedomAddress as `0x${string}`;
 const USDC_ADDRESS = CHAIN_CONFIG[84532].usdcAddress as `0x${string}`;
@@ -26,7 +26,7 @@ export const withdrawCommand = async (ctx: Context) => {
   }
 
   const params = ctx.message?.text?.split(' ').filter(Boolean) || [];
-  const provider = new ethers.JsonRpcProvider('https://sepolia.base.org');
+  const provider = new ethers.JsonRpcProvider('https://sepolia.base.org'); //TODO Avoid hardcoding
 
   // If just /withdraw, show balance and options
   if (params.length === 1) {

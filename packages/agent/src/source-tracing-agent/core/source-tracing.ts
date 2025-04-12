@@ -36,7 +36,7 @@ export async function traceSourceChain(
   const startingUrls = collectStartingUrls(researchItem);
 
   // Extract topic keywords for searching additional sources
-  let topicKeywords = extractTopicKeywords(researchItem);
+  const topicKeywords = extractTopicKeywords(researchItem);
 
   // Enhance with Datura API search if we have topic keywords
   let enhancedUrls: string[] = [];

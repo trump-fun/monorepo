@@ -23,8 +23,7 @@ import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-ex
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
 import { tavilySearchFunctionSingle } from './tools/tavily-search';
 import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
-// Import the new source tracing tool
-import { traceSourceChain } from '../source-tracing-agent/tools/trace-source-chain';
+import { traceSourceChain } from '../source-tracing-agent/core/source-tracing';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,

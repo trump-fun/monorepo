@@ -29,7 +29,7 @@ Prediction Swarm Agents provides Torus with a comprehensive prediction intellige
 
 - Analyzes prediction history and style metrics
 - Identifies expertise areas and patterns
-- Calculates explicitness, evidence-based reasoning, and timeframe preferences
+- Grades user's prediction style, accuracy, and consistency to influence later grading
 - Tracks verified predictions for accuracy records
 
 #### Prediction Verification
@@ -41,11 +41,11 @@ Prediction Swarm Agents provides Torus with a comprehensive prediction intellige
 
 ### Implementation
 
-- TypeScript with Bun runtime
-- LangChain/LangGraph for agent workflows
-- Datura API for X/Twitter integration
-- Tavily for search and news intelligence
-- Comprehensive command-line interface
+- TypeScript + Bun: Base language and runtime
+- LangChain/LangGraph: All agents use LangChain/LangGraph for custom tool routing and structured output
+- Datura API: X/Twitter integration used to search for predictions
+- Tavily: Search and news intelligence
+- Commander: Provides comprehensive command-line interface for the
 
 ## Command-Line Interface
 
@@ -182,22 +182,10 @@ bun run prediction-tools batch-verify --file predictions.json --output results.j
 
 ## Technical Requirements
 
-- Node.js 18+
+- Node.js 20+
 - Bun runtime
 - 4GB RAM minimum
 - API keys for language models, Datura, and Tavily
-
-## GitHub Repository
-
-Complete project code: github.com/yourusername/prediction-swarm
-
-Includes:
-
-- Full source code
-- Comprehensive documentation
-- Example implementations
-- Installation guides
-- Test cases
 
 ## Conclusion
 
