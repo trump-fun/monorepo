@@ -1,5 +1,6 @@
 import { config } from '../../config';
 import { delay } from '../utils/delay';
+import axios from 'axios';
 import FirecrawlApp from '@mendable/firecrawl-js';
 
 /**
@@ -14,7 +15,10 @@ export async function fetchWithFirecrawl(
   maxRetries = 3,
   retryDelayMs = 2000
 ): Promise<string | null> {
-  if (!config.firecrawlApiKey) return null;
+  if (!config.firecrawlApiKey) {
+    console.log('No Firecrawl API key found, attempting direct request...');
+    return fetchWithDirectRequest(url);
+  }
 
   let attempts = 0;
   // Initialize the Firecrawl SDK with the API key
@@ -33,7 +37,16 @@ export async function fetchWithFirecrawl(
 
       // Check if the scrape was successful
       if (!scrapeResponse.success) {
-        throw new Error(`Failed to scrape: ${scrapeResponse.error}`);
+        const errorMessage = scrapeResponse.error || 'Unknown error';
+        console.error(`Firecrawl error: ${errorMessage}`);
+        
+        // Check if this is a domain support issue
+        if (errorMessage.includes('no longer supported') || errorMessage.includes('not supported')) {
+          console.log('Domain not supported by Firecrawl, trying direct request fallback...');
+          return fetchWithDirectRequest(url);
+        }
+        
+        throw new Error(`Failed to scrape: ${errorMessage}`);
       }
 
       // Extract content - type assertion to handle potential type issues
@@ -64,12 +77,17 @@ export async function fetchWithFirecrawl(
       attempts++;
       if (attempts < maxRetries) {
         await delay(retryDelayMs);
+      } else {
+        // Last attempt failed, try direct request as a final fallback
+        console.log('Firecrawl attempts exhausted, trying direct request fallback...');
+        return fetchWithDirectRequest(url);
       }
     }
   }
 
   console.log(`Failed to fetch content with Firecrawl SDK after ${maxRetries} attempts`);
-  return null;
+  console.log('Attempting direct request as final fallback...');
+  return fetchWithDirectRequest(url);
 }
 
 /**
@@ -79,6 +97,34 @@ export async function fetchWithFirecrawl(
  * @param pollIntervalMs Interval between polling attempts in milliseconds
  * @returns Content if successful, null otherwise
  */
+// Fetch content using a direct HTTP request
+async function fetchWithDirectRequest(url: string): Promise<string | null> {
+  try {
+    console.log('Fetching with direct request:', url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml',
+        'Accept-Language': 'en-US,en;q=0.9'
+      },
+      timeout: 15000,
+      maxContentLength: 10 * 1024 * 1024 // 10MB limit
+    });
+    
+    if (response.status === 200 && response.data) {
+      const content = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      console.log(`Successfully fetched ${content.length} chars with direct request`);
+      return content;
+    }
+    
+    console.log(`Direct request failed with status ${response.status}`);
+    return null;
+  } catch (error: any) {
+    console.error('Direct request error:', error.message);
+    return null;
+  }
+}
+
 export async function pollFirecrawlJob(
   jobId: string,
   maxAttempts = 10,

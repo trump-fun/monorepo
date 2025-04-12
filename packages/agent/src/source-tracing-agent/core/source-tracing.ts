@@ -110,7 +110,7 @@ export async function traceSourceChain(
   let primarySourceSummary = '';
 
   // Helper function to process a single URL with timeout
-  async function processUrlWithTimeout(url: string, timeoutMs: number = 30000) {
+  async function processUrlWithTimeout(url: string, timeoutMs: number = 60000) {
     return new Promise<{
       primarySourceFound: boolean;
       primarySourceUrl?: string;
