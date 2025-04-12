@@ -1,8 +1,11 @@
 import type { Context } from 'grammy';
 import { InlineKeyboard } from 'grammy';
-import { OrderDirection, Pool_OrderBy, PoolStatus, type Pool } from '@trump-fun/common';
-import { apolloClient } from '../lib/apolloClient';
-import { GET_POOLS } from '../queries';
+import { PoolStatus, getTimeRemaining } from '@trump-fun/common';
+import { OrderDirection, Pool_OrderBy, type Pool } from '@trump-fun/common';
+import { apolloClient } from '@/lib/apolloClient';
+import { GET_POOLS } from '../../queries';
+import { createPoolDetailsKeyboard } from '@/utils/ui';
+import { formatPoolMessage } from '@/utils/messages';
 
 enum PoolFilterType {
   ACTIVE = 'active',
@@ -17,68 +20,43 @@ interface PaginationState {
   limit: number;
 }
 
-function formatPoolMessage(pool: Pool): string {
-  const formattedDate = new Date(Number(pool.createdAt) * 1000).toLocaleString();
-
-  const totalBets = pool.bets?.length || 0;
-  const totalVolume = pool.bets?.reduce((sum, bet) => sum + parseFloat(bet.amount), 0) || 0;
-  const formattedVolume = totalVolume.toLocaleString(undefined, {
-    maximumFractionDigits: 2,
-  });
-
-  const optionsText = pool.options
-    .map((opt: string, i: number) => {
-      const optionBets = pool.bets?.filter(bet => bet.option === i) || [];
-      const optionVolume = optionBets.reduce((sum, bet) => sum + parseFloat(bet.amount), 0);
-      const odds = totalVolume > 0 ? ((optionVolume / totalVolume) * 100).toFixed(1) + '%' : 'N/A';
-
-      return `   ${i + 1}. ${opt} (${odds})`;
-    })
-    .join('\n');
-
-  let timeRemaining = '';
-  if (pool.betsCloseAt) {
-    const endTime = Number(pool.betsCloseAt) * 1000;
-    const now = Date.now();
-    const remainingMs = endTime - now;
-
-    if (remainingMs > 0) {
-      const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      timeRemaining = `\n⏳ *Time Remaining:* ${days}d ${hours}h`;
-    } else {
-      timeRemaining = '\n⏳ *Status:* Awaiting resolution';
-    }
-  }
-
-  return (
-    `🔷 *Pool ID:* \`${pool.poolId}\`\n\n` +
-    `❓ *Question:* ${pool.question}\n\n` +
-    `⚡️ *Options:*\n${optionsText}\n\n` +
-    `💰 *Volume:* ${formattedVolume} tokens\n` +
-    `👥 *Participants:* ${totalBets}\n` +
-    `🔹 *Status:* ${pool.status}${timeRemaining}\n` +
-    `🕒 *Created:* ${formattedDate}`
-  );
-}
-
 function formatPoolsList(pools: Pool[]): string {
   if (pools.length === 0) {
-    return 'No pools found matching your criteria.';
+    return "No prediction markets found on Trump's Truth Social posts yet.";
   }
 
-  let message = '📊 *Available Pools:*\n\n';
+  let message = '<b>🇺🇸 TRUMP PREDICTIONS:</b>\n\n';
 
   pools.forEach((pool, index) => {
-    const totalVolume = Number(pool.usdcVolume) + Number(pool.pointsVolume);
+    const totalVolume = Number(pool.usdcVolume || '0') + Number(pool.pointsVolume || '0');
+    const formattedVolume = `$${(Number(totalVolume) / 10 ** 6).toFixed(2)}`;
 
-    message += `${index + 1}. *${pool.question}*\n`;
-    message += `   ID: \`${pool.poolId}\` | Vol: ${Number(
-      Number(totalVolume) / 10 ** 6
-    )} | Options: ${pool.options.length}\n\n`;
+    // Determine pool status with appropriate emoji
+    let statusEmoji;
+    let timeInfo = '';
+
+    if (pool.status === PoolStatus.Pending) {
+      statusEmoji = '🟢'; // Green circle for active pools
+
+      // Add time remaining for active pools
+      if (pool.betsCloseAt) {
+        const remaining = getTimeRemaining(pool.betsCloseAt);
+        if (remaining) {
+          timeInfo = ` | ⏱️ ${remaining}`;
+        }
+      }
+    } else if (pool.status === PoolStatus.Graded || pool.status === PoolStatus.Regraded) {
+      statusEmoji = '✅'; // Checkmark for resolved pools
+    } else {
+      statusEmoji = '🟠'; // Orange for other statuses
+    }
+
+    // Format the Trump prediction with TREMENDOUS style
+    message += `${index + 1}. <b>${pool.question}</b>\n`;
+    message += `   ID: <code>${pool.poolId}</code> | ${statusEmoji} ${pool.status}${timeInfo} | Vol: ${formattedVolume} | Options: ${pool.options.length}\n\n`;
   });
 
-  message += 'Use /pool [ID] to see details or select a pool below.';
+  message += '<i>Use /pool [ID] or tap a button below to see details and place your bets!</i>';
 
   return message;
 }
@@ -190,6 +168,15 @@ async function fetchPools(
       return { pools: null, error };
     }
 
+    // Check if data and data.pools exist
+    if (!data || !data.pools) {
+      console.error('No data returned from the GraphQL endpoint');
+      return {
+        pools: null,
+        error: new Error('The Graph endpoint is unavailable. The endpoint has been removed.'),
+      };
+    }
+
     return { pools: data.pools, error: null };
   } catch (err) {
     console.error('Exception while fetching pools:', err);
@@ -207,7 +194,7 @@ export const poolsCommand = async (ctx: Context): Promise<void> => {
       limit: 10,
     };
 
-    const queryParams = getPoolQueryParams(PoolFilterType.ACTIVE);
+    const queryParams = getPoolQueryParams(PoolFilterType.NEWEST);
     const { pools, error } = await fetchPools(queryParams, pagination);
 
     if (error || !pools) {
@@ -220,17 +207,19 @@ export const poolsCommand = async (ctx: Context): Promise<void> => {
       return;
     }
 
-    const keyboard = createPoolsKeyboard(pools, PoolFilterType.ACTIVE, pagination);
+    const keyboard = createPoolsKeyboard(pools, PoolFilterType.NEWEST, pagination);
 
     await ctx.reply(formatPoolsList(pools), {
       reply_markup: keyboard,
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
     });
   } catch (err) {
     console.error('Error in pools command:', err);
     await ctx.reply('An unexpected error occurred. Please try again later.');
   }
 };
+
+// createProgressBar has been moved to utils/ui.ts
 
 export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
   if (!ctx.callbackQuery?.data) return;
@@ -258,11 +247,13 @@ export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
         return;
       }
 
-      const backKeyboard = new InlineKeyboard().text('« Back to Pools', 'pools_back_to_list');
+      // Create keyboard with betting options and navigation
+      const poolData = data.pools[0];
+      const keyboard = createPoolDetailsKeyboard(poolData);
 
-      await ctx.editMessageText(formatPoolMessage(data.pools[0]), {
-        reply_markup: backKeyboard,
-        parse_mode: 'Markdown',
+      await ctx.editMessageText(formatPoolMessage(poolData), {
+        reply_markup: keyboard,
+        parse_mode: 'HTML',
       });
       return;
     }
@@ -285,7 +276,7 @@ export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
 
       await ctx.editMessageText(formatPoolsList(pools), {
         reply_markup: createPoolsKeyboard(pools, filterType, pagination),
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
       });
       return;
     }
@@ -310,7 +301,7 @@ export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
 
       await ctx.editMessageText(formatPoolsList(pools), {
         reply_markup: createPoolsKeyboard(pools, filterType, pagination),
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
       });
       return;
     }
@@ -321,7 +312,7 @@ export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
         limit: 10,
       };
 
-      const queryParams = getPoolQueryParams(PoolFilterType.ACTIVE);
+      const queryParams = getPoolQueryParams(PoolFilterType.NEWEST);
       const { pools, error } = await fetchPools(queryParams, pagination);
 
       if (error || !pools) {
@@ -330,12 +321,25 @@ export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
       }
 
       await ctx.editMessageText(formatPoolsList(pools), {
-        reply_markup: createPoolsKeyboard(pools, PoolFilterType.ACTIVE, pagination),
-        parse_mode: 'Markdown',
+        reply_markup: createPoolsKeyboard(pools, PoolFilterType.NEWEST, pagination),
+        parse_mode: 'HTML',
       });
       return;
     }
-  } catch (err) {
+    // Handle bet_pool_ callback - redirect to bet.ts for the betting flow
+    if (callbackData.startsWith('bet_pool_')) {
+      // The handler in bet.ts will handle this callback
+      // We don't return anything as this function returns void
+      return;
+    }
+  } catch (err: any) {
+    // Check if this is a "message not modified" error (which is not a critical error)
+    if (err.description && err.description.includes('message is not modified')) {
+      // Just log it but don't show an error to the user
+      console.log('Navigation produced identical message content - ignoring');
+      return;
+    }
+
     console.error('Error in pools navigation handler:', err);
     await ctx.reply('An error occurred. Please try again.');
   }

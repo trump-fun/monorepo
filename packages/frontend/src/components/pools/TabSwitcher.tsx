@@ -116,9 +116,9 @@ export const TabSwitcher = ({
                 <div className='font-medium'>
                   {formatTokenAmount(
                     bet.amount,
-                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Points
+                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom
                   )}{' '}
-                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Points)}
+                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom)}
                 </div>
               </div>
             ))}

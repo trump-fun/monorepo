@@ -111,7 +111,7 @@ export const calculateOptionPercentages = (
       : pool.options.map(() => 0);
 
   return pool.options.map((_, index) => {
-    if (tokenType === TokenType.Points && totalPoints > BigInt(0)) {
+    if (tokenType === TokenType.Freedom && totalPoints > BigInt(0)) {
       return pointsPercentages[index];
     } else if (tokenType === TokenType.Usdc && totalUsdc > BigInt(0)) {
       return usdcPercentages[index];

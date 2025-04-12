@@ -1855,7 +1855,7 @@ export type QueryWithdrawalsArgs = {
 };
 
 export enum TokenType {
-  Points = 'POINTS',
+  Freedom = 'POINTS',
   Usdc = 'USDC',
 }
 

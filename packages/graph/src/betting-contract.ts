@@ -68,7 +68,7 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
     bet.createdAt = event.block.timestamp;
     bet.updatedAt = event.block.timestamp;
     bet.isWithdrawn = false;
-    bet.tokenType = event.params.tokenType == 0 ? 'USDC' : 'POINTS';
+    bet.tokenType = event.params.tokenType == 0 ? 'USDC' : 'FREEDOM';
     bet.pool = poolId;
     bet.blockNumber = event.block.number;
     bet.blockTimestamp = event.block.timestamp;
@@ -97,7 +97,7 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
     pool.usdcBetTotals = usdcBetTotals;
     pool.usdcVolume = pool.usdcVolume.plus(event.params.amount);
   } else {
-    // POINTS
+    // FREEDOM
     const pointsBetTotals = pool.pointsBetTotals;
     pointsBetTotals[event.params.optionIndex.toI32()] = pointsBetTotals[
       event.params.optionIndex.toI32()
