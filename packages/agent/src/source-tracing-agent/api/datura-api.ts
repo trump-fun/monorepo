@@ -31,7 +31,7 @@ export async function extractContentWithDatura(url: string): Promise<string | nu
             Authorization: `${config.daturaApiKey}`,
             'Content-Type': 'application/json',
           },
-          timeout: 30000,
+          timeout: 45000, // Increased timeout
         }
       );
 
@@ -47,7 +47,11 @@ export async function extractContentWithDatura(url: string): Promise<string | nu
         return snippet;
       }
     } catch (webError: any) {
-      console.log(`Datura web search API error: ${webError.message}`);
+      if (webError.message.includes('timeout') || webError.code === 'ECONNABORTED') {
+        console.log(`Datura web search API timeout: ${webError.message}`);
+      } else {
+        console.log(`Datura web search API error: ${webError.message}`);
+      }
     }
 
     // Try with main AI search as a last resort
@@ -68,7 +72,7 @@ export async function extractContentWithDatura(url: string): Promise<string | nu
             Authorization: `${config.daturaApiKey}`,
             'Content-Type': 'application/json',
           },
-          timeout: 30000,
+          timeout: 45000, // Increased timeout
         }
       );
 
@@ -78,7 +82,36 @@ export async function extractContentWithDatura(url: string): Promise<string | nu
         return summary;
       }
     } catch (aiError: any) {
-      console.log(`Datura AI search error: ${aiError.message}`);
+      if (aiError.message.includes('timeout') || aiError.code === 'ECONNABORTED') {
+        console.log(`Datura AI search timeout: ${aiError.message}`);
+      } else {
+        console.log(`Datura AI search error: ${aiError.message}`);
+      }
+    }
+
+    // If Datura APIs have failed, try to use a direct HTTP request as a last resort
+    try {
+      console.log('Attempting direct HTTP request as last resort fallback');
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml',
+          'Accept-Language': 'en-US,en;q=0.9'
+        },
+        timeout: 15000,
+        maxContentLength: 5 * 1024 * 1024 // 5MB limit
+      });
+      
+      if (response.data && typeof response.data === 'string') {
+        console.log(`Retrieved ${response.data.length} chars with direct HTTP request`);
+        return response.data;
+      } else if (response.data) {
+        const content = JSON.stringify(response.data);
+        console.log(`Retrieved and converted ${content.length} chars with direct HTTP request`);
+        return content;
+      }
+    } catch (directError: any) {
+      console.log(`Direct HTTP request failed: ${directError.message}`);
     }
 
     return null;
