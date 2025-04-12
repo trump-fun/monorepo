@@ -5,7 +5,7 @@ import { calculateVolume } from '@/utils/betsCalculations';
 import { useMemo } from 'react';
 import { useUserBetsData } from './useUserBetsData';
 
-export function useUserStats(bets?: Bet[], payoutClaimeds?: PayoutClaimed[]) {
+export function useUserStats(bets?: Bet[], _payoutClaimeds?: PayoutClaimed[]) {
   const { betsData } = useUserBetsData('won');
 
   return useMemo(() => {
@@ -14,12 +14,12 @@ export function useUserStats(bets?: Bet[], payoutClaimeds?: PayoutClaimed[]) {
 
     const wonBets =
       betsData.payoutClaimeds.length +
-      betsData.bets.filter((bet) => bet.pool.status === 'GRADED' && bet.isWithdrawn).length;
+      betsData.bets.filter((bet: Bet) => bet.pool.status === 'GRADED' && bet.isWithdrawn).length;
 
     const lostBets = allBets.filter(
-      (bet) => bet.pool.status === 'GRADED' && !bet.isWithdrawn
+      (bet: Bet) => bet.pool.status === 'GRADED' && !bet.isWithdrawn
     ).length;
-    const pendingBets = allBets.filter((bet) => bet.pool.status === 'PENDING').length;
+    const pendingBets = allBets.filter((bet: Bet) => bet.pool.status === 'PENDING').length;
 
     // Calculate volumes
     const { totalVolume, activeVolume } = calculateVolume(allBets);

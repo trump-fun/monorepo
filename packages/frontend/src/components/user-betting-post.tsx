@@ -1,5 +1,5 @@
 import { PoolStatus, TokenType } from '@/types';
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { toDecimal } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -63,15 +63,15 @@ export function UserBettingPost({
       : tokenType;
 
   const symbol = resolvedTokenType === TokenType.Usdc ? '💲' : '🦅';
-  const decimals = resolvedTokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
   const isActive = status === PoolStatus.Pending || status === PoolStatus.None;
 
-  const formattedAmount = (parseFloat(userBet.amount) / Math.pow(10, decimals)).toFixed(0);
+  // Use centralized formatting utilities
+  const formattedAmount = toDecimal(userBet.amount, resolvedTokenType).toFixed(0);
   const formattedPayout = userBet.payout
-    ? (parseFloat(userBet.payout) / Math.pow(10, decimals)).toFixed(0)
+    ? toDecimal(userBet.payout, resolvedTokenType).toFixed(0)
     : undefined;
   const formattedNetWinnings = userBet.netWinnings
-    ? (parseFloat(userBet.netWinnings) / Math.pow(10, decimals)).toFixed(0)
+    ? toDecimal(userBet.netWinnings, resolvedTokenType).toFixed(0)
     : undefined;
 
   const isClosed = new Date(closesAt * 1000) < new Date();

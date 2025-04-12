@@ -1,17 +1,17 @@
 'use client';
-import { GetBetsQuery, GetPoolQuery } from '@/types/__generated__/graphql';
+import { GetBetsQuery, GetPoolQuery, TokenType } from '@/types/__generated__/graphql';
+import { formatTokenAmount } from '@trump-fun/common';
 import { format } from 'date-fns';
 import { ReactNode } from 'react';
 
 interface UserBetsProps {
-  placedBets: GetBetsQuery['bets']; // Replace with proper typing
-  pool: GetPoolQuery['pool']; // Replace with proper typing
-  USDC_DECIMALS: number;
+  placedBets: GetBetsQuery['bets'];
+  pool: GetPoolQuery['pool'];
   tokenLogo: ReactNode;
   symbol: string;
 }
 
-export const UserBets = ({ placedBets, pool, USDC_DECIMALS, tokenLogo }: UserBetsProps) => {
+export const UserBets = ({ placedBets, pool, tokenLogo }: UserBetsProps) => {
   if (placedBets.length === 0) {
     return null;
   }
@@ -38,7 +38,7 @@ export const UserBets = ({ placedBets, pool, USDC_DECIMALS, tokenLogo }: UserBet
             </div>
             <div className='flex items-center gap-1'>
               <span className='font-medium'>
-                {(Number(bet.amount) / 10 ** USDC_DECIMALS).toLocaleString()}
+                {formatTokenAmount(bet.amount, bet.tokenType || TokenType.Usdc)}
               </span>
               {tokenLogo}
             </div>

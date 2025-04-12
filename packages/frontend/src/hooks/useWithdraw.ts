@@ -2,7 +2,7 @@ import { useNetwork } from '@/hooks/useNetwork';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { TokenType } from '@/types';
-import { bettingContractAbi, POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { bettingContractAbi, toDecimal, toRawAmount } from '@trump-fun/common';
 import { useMemo, useState } from 'react';
 import { usePublicClient, useReadContract, useWriteContract } from 'wagmi';
 
@@ -25,10 +25,8 @@ export function useWithdraw() {
 
   const formattedWithdrawableBalance = useMemo((): number => {
     if (!balance) return 0;
-
-    return (
-      Number(balance) / Math.pow(10, tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS)
-    );
+    // Explicitly cast balance to a type compatible with toDecimal
+    return toDecimal(balance as bigint, tokenType);
   }, [balance, tokenType]);
 
   const handleWithdraw = async () => {
@@ -36,11 +34,7 @@ export function useWithdraw() {
 
     if (withdrawAmount <= formattedWithdrawableBalance && withdrawAmount > 0) {
       try {
-        const tokenAmount = BigInt(
-          Math.floor(
-            withdrawAmount * (tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS)
-          )
-        );
+        const tokenAmount = toRawAmount(withdrawAmount, tokenType);
 
         const { request } = await publicClient.simulateContract({
           abi: bettingContractAbi,

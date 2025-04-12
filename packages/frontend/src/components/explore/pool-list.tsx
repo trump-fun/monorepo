@@ -29,6 +29,7 @@ export function PoolList({
           width={100}
           height={100}
           className='z-50 size-40 animate-spin rounded-full'
+          unoptimized
         />
       </div>
     );

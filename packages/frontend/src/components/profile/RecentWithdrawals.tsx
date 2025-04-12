@@ -1,7 +1,9 @@
 import { Separator } from '@/components/ui/separator';
 import { TokenType } from '@/types';
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
-export function RecentWithdrawals({ withdrawals }: { withdrawals?: any[] }) {
+import { WithdrawalData } from '@/types/interfaces';
+import { toDecimal } from '@trump-fun/common';
+
+export function RecentWithdrawals({ withdrawals }: { withdrawals?: WithdrawalData[] }) {
   if (!withdrawals || withdrawals.length === 0) return null;
 
   return (
@@ -21,12 +23,22 @@ export function RecentWithdrawals({ withdrawals }: { withdrawals?: any[] }) {
   );
 }
 
-function WithdrawalItem({ withdrawal }: { withdrawal: any }) {
+function WithdrawalItem({ withdrawal }: { withdrawal: WithdrawalData }) {
   const resolvedTokenType = withdrawal.bet?.tokenType === 0 ? TokenType.Usdc : TokenType.Points;
   const symbol = resolvedTokenType === TokenType.Usdc ? '💲' : '🦅';
-  const decimals = resolvedTokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
-  const formattedAmount = (parseFloat(withdrawal.bet?.amount) / Math.pow(10, decimals)).toFixed(0);
-  const date = new Date(withdrawal.blockTimestamp * 1000);
+  // Use centralized utility to format the amount with fallback to prevent errors
+  const formattedAmount = withdrawal.bet?.amount
+    ? toDecimal(withdrawal.bet.amount, resolvedTokenType).toFixed(0)
+    : '0';
+
+  // Safely convert timestamp to Date
+  const date = new Date(
+    typeof withdrawal.blockTimestamp === 'string'
+      ? parseInt(withdrawal.blockTimestamp) * 1000
+      : typeof withdrawal.blockTimestamp === 'number'
+        ? withdrawal.blockTimestamp * 1000
+        : Date.now()
+  );
 
   return (
     <div className='rounded-md bg-gray-50 p-2 text-xs dark:bg-gray-800'>

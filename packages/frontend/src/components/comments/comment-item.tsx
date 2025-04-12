@@ -7,18 +7,29 @@ import { formatDate } from '@/utils/formatDate';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 import { Tables } from '@trump-fun/common';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RandomAvatar } from 'react-random-avatars';
 
 interface CommentItemProps {
   comment: Tables<'comments'>;
 }
 
+// Define local CommentData interface for this component
+interface CommentData {
+  id: string;
+  commentID?: string;
+  parent_id?: string;
+  user_address: string;
+  body: string;
+  created_at: string;
+  upvotes?: number;
+}
+
 const CommentItem = ({ comment }: CommentItemProps) => {
   const [upvotes, setUpvotes] = useState<number>(comment.upvotes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [replies, setReplies] = useState<any[]>([]);
+  const [replies, setReplies] = useState<CommentData[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [hasTrumpReplies, setHasTrumpReplies] = useState(false);
@@ -42,18 +53,20 @@ const CommentItem = ({ comment }: CommentItemProps) => {
         // Log the response to debug
 
         // Check if there are any Trump replies
-        let trumpReplies = [];
+        let trumpReplies: CommentData[] = [];
         if (data.comments && Array.isArray(data.comments)) {
           trumpReplies = data.comments.filter(
-            (reply: any) =>
+            (reply: CommentData) =>
               reply.user_address === '0xRealDonaldTrump2025' &&
-              (reply.commentID === comment.id || reply.parent_id === comment.id)
+              (String(reply.commentID) === String(comment.id) ||
+                String(reply.parent_id) === String(comment.id))
           );
         } else if (Array.isArray(data)) {
           trumpReplies = data.filter(
-            (reply) =>
+            (reply: CommentData) =>
               reply.user_address === '0xRealDonaldTrump2025' &&
-              (reply.commentID === comment.id || reply.parent_id === comment.id)
+              (String(reply.commentID) === String(comment.id) ||
+                String(reply.parent_id) === String(comment.id))
           );
         }
 
@@ -89,19 +102,10 @@ const CommentItem = ({ comment }: CommentItemProps) => {
     fetchReplies();
   }, [comment.id, showReplies, replies.length]);
 
-  // Check localStorage when component mounts to see if this comment was liked before
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const wasLiked = isCommentLiked(comment.id);
-      setIsLiked(wasLiked);
-    }
-  }, [comment.id, authenticated]);
+  // Define hooks at the top level before any conditional returns
+  const handleLike = useCallback(async () => {
+    if (!comment || !comment.id) return;
 
-  if (!comment || !comment.id) {
-    return null;
-  }
-
-  const handleLike = async () => {
     if (!isWalletConnected) {
       login();
       return;
@@ -115,7 +119,8 @@ const CommentItem = ({ comment }: CommentItemProps) => {
       const wallet = wallets?.[0];
 
       if (!wallet || !wallet.address) {
-        return setIsSubmitting(false);
+        setIsSubmitting(false);
+        return;
       }
 
       // Determine action without updating state yet
@@ -184,11 +189,23 @@ const CommentItem = ({ comment }: CommentItemProps) => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isLiked, isSubmitting, isWalletConnected, login, wallets, signMessage, comment, upvotes]);
 
-  const toggleReplies = () => {
+  const toggleReplies = useCallback(() => {
     setShowReplies(!showReplies);
-  };
+  }, [showReplies]);
+
+  // Check localStorage when component mounts to see if this comment was liked before
+  useEffect(() => {
+    if (typeof window !== 'undefined' && comment?.id) {
+      const wasLiked = isCommentLiked(comment.id);
+      setIsLiked(wasLiked);
+    }
+  }, [comment?.id, authenticated]);
+
+  if (!comment || !comment.id) {
+    return null;
+  }
 
   return (
     <div className='border-b pb-4 last:border-0'>
