@@ -5,10 +5,10 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { validator } from 'hono/validator';
 import { z } from 'zod';
-import { PredictionResult } from './src/prediction-finder-agent/tools/find-predictions';
+import type { PredictionResult } from './src/prediction-finder-agent/tools/find-predictions';
 import { predictionMarketAgent } from './src/prediction-market-agent/prediction-market-agent';
-import { PredictionVerification } from './src/prediction-verification-agent/tools/verify-prediction';
-import { PredictorProfile } from './src/predictor-profile-agent/tools/build-predictor-profile';
+import type { PredictionVerification } from './src/prediction-verification-agent/tools/verify-prediction';
+import type { PredictorProfile } from './src/predictor-profile-agent/tools/build-predictor-profile';
 import { traceSource } from './src/source-tracing-agent/source-tracing-graph';
 
 // Define types for the application
