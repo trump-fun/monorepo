@@ -72,6 +72,8 @@ A comprehensive prediction intelligence ecosystem that discovers, tracks, analyz
 - Datura API key for X/Twitter integration
 - Tavily API key
 
+## Development
+
 ## Running the Agents
 
 ### Pool Creation Agent
@@ -157,6 +159,52 @@ You can use these tools individually or build workflows that combine them, such 
 - Finding predictions on a topic, then verifying each one
 - Building profiles of predictors, then comparing their accuracy scores
 - Batch verifying predictions from multiple sources to identify trends
+
+### Running Bounty Agents
+
+To run the specialized bounty agents directly, follow these steps:
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/trump-fun/monorepo
+```
+
+2. Check out the feature branch containing all bounty agents: (As of writing, the source finder and prediction swarm agents aren't on main)
+
+```bash
+git checkout feat/source-finder
+```
+
+3. Set up the environment variables in `packages/agent/.env`:
+   - Copy the example file: `cp packages/agent/.env.example packages/agent/.env`
+   - Required API keys:
+     - `TAVILY_API_KEY` (get one from [Tavily](https://tavily.com/))
+     - `NEWS_API_KEY` (get one from [NewsAPI](https://newsapi.org/))
+     - `FIRECRAWL_API_KEY` (get one from [Firecrawl](https://firecrawl.com/))
+   - Configure LLM providers by setting the `<TYPE>_PROVIDER` variables:
+     - `SMALL_LLM_PROVIDER` (for classification and search queries)
+     - `CHEAP_LLM_PROVIDER` (Anthropic is really expensive)
+     - `LARGE_LLM_PROVIDER` (for analysis and text generation)
+   - Add the corresponding API key for your chosen provider(s):
+     - For example, if using Anthropic, set `ANTHROPIC_API_KEY`
+4. Run the specific bounty agent:
+
+```bash
+# Source Tracing Agent
+bun run:source-tracing
+
+# Prediction Finder
+bun run:find-predictions
+
+# Build Predictor Profile
+bun run:build-profile
+
+# Prediction Verification
+bun run:verify-prediction
+```
+
+You can find all available run scripts in the project's `package.json` file.
 
 ## Deployment
 
