@@ -86,7 +86,9 @@ const predictionAnalysisSchema = z.object({
     .number()
     .min(0)
     .max(1)
-    .describe('Confidence that this is a genuine prediction (0-1)'),
+    .describe(
+      'Confidence that this is a genuine prediction and that this prediction is related to the topic (0-1)'
+    ),
   implicit: z.boolean().optional().describe('Whether the prediction is implicit or explicit'),
   topic_relevance: z
     .number()
@@ -128,17 +130,22 @@ export type PredictionResult = z.infer<typeof predictionAnalysisSchema> & {
   topic: string;
 };
 
+export type PredictionFinderResult = {
+  predictions: PredictionResult[];
+  not_predictions: PredictionResult[];
+};
+
 /**
  * Finds X posts containing explicit or implicit predictions related to a Polymarket topic
  *
  * @param topic Polymarket topic to search for predictions about
  * @param limit Maximum number of results to return
- * @returns Array of predictions found on X/Twitter
+ * @returns Object containing arrays of predictions and non-predictions found on X/Twitter
  */
 export async function findPredictions(
   topic: string,
   limit: number = 10
-): Promise<PredictionResult[]> {
+): Promise<PredictionFinderResult> {
   console.log(`Finding predictions related to topic: ${topic}`);
 
   // Step 1: Generate search queries related to the topic
@@ -148,9 +155,9 @@ export async function findPredictions(
   const rawResults = await searchForPredictionPosts(searchQueries, limit);
 
   // Step 3: Filter and analyze posts to identify predictions
-  const predictions = await analyzePredictionCandidates(rawResults, topic);
+  const result = await analyzePredictionCandidates(rawResults, topic);
 
-  return predictions;
+  return result;
 }
 
 /**
@@ -297,9 +304,10 @@ async function searchForPredictionPosts(
 async function analyzePredictionCandidates(
   posts: TwitterScraperTweet[],
   topic: string
-): Promise<PredictionResult[]> {
+): Promise<PredictionFinderResult> {
   console.log(`Analyzing ${posts.length} posts for predictions on topic: ${topic}`);
   const predictions: PredictionResult[] = [];
+  const notPredictions: PredictionResult[] = [];
 
   // Process posts in batches to avoid overwhelming the LLM
   const batchSize = 5;
@@ -313,9 +321,16 @@ async function analyzePredictionCandidates(
     const batchPromises = batch.map(post => analyzeSinglePost(post, topic));
     const batchResults = await Promise.all(batchPromises);
 
-    // Filter out null results (posts that aren't predictions)
-    const validResults = batchResults.filter(result => result !== null) as PredictionResult[];
-    predictions.push(...validResults);
+    // Sort results into predictions and not-predictions
+    batchResults.forEach(result => {
+      if (result) {
+        if (result.is_prediction) {
+          predictions.push(result);
+        } else {
+          notPredictions.push(result);
+        }
+      }
+    });
 
     // Add a small delay between batches
     if (i + batchSize < posts.length) {
@@ -326,13 +341,15 @@ async function analyzePredictionCandidates(
   // Sort by confidence score (highest first)
   predictions.sort((a, b) => b.confidence_score - a.confidence_score);
 
-  console.log(`Found ${predictions.length} posts containing predictions`);
-  return predictions;
+  console.log(
+    `Found ${predictions.length} posts containing predictions and ${notPredictions.length} non-prediction posts`
+  );
+  return { predictions, not_predictions: notPredictions };
 }
 
 /**
  * Analyzes a single post to determine if it contains a prediction
- * Returns null if the post doesn't contain a prediction
+ * Returns structured data for both predictions and non-predictions
  */
 async function analyzeSinglePost(
   post: TwitterScraperTweet,
@@ -387,22 +404,32 @@ async function analyzeSinglePost(
 
     const result = await structuredLlm.invoke(formattedPrompt);
 
-    // If not a prediction, return null
+    // If not a prediction, return non-prediction data with the same field structure
     if (!result.is_prediction) {
-      return null;
+      return {
+        is_prediction: false,
+        source_text: postText,
+        confidence_score: 0,
+        prediction_text: undefined,
+        implicit: undefined,
+        topic_relevance: 0,
+        timeframe: undefined,
+        has_condition: undefined,
+        prediction_sentiment: undefined,
+        probability_stated: undefined,
+        post_id: postId,
+        post_url: postUrl,
+        author_username: username,
+        author_name: authorName,
+        post_date: postDate,
+        topic: topic,
+      };
     }
 
     // Return the prediction with metadata
     return {
-      is_prediction: result.is_prediction,
-      prediction_text: result.prediction_text,
-      confidence_score: result.confidence_score,
-      implicit: result.implicit,
-      topic_relevance: result.topic_relevance,
-      timeframe: result.timeframe,
-      has_condition: result.has_condition,
-      prediction_sentiment: result.prediction_sentiment,
-      probability_stated: result.probability_stated,
+      ...result,
+      source_text: postText,
       post_id: postId,
       post_url: postUrl,
       author_username: username,
