@@ -6,8 +6,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SUPABASE_BUCKET } from '@trump-fun/common';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { arbitrumSepolia, baseSepolia } from 'viem/chains';
+import {
+  arbitrumSepolia as arbitrumSepoliaOriginal,
+  baseSepolia as baseSepoliaOriginal,
+} from 'viem/chains';
 import { http } from 'wagmi';
+
+// Create compatible chain objects with type assertions to handle viem version differences
+const baseSepolia = baseSepoliaOriginal as any;
+const arbitrumSepolia = arbitrumSepoliaOriginal as any;
 
 // Create a Wagmi config - ensure we're importing createConfig from @privy-io/wagmi
 const wagmiConfig = createConfig({

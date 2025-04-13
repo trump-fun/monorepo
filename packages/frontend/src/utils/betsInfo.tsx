@@ -1,6 +1,6 @@
 import { TOKEN_SYMBOLS } from '@/hooks/useTokenContext';
 import { GetPoolQuery, GetPoolsQuery, Pool, TokenType } from '@/types';
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import React from 'react';
 
 // Helper function to safely convert token amounts
@@ -26,7 +26,7 @@ export const getVolumeForTokenType = (
     return rawValue;
   }
 
-  const decimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
+  const decimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
   const value = Number(rawValue) / Math.pow(10, decimals);
 
   return Math.ceil(value);
@@ -46,7 +46,7 @@ export const calculateVolume = (
   try {
     const isUsdc = tokenType === TokenType.Usdc;
     const rawAmount = isUsdc ? pool.usdcVolume : pool.pointsVolume;
-    const decimals = isUsdc ? USDC_DECIMALS : POINTS_DECIMALS;
+    const decimals = isUsdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
     const value = formatTokenAmount(rawAmount, decimals, !isUsdc);
 
     return (
@@ -73,7 +73,7 @@ export const getBetTotals = (
     const betTotals = isUsdc ? pool.usdcBetTotals : pool.pointsBetTotals;
     if (!betTotals) return isUsdc ? '$0' : '0';
 
-    const decimals = isUsdc ? USDC_DECIMALS : POINTS_DECIMALS;
+    const decimals = isUsdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
     const value = formatTokenAmount(betTotals[option], decimals, !isUsdc);
 
     return value.toLocaleString();

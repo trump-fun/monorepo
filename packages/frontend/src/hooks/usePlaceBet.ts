@@ -1,15 +1,14 @@
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import { bettingContractAbi, freedomAbi, USDC_DECIMALS } from '@trump-fun/common';
-import { PublicClient } from 'viem';
-import { UseWriteContractReturnType } from 'wagmi';
+import { useWriteContract } from 'wagmi';
 import { useApprovalAmount } from './useApprovalAmount';
 import { useNetwork } from './useNetwork';
 
 interface UsePlaceBetProps {
-  writeContract: UseWriteContractReturnType['writeContract'];
+  writeContract: ReturnType<typeof useWriteContract>['writeContract'];
   ready: boolean;
-  publicClient: PublicClient | undefined;
+  publicClient: any; // Using any to avoid version-specific type conflicts
   accountAddress: string | undefined;
   tokenAddress: `0x${string}`;
   tokenType: TokenType;

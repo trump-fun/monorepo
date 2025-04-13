@@ -1,12 +1,16 @@
 import { apolloClient } from '@/lib/apollo';
-import { GetPoolQuery, GetPoolQueryVariables } from '@/types/__generated__/graphql';
+import { Pool } from '@/types';
 import { QueryOptions } from '@apollo/client/core';
 import { GET_POOL } from '@trump-fun/common';
+
+interface GetPoolQueryVariables {
+  poolId: string;
+}
 
 export async function fetchPool(
   poolId: string,
   options?: QueryOptions<GetPoolQueryVariables>
-): Promise<GetPoolQuery['pool'] | null> {
+): Promise<Pool | null> {
   try {
     const { data } = await apolloClient.query({
       ...options,

@@ -1,5 +1,5 @@
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { CHAIN_CONFIG, POINTS_DECIMALS, SupportedChainIds, freedomAbi } from '@trump-fun/common';
+import { CHAIN_CONFIG, FREEDOM_DECIMALS, SupportedChainIds, freedomAbi } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
 
@@ -19,8 +19,8 @@ export type TopUpBalanceResponse = {
 
 const RATE_LIMIT_HOURS = 6;
 const RATE_LIMIT_MS = RATE_LIMIT_HOURS * 60 * 60 * 1000;
-const NEW_USER_POINTS = BigInt(10000) * BigInt(10) ** BigInt(POINTS_DECIMALS);
-const RETURNING_USER_POINTS = BigInt(1000) * BigInt(10) ** BigInt(POINTS_DECIMALS);
+const NEW_USER_POINTS = BigInt(10000) * BigInt(10) ** BigInt(FREEDOM_DECIMALS);
+const RETURNING_USER_POINTS = BigInt(1000) * BigInt(10) ** BigInt(FREEDOM_DECIMALS);
 
 const checkRateLimit = async (walletAddress: string): Promise<boolean> => {
   const supabase = await createSupabaseAdminClient();

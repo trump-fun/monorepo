@@ -1,5 +1,5 @@
 import { TokenType } from '../types/__generated__/graphql';
-import { USDC_DECIMALS, POINTS_DECIMALS } from '../config';
+import { USDC_DECIMALS, FREEDOM_DECIMALS } from '../config';
 
 // Constants for token names
 export const TOKEN_NAMES = {
@@ -13,7 +13,7 @@ export const TOKEN_NAMES = {
  * @returns Number of decimals
  */
 export function getTokenDecimals(tokenType: TokenType): number {
-  return tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
+  return tokenType === TokenType.Usdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
 }
 
 /**

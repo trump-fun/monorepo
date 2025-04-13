@@ -1,4 +1,4 @@
-import { CHAIN_CONFIG } from '@trump-fun/common';
+import { CHAIN_CONFIG, USDC_DECIMALS, FREEDOM_DECIMALS } from '@trump-fun/common';
 import { bettingContractAbi } from '@trump-fun/common/abi/contract.types';
 import { ethers } from 'ethers';
 import type { Context } from 'grammy';
@@ -294,8 +294,8 @@ async function getUserBalance(
 
     const balanceWei = await contract.userBalances(address, BigInt(tokenType));
 
-    // Format based on token decimals (USDC = 6, FREEDOM = 18)
-    const decimals = tokenType === TokenType.USDC ? 6 : 18;
+    // Format based on token decimals (USDC = 6, FREEDOM = 6)
+    const decimals = tokenType === TokenType.USDC ? USDC_DECIMALS : FREEDOM_DECIMALS;
     return parseFloat(ethers.formatUnits(balanceWei, decimals));
   } catch (error) {
     console.error('Error checking balance:', error);

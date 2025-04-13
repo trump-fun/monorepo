@@ -1,5 +1,5 @@
 import { useWallets } from '@privy-io/react-auth';
-import { POINTS_DECIMALS, erc20Abi } from '@trump-fun/common';
+import { FREEDOM_DECIMALS, erc20Abi } from '@trump-fun/common';
 import { TokenType } from '@/types';
 import { ethers } from 'ethers';
 import { useCallback, useEffect, useState } from 'react';
@@ -53,7 +53,7 @@ export const useBalance = () => {
         const balance = await contract.balanceOf(embeddedWallet.address);
 
         // Format balance (assuming 6 decimals for USDC)
-        const formattedBalance = ethers.formatUnits(balance, POINTS_DECIMALS);
+        const formattedBalance = ethers.formatUnits(balance, FREEDOM_DECIMALS);
         // Remove all decimal places by parsing to float and then to integer
         setBalance(Math.floor(parseFloat(formattedBalance)).toString());
       } catch (contractError) {

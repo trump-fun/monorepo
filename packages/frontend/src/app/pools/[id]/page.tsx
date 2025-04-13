@@ -1,5 +1,6 @@
 import { PoolDetailClient } from '@/components/pools/PoolDetailClient';
 import { supabaseAnonClient } from '@/lib/supabase';
+import { fetchPool } from '@/utils/fetchPool';
 import { Metadata } from 'next';
 
 type Props = {
@@ -32,18 +33,61 @@ async function getPoolData(poolId: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const id = (await params).id;
 
-  //TODO Below line triggers gql invariant, should fix later
-  // const pool = await fetchPool(id);
-  const pool = {
-    question: undefined,
-    imageUrl: undefined,
-  };
-  // Using default metadata since we can't fetch pool data server-side with Apollo anymore
+  const pool = await fetchPool(id);
+  const poolNumber = id;
+  const poolQuestion = pool?.question || 'Prediction pool';
+  const siteName = 'Trump.fun';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://trump-fun.vercel.app/';
+  const poolUrl = `${baseUrl}/pools/${id}`;
+  const imageUrl = pool?.imageUrl || '/default-pool-image.jpg';
+
   return {
-    title: `Prediction Pool #${id}`,
-    description: pool?.question || 'Predict the outcome of this event',
+    title: poolQuestion
+      ? `${poolQuestion} | Pool #${poolNumber} | ${siteName}`
+      : `Prediction Pool #${poolNumber} | ${siteName}`,
+    description: pool?.question
+      ? `Join the prediction pool: ${pool.question}. Place your bets with FREEDOM tokens and win big if you predict correctly!`
+      : 'Join our prediction markets, bet with FREEDOM tokens, and win rewards for accurate predictions!',
+    keywords: [
+      'prediction market',
+      'FREEDOM tokens',
+      'betting',
+      'predictions',
+      'crypto predictions',
+    ],
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: poolUrl,
+    },
     openGraph: {
-      images: [pool?.imageUrl || '/default-pool-image.jpg'],
+      title: poolQuestion
+        ? `${poolQuestion} | Prediction Pool #${poolNumber}`
+        : `Prediction Pool #${poolNumber}`,
+      description: pool?.question
+        ? `Join the prediction pool: ${pool.question}. Place your bets now!`
+        : 'Join our prediction markets and win rewards for accurate predictions!',
+      url: poolUrl,
+      siteName: siteName,
+      images: [
+        {
+          url: imageUrl,
+          width: 1024,
+          height: 1024,
+          alt: pool?.question || `Prediction Pool #${poolNumber}`,
+        },
+      ],
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: poolQuestion
+        ? `${poolQuestion} | Pool #${poolNumber}`
+        : `Prediction Pool #${poolNumber}`,
+      description: pool?.question
+        ? `Join the prediction pool: ${pool.question}. Place your bets now!`
+        : 'Join our prediction markets and win rewards for accurate predictions!',
+      images: [imageUrl],
     },
   };
 }
