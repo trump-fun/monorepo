@@ -1,0 +1,58 @@
+https://indianexpress.com/article/business/insider-trading-allegations-trump-tariff-pause-9937914/
+
+--- SOURCE TRACING RESULTS ---
+Primary source found: false
+--- REFERENCE CHAINS ---
+Chain 1 (Confidence: 0.85):
+Complete: false
+  Source 1: https://www.reuters.com/business/finance/well-timed-options-trades-ahead-trumps-tariff-pause-draw-questions-2025-04-10/
+  Title: Well-timed options trades ahead of Trump's tariff pause draw questions
+  Type: news
+  Primary: undefined
+  Verification: verified
+  Summary: An investigative news article examining potentially suspicious options trading activity preceding Trump's announcement of a tariff pause, which resulted in significant market gains.
+
+Chain 2 (Confidence: 0.80):
+Complete: false
+  Source 1: https://www.nbcnews.com/business/markets/trump-tariff-pause-experts-question-timing-trump-social-media-posts-rcna200526
+  Title: Trump Tariff Pause: Experts Question Timing of Trump's Social Media Posts
+  Type: news
+  Primary: undefined
+  Verification: verified
+  Summary: An analysis of President Trump's decision to pause reciprocal tariffs for 90 days, examining the potential insider trading implications of his "buy now, thank me later" social media post.
+
+Chain 3 (Confidence: 0.75):
+Complete: false
+  Source 1: https://www.pbs.org/newshour/politics/trump-told-investors-to-buy-on-social-media-hours-before-his-tariff-pause-rose-stocks-raising-questions-about-manipulation
+  Title: Trump told investors to 'buy' on social media hours before his tariff pause rose stocks, raising questions about manipulation
+  Type: news
+  Primary: undefined
+  Verification: verified
+  Summary: News article examining Trump's social media post advising investors to buy, which preceded a stock market surge following his tariff pause announcement.
+
+Chain 4 (Confidence: 0.70):
+Complete: false
+  Source 1: https://time.com/7276515/explaining-insider-trading-accusations-leveled-at-trump-tariffs-pause/
+  Title: Breaking Down 'Insider Trading' Accusations Leveled at Trump
+  Type: news
+  Primary: undefined
+  Verification: verified
+  Summary: An article discussing insider trading allegations against President Donald Trump related to his tariff pause decision, explaining the legal framework and potential implications.
+
+Chain 5 (Confidence: 0.65):
+Complete: false
+  Source 1: https://www.fox9.com/news/trump-accused-insider-trading-tariffs-pause
+  Title: Why is Trump being accused of insider trading after tariffs pause
+  Type: news
+  Primary: undefined
+  Verification: partially_verified
+  Summary: News article discussing allegations of insider trading against President Trump related to a tariffs pause that significantly impacted stock markets.
+
+Chain 6 (Confidence: 0.60):
+Complete: false
+  Source 1: https://m.economictimes.com/news/international/global-trends/buy-now-thank-me-later-trumps-tariff-reversal-sparks-insider-trading-allegations-heres-which-billionaire-just-got-richer/articleshow/120207715.cms
+  Title: Buy now, thank me later: Trump's tariff reversal sparks insider trading allegations
+  Type: news
+  Primary: undefined
+  Verification: partially_verified
+  Summary: An analysis of Trump's tariff policy reversal, examining potential insider trading allegations and the financial beneficiaries of the market surge.

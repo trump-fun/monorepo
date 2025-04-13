@@ -21863,7 +21863,7 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "FREEDOM",
+            "name": "POINTS",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

@@ -1,9 +1,9 @@
+import { apolloClient } from '@/lib/apolloClient';
+import { PoolStatus, TokenType, formatTokenAmount, type Bet } from '@trump-fun/common';
 import type { Context } from 'grammy';
 import { InlineKeyboard } from 'grammy';
-import { apolloClient } from '@/lib/apolloClient';
 import { GET_BETS } from '../../queries';
 import { getWallet } from '../utils/wallet';
-import { PoolStatus, type Bet, TokenType, formatTokenAmount } from '@trump-fun/common';
 
 enum FilterType {
   ACTIVE = 'active',

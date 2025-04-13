@@ -6,7 +6,7 @@ import { privy } from '@/lib/privy';
 import { getWallet } from '@/utils/wallet';
 import config from '@/config';
 
-//TODO fix this
+//TODO fix this, shouldn't be hardcoded at all, have user provide network and load the relevant config
 const APP_ADDRESS = CHAIN_CONFIG[84532].appAddress as `0x${string}`;
 const POINTS_ADDRESS = CHAIN_CONFIG[84532].freedomAddress as `0x${string}`;
 const USDC_ADDRESS = CHAIN_CONFIG[84532].usdcAddress as `0x${string}`;

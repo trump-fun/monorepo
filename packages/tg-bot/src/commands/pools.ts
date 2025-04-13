@@ -1,11 +1,16 @@
+import { apolloClient } from '@/lib/apolloClient';
+import { formatPoolMessage } from '@/utils/messages';
+import { createPoolDetailsKeyboard } from '@/utils/ui';
+import {
+  OrderDirection,
+  PoolStatus,
+  Pool_OrderBy,
+  getTimeRemaining,
+  type Pool,
+} from '@trump-fun/common';
 import type { Context } from 'grammy';
 import { InlineKeyboard } from 'grammy';
-import { PoolStatus, getTimeRemaining } from '@trump-fun/common';
-import { OrderDirection, Pool_OrderBy, type Pool } from '@trump-fun/common';
-import { apolloClient } from '@/lib/apolloClient';
 import { GET_POOLS } from '../../queries';
-import { createPoolDetailsKeyboard } from '@/utils/ui';
-import { formatPoolMessage } from '@/utils/messages';
 
 enum PoolFilterType {
   ACTIVE = 'active',
@@ -219,7 +224,6 @@ export const poolsCommand = async (ctx: Context): Promise<void> => {
   }
 };
 
-
 export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
   if (!ctx.callbackQuery?.data) return;
 
@@ -250,13 +254,13 @@ export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
       const poolData = data.pools[0];
       const keyboard = createPoolDetailsKeyboard(poolData);
       const formattedMessage = formatPoolMessage(poolData);
-      
+
       // Check if the pool has an image URL
       if (poolData.imageUrl) {
         try {
           // Delete the current message
           await ctx.deleteMessage();
-          
+
           // Send a new message with the image
           await ctx.replyWithPhoto(poolData.imageUrl, {
             caption: formattedMessage,
