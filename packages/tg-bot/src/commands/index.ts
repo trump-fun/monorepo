@@ -1,3 +1,4 @@
+export * from './airdrop';
 export * from './bets';
 export * from './help';
 export * from './pools';

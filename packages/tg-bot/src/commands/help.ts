@@ -30,6 +30,7 @@ Bet on President Trump's actions and Truth Social posts! Win FREEDOM tokens and 
 • /wallet - Manage your crypto wallet
 • /bets - Track your bets on Trump's actions
 • /withdraw - Cash out your winnings
+• /airdrop - Get free FREEDOM tokens
 
 🔄 <b>Quick Access:</b>
 • /start, /help - Show this menu anytime

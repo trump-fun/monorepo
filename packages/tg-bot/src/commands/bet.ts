@@ -315,8 +315,8 @@ async function showAvailablePools(ctx: Context, userAddress: string): Promise<an
     // First show a loading message
     const loadingMsg = await ctx.reply('🔍 Fetching available pools...');
 
-    // Get user balance
-    const balance = await checkTokenBalance(userAddress);
+    // Get user balance for FREEDOM token
+    const balance = await checkTokenBalance(userAddress, TokenType.Freedom);
 
     // Fetch active pools
     const { data } = await apolloClient.query({
@@ -361,10 +361,10 @@ async function showAvailablePools(ctx: Context, userAddress: string): Promise<an
     // Replace loading message with pools list
     await ctx.api.deleteMessage(ctx.chat.id, loadingMsg.message_id);
     return ctx.reply(
-      `🎲 *Place a Bet*\n\n` +
-        `💰 Balance: ${formatTokenAmount(balance.toString(), TokenType.Freedom)}\n\n` +
+      `🎲 <b>Place a Bet</b>\n\n` +
+        `💰 Balance: ${balance.toLocaleString()} FREEDOM\n\n` +
         `Select a prediction pool below or use:\n` +
-        '`/bet <poolId> <option> <amount> <tokenType>`\n\n' +
+        '<code>/bet &lt;poolId&gt; &lt;option&gt; &lt;amount&gt; &lt;tokenType&gt;</code>\n\n' +
         `Available Pools:`,
       {
         parse_mode: 'HTML',

@@ -26,6 +26,7 @@ import {
   processBetWithParams,
 } from './src/commands/bet';
 import { withdrawCommand } from './src/commands/withdraw';
+import { airdrop } from './src/commands/airdrop';
 import { getWallet } from './src/utils/wallet';
 
 // Initialize the bot with token from config
@@ -73,6 +74,7 @@ const registerCommands = () => {
   bot.command('bets', ctx => betsCommand(ctx));
   bot.command('bet', ctx => placeBetCommand(ctx));
   bot.command('withdraw', ctx => withdrawCommand(ctx));
+  bot.command('airdrop', ctx => airdrop(ctx));
 
   // Callback queries for menu navigation
   const menuHandlers = {
@@ -162,7 +164,8 @@ const registerCommands = () => {
     const callbackData = ctx.callbackQuery?.data;
     if (!callbackData) return;
 
-    const [_, __, poolId, optionIndex, amount] = callbackData.split('_');
+    // Format: bet_amount_poolId_optionIndex_amount_tokenType
+    const [_, __, poolId, optionIndex, amount, tokenType] = callbackData.split('_');
 
     // Get the user's wallet
     if (!ctx.from) {
@@ -178,13 +181,13 @@ const registerCommands = () => {
       return ctx.reply('❌ Invalid bet parameters.');
     }
 
-    // Place the bet with the selected amount
+    // Place the bet with the selected amount and correct token type
     await processBetWithParams(ctx, wallet, [
       '/bet',
       poolId,
       (parseInt(optionIndex) + 1).toString(),
       amount,
-      '0',
+      tokenType || '0', // Use the token type from the callback data
     ]);
   });
 
@@ -233,6 +236,7 @@ bot.api.setMyCommands([
   { command: 'bets', description: 'View your bets' },
   { command: 'bet', description: 'Place a bet' },
   { command: 'withdraw', description: 'Withdraw your winnings' },
+  { command: 'airdrop', description: 'Get free FREEDOM tokens' },
 ]);
 
 // Start the bot
