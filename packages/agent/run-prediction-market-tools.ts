@@ -25,14 +25,34 @@ program
       );
 
       console.log(`Found ${predictions.length} predictions on topic: ${options.topic}`);
+
+      // Format predictions for a more readable console output with fewer columns
       console.table(
-        predictions.map(p => ({
-          ...p,
+        predictions.map((p, index) => ({
+          id: index,
+          author: p.author_username,
           prediction:
-            p.prediction_text?.substring(0, 100) +
-            ((p.prediction_text?.length ?? 0 > 100) ? '...' : ''),
+            p.prediction_text?.substring(0, 60) +
+            ((p.prediction_text?.length ?? 0 > 60) ? '...' : ''),
+          confidence: p.confidence_score.toFixed(1),
+          type: p.implicit ? 'Implicit' : 'Explicit',
+          timeframe: p.timeframe,
+          topic: p.topic,
         }))
       );
+
+      // Print full details for each prediction
+      console.log('\nDetailed predictions:');
+      predictions.forEach((p, i) => {
+        console.log(`\n[${i}] Prediction by @${p.author_username} (${p.author_name || 'Unknown'})`);
+        console.log(`URL: ${p.post_url}`);
+        console.log(`Date: ${p.post_date}`);
+        console.log(`Topic: ${p.topic} (Relevance: ${(p.topic_relevance || 0.5).toFixed(1)})`);
+        console.log(`Text: ${p.prediction_text || 'No text available'}`);
+        console.log(
+          `Type: ${p.implicit ? 'Implicit' : 'Explicit'} | Confidence: ${(p.confidence_score || 0).toFixed(1)} | Timeframe: ${p.timeframe || 'unknown'}`
+        );
+      });
 
       // Save to file if specified
       if (options.output) {
