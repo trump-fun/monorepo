@@ -219,7 +219,6 @@ export const poolsCommand = async (ctx: Context): Promise<void> => {
   }
 };
 
-// createProgressBar has been moved to utils/ui.ts
 
 export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
   if (!ctx.callbackQuery?.data) return;
@@ -250,11 +249,35 @@ export const handlePoolsNavigation = async (ctx: Context): Promise<void> => {
       // Create keyboard with betting options and navigation
       const poolData = data.pools[0];
       const keyboard = createPoolDetailsKeyboard(poolData);
-
-      await ctx.editMessageText(formatPoolMessage(poolData), {
-        reply_markup: keyboard,
-        parse_mode: 'HTML',
-      });
+      const formattedMessage = formatPoolMessage(poolData);
+      
+      // Check if the pool has an image URL
+      if (poolData.imageUrl) {
+        try {
+          // Delete the current message
+          await ctx.deleteMessage();
+          
+          // Send a new message with the image
+          await ctx.replyWithPhoto(poolData.imageUrl, {
+            caption: formattedMessage,
+            parse_mode: 'HTML',
+            reply_markup: keyboard,
+          });
+        } catch (error) {
+          console.error('Error sending pool image:', error);
+          // Fallback to text-only if image fails
+          await ctx.editMessageText(formattedMessage, {
+            reply_markup: keyboard,
+            parse_mode: 'HTML',
+          });
+        }
+      } else {
+        // No image, use standard text message
+        await ctx.editMessageText(formattedMessage, {
+          reply_markup: keyboard,
+          parse_mode: 'HTML',
+        });
+      }
       return;
     }
 

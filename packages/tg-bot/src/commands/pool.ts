@@ -1,10 +1,9 @@
-import type { CommandContext, Context } from 'grammy';
 import { apolloClient } from '@/lib/apolloClient';
-import { GET_POOL } from '../../queries';
-import { OrderDirection, Pool_OrderBy } from '@trump-fun/common';
-import { type Pool } from '@trump-fun/common';
 import { formatPoolMessage } from '@/utils/messages';
 import { createPoolDetailsKeyboard } from '@/utils/ui';
+import { OrderDirection, Pool_OrderBy, type Pool } from '@trump-fun/common';
+import type { CommandContext, Context } from 'grammy';
+import { GET_POOL } from '../../queries';
 
 export const poolCommand = async (ctx: CommandContext<Context>) => {
   if (!ctx.message) {
@@ -41,6 +40,16 @@ export const poolCommand = async (ctx: CommandContext<Context>) => {
     // Create keyboard with betting options and navigation
     const keyboard = createPoolDetailsKeyboard(poolData);
 
+    if (poolData.imageUrl) {
+      // Send the image with the caption
+      return ctx.replyWithPhoto(poolData.imageUrl, {
+        caption: message,
+        parse_mode: 'HTML',
+        reply_markup: keyboard,
+      });
+    }
+
+    // If no image was found or there was an error, just send the text message
     return ctx.reply(message, {
       parse_mode: 'HTML',
       reply_markup: keyboard,
@@ -50,7 +59,3 @@ export const poolCommand = async (ctx: CommandContext<Context>) => {
     return ctx.reply('An unexpected error occurred while fetching pool data.');
   }
 };
-
-// The formatPoolMessage function has been moved to utils/messages.ts
-
-// The createProgressBar function has been moved to utils/ui.ts
