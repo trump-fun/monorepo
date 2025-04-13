@@ -23,6 +23,7 @@ import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-ex
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
 import { tavilySearchFunctionSingle } from './tools/tavily-search';
 import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
+import { sendTgMessage } from './tools/send-tg-message';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,
@@ -143,6 +144,7 @@ builder
   .addNode('generate_image', generateImage)
   .addNode('create_betting_pool', createBettingPool)
   .addNode('upsert_truth_social_post', upsertTruthSocialPost)
+  .addNode('send_tg_message', sendTgMessage)
   .addEdge(START, 'extract_search_query')
   .addConditionalEdges('extract_search_query', shouldContinueProcessing, {
     continue: 'news_api_search',
@@ -166,7 +168,8 @@ builder
     stop: END,
   })
   .addEdge('create_betting_pool', 'upsert_truth_social_post')
-  .addEdge('upsert_truth_social_post', END);
+  .addEdge('upsert_truth_social_post', 'send_tg_message')
+  .addEdge('send_tg_message', END);
 
 // Compile the graph
 export const singleBettingPoolGraph = builder.compile();
