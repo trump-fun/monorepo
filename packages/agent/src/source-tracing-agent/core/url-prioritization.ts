@@ -52,16 +52,35 @@ function scoreDomain(domain: string): number {
       return 4.0;
     }
     
-    // News organizations
+    // News organizations - primary news sources ranked higher
     if (
-      domainLower.includes('news') ||
-      domainLower.includes('nyt') ||
-      domainLower.includes('wsj') ||
-      domainLower.includes('reuters') ||
-      domainLower.includes('bloomberg') ||
+      domainLower.includes('reuters.com') ||
+      domainLower.includes('apnews.com') ||
+      domainLower.includes('bloomberg.com') ||
+      domainLower.includes('nytimes.com') ||
+      domainLower.includes('washingtonpost.com') ||
+      domainLower.includes('bbc.com') ||
+      domainLower.includes('bbc.co.uk') ||
+      domainLower.includes('ft.com') ||
+      domainLower.includes('wsj.com') ||
+      domainLower.includes('economist.com') ||
       domainLower.includes('ap.org')
     ) {
-      return 2.5;
+      return 4.0; // Higher than generic news
+    }
+    
+    // Secondary news sites
+    if (
+      domainLower.includes('news') ||
+      domainLower.includes('cnn.com') ||
+      domainLower.includes('foxnews.com') ||
+      domainLower.includes('nbcnews.com') ||
+      domainLower.includes('cbsnews.com') ||
+      domainLower.includes('abcnews.go.com') ||
+      domainLower.includes('theguardian.com') ||
+      domainLower.includes('aljazeera.com')
+    ) {
+      return 3.2;
     }
     
     // Social media (rarely primary sources)
@@ -70,9 +89,24 @@ function scoreDomain(domain: string): number {
       domainLower.includes('facebook') ||
       domainLower.includes('instagram') ||
       domainLower.includes('tiktok') ||
-      domainLower.includes('reddit')
+      domainLower.includes('reddit') ||
+      domainLower.includes('linkedin') ||
+      domainLower.includes('threads') ||
+      domainLower.includes('pinterest')
     ) {
-      return 1.2;
+      return 0.8; // Lower score for social media
+    }
+    
+    // Technical specification sites - should be avoided
+    if (
+      domainLower === 'schema.org' ||
+      domainLower === 'w3.org' ||
+      domainLower.includes('xmlns') ||
+      domainLower.includes('jquery') ||
+      domainLower.includes('googleapis.com') ||
+      domainLower.includes('gstatic.com')
+    ) {
+      return 0.1; // Strongly downrank technical spec sites
     }
     
     // Default commercial site
@@ -199,15 +233,74 @@ export function prioritizeUrls(urls: string[], maxResults: number = 10): string[
     }
   });
   
+  // Filter out utility URLs that aren't useful for source tracing
+  const filteredUrls = scoredUrls.filter(item => {
+    const url = item.url.toLowerCase();
+    // Filter out privacy policies, terms of service, schema.org, etc.
+    if (
+      url.includes('schema.org') ||
+      url.includes('w3.org') ||
+      url.includes('privacy') ||
+      url.includes('terms') ||
+      url.includes('cookies') ||
+      url.includes('javascript:') ||
+      url.includes('cdn.') ||
+      url.includes('assets.') ||
+      url.includes('favicon') ||
+      url.includes('sitemap') ||
+      url.includes('logo') ||
+      url.includes('analytics') ||
+      url.includes('tracking')
+    ) {
+      return false;
+    }
+    return true;
+  });
+
   // Sort by score, descending
-  scoredUrls.sort((a, b) => b.score - a.score);
+  filteredUrls.sort((a, b) => b.score - a.score);
   
   // Log prioritization results for top URLs
-  console.log('URL prioritization results (top ' + Math.min(3, scoredUrls.length) + '):');
-  scoredUrls.slice(0, 3).forEach(item => {
+  console.log('URL prioritization results (top ' + Math.min(3, filteredUrls.length) + '):');
+  filteredUrls.slice(0, 3).forEach(item => {
     console.log(`  Score ${item.score.toFixed(3)}: ${item.url}`);
   });
   
-  // Return the top URLs
-  return scoredUrls.slice(0, maxResults).map(item => item.url);
+  // Return the top URLs, with at least 60% being news sources if possible
+  const newsUrls = filteredUrls.filter(item => {
+    const domain = new URL(item.url).hostname.toLowerCase();
+    return (
+      domain.includes('news') ||
+      domain.includes('reuters') ||
+      domain.includes('ap.org') ||
+      domain.includes('bloomberg') ||
+      domain.includes('nytimes') ||
+      domain.includes('wsj') ||
+      domain.includes('washingtonpost') ||
+      domain.includes('bbc') ||
+      domain.includes('cnn') ||
+      domain.includes('nbcnews') ||
+      domain.includes('theguardian')
+    );
+  });
+  
+  // If we have enough news URLs, ensure they make up at least 60% of results
+  if (newsUrls.length >= maxResults * 0.6) {
+    const newsCount = Math.ceil(maxResults * 0.6);
+    const otherCount = maxResults - newsCount;
+    
+    // Get top news URLs
+    const topNewsUrls = newsUrls.slice(0, newsCount);
+    
+    // Get top non-news URLs (excluding ones already selected)
+    const nonNewsUrls = filteredUrls
+      .filter(item => !topNewsUrls.some(newsItem => newsItem.url === item.url))
+      .slice(0, otherCount);
+    
+    // Combine and return URLs
+    return [...topNewsUrls, ...nonNewsUrls].map(item => item.url);
+  }
+  
+  // Otherwise, just return top filtered URLs
+  return filteredUrls.slice(0, maxResults).map(item => item.url);
 }

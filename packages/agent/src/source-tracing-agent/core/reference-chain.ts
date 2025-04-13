@@ -71,13 +71,26 @@ export async function followReferenceChain(
     // Add to the chain
     chain.sources.push(sourceWithUrl);
 
-    // Check if this is a primary source
+    // Check if this is a primary or high-quality source
     const isPrimarySource = 
       sourceInfo.source_type === 'primary' && 
       sourceInfo.contains_original_information;
+    
+    // Consider quality news sources as semi-primary sources
+    const isQualityNewsSource = 
+      url.includes('reuters.com') ||
+      url.includes('apnews.com') ||
+      url.includes('bloomberg.com') ||
+      url.includes('washingtonpost.com') ||
+      url.includes('nytimes.com') ||
+      url.includes('npr.org') ||
+      url.includes('bbc.co.uk') ||
+      url.includes('bbc.com') ||
+      url.includes('theguardian.com');
 
-    if (isPrimarySource) {
-      // Generate a summary of the primary source
+    // Handle both primary sources and high-quality news sources
+    if (isPrimarySource || isQualityNewsSource) {
+      // Generate a summary of the source
       let primarySourceSummary = '';
       
       try {
@@ -91,14 +104,33 @@ export async function followReferenceChain(
         const summaryResult = await config.cheap_large_llm.invoke(formattedPrompt);
         primarySourceSummary = (summaryResult as any).content || '';
       } catch (summaryError) {
-        console.error('Error generating primary source summary:', summaryError);
+        console.error('Error generating source summary:', summaryError);
         primarySourceSummary = sourceInfo.content_summary;
       }
 
-      // Mark chain as complete since we found a primary source
+      // Mark chain as complete since we found a primary source or quality news source
       chain.is_complete = true;
       
-      console.log(`Found valid source chain endpoint: ${url}`);
+      // Add special markers for quality sources to help with confidence scoring
+      if (isQualityNewsSource && !isPrimarySource) {
+        sourceInfo.source_type = 'news';
+        sourceInfo.contains_original_information = true;
+        sourceInfo.verification_status = 'partially_verified';
+        sourceInfo.chain_distance_markers.cites_primary_sources = true;
+        
+        // Update the source in the chain
+        const sourceIndex = chain.sources.findIndex(s => s.url === url);
+        if (sourceIndex >= 0) {
+          chain.sources[sourceIndex] = {
+            ...chain.sources[sourceIndex],
+            ...sourceInfo
+          };
+        }
+        
+        console.log(`Found high-quality news source: ${url}`);
+      } else {
+        console.log(`Found valid source chain endpoint: ${url}`);
+      }
       
       return {
         chain,
@@ -203,12 +235,12 @@ export function calculateChainConfidence(chain: ReferenceChain): number {
   // 1. Chain completeness - has at least one endpoint (source with no references)
   const endpointSources = chain.sources.filter(s => s.chain_distance_markers.has_no_references);
   if (endpointSources.length > 0) {
-    score += 0.2;
+    score += 0.25; // Increased weight
 
     // Check if these endpoints contain original information
     const endpointsWithOriginalInfo = endpointSources.filter(s => s.contains_original_information);
     if (endpointsWithOriginalInfo.length > 0) {
-      score += 0.3; // Strong indication of reaching original sources
+      score += 0.35; // Strong indication of reaching original sources
     }
   }
 
@@ -217,22 +249,56 @@ export function calculateChainConfidence(chain: ReferenceChain): number {
     s => s.chain_distance_markers.cites_primary_sources
   );
   if (sourcesCitingPrimary.length > 0) {
-    score += 0.2 * Math.min(sourcesCitingPrimary.length / chain.sources.length, 1);
+    score += 0.25 * Math.min(sourcesCitingPrimary.length / chain.sources.length, 1);
   }
 
   // 3. Interconnectedness - sources that are directly cited by others in the chain
   const directlyCitedSources = chain.sources.filter(
     s => s.chain_distance_markers.is_directly_cited
   );
-  score += 0.1 * Math.min(directlyCitedSources.length / chain.sources.length, 1);
+  score += 0.15 * Math.min(directlyCitedSources.length / chain.sources.length, 1);
 
-  // 4. Length-based metrics (with lower weight)
-  // More sources = better evidence of recursive tracing, up to a point
-  score += Math.min(chain.sources.length / 4, 0.2);
+  // 4. Source type quality
+  const qualitySourcesCount = chain.sources.filter(s => 
+    s.source_type === 'primary' || 
+    s.source_type === 'news' ||
+    s.url.includes('reuters.com') ||
+    s.url.includes('apnews.com') ||
+    s.url.includes('bloomberg.com') ||
+    s.url.includes('washingtonpost.com') ||
+    s.url.includes('nytimes.com')
+  ).length;
+  score += 0.2 * Math.min(qualitySourcesCount / chain.sources.length, 1);
 
   // 5. Verification status for credibility
-  const verifiedCount = chain.sources.filter(s => s.verification_status === 'verified').length;
-  score += (verifiedCount / chain.sources.length) * 0.2;
+  const verifiedCount = chain.sources.filter(s => 
+    s.verification_status === 'verified' || 
+    s.verification_status === 'partially_verified'
+  ).length;
+  score += (verifiedCount / chain.sources.length) * 0.25;
+  
+  // Bonus for chains with reliable sources
+  if (chain.is_complete && chain.sources.some(s => s.contains_original_information)) {
+    score += 0.15;
+  }
 
+  // Apply a minimum confidence score for chains with quality sources
+  if (chain.sources.length > 0) {
+    // Check for quality sources
+    const hasQualitySource = chain.sources.some(s => 
+      s.source_type === 'primary' || 
+      s.source_type === 'news' ||
+      s.verification_status === 'verified' ||
+      s.verification_status === 'partially_verified' ||
+      s.contains_original_information
+    );
+    
+    if (hasQualitySource) {
+      score = Math.max(score, 0.40); // Minimum score of 0.40 for chains with quality sources
+    } else {
+      score = Math.max(score, 0.20); // Minimum score of 0.20 for chains with any sources
+    }
+  }
+  
   return Math.min(Math.max(score, 0), 0.99);
 }

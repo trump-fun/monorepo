@@ -30,8 +30,9 @@ export async function extractContentWithDatura(url: string): Promise<string | nu
           headers: {
             Authorization: `${config.daturaApiKey}`,
             'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36' // Add user agent
           },
-          timeout: 45000, // Increased timeout
+          timeout: 20000, // Decreased timeout for better reliability
         }
       );
 
@@ -71,8 +72,9 @@ export async function extractContentWithDatura(url: string): Promise<string | nu
           headers: {
             Authorization: `${config.daturaApiKey}`,
             'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36' // Add user agent
           },
-          timeout: 45000, // Increased timeout
+          timeout: 20000, // Decreased timeout for better reliability
         }
       );
 
@@ -330,8 +332,9 @@ export async function searchForSourcesWithDatura(
           headers: {
             Authorization: `${config.daturaApiKey}`,
             'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36' // Add user agent
           },
-          timeout: 30000,
+          timeout: 20000, // Reduced timeout for faster failures
         }
       );
 

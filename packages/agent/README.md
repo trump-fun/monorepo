@@ -21,12 +21,12 @@ These agents power the core functionality of Trump.fun - an AI-powered predictio
 
 ## Key Functionality
 
-- **Pool Creation**: Automatically analyzes Trump's social media posts
-- **Market Formation**: Creates betting markets with appropriate options
-- **Automated Grading**: Monitors real-world events to determine bet outcomes
-- **Trump-Style Responses**: Generates responses to user comments in Trump's distinctive style
-- **Source Verification**: Traces information back to primary sources through reference chains
-- **Prediction Intelligence**: Finds, profiles, and verifies predictions from social media
+- **Pool Creation**: Automatically analyzes Trump's social media posts with improved source verification
+- **Market Formation**: Creates betting markets with appropriate options using optimized blockchain interactions
+- **Automated Grading**: Monitors real-world events to determine bet outcomes with enhanced evidence gathering
+- **Trump-Style Responses**: Generates responses to user comments in Trump's distinctive style using advanced LLM prompting
+- **Source Verification**: Traces information back to primary sources through reference chains with improved reliability
+- **Prediction Intelligence**: Finds, profiles, and verifies predictions from social media with better accuracy
 
 ### Hackathon Agents
 
@@ -237,12 +237,79 @@ You can also use LangGraph Studio to visualize agent workflows locally, though n
 
 ## Agent Architecture
 
-The agents use a directed graph architecture with:
+## Enhanced Agent Architecture (2025 Update)
 
+The agents have been refactored with an improved architecture focused on maintainability, reliability, and performance:
+
+### Core Architecture Improvements
+
+- **Shared Utilities Layer**: Centralized utilities for common operations across agents
+  - `common/api/datura-api.ts`: Standardized Twitter/X API client with caching, rate limiting, and error handling
+  - `common/llm/llm-manager.ts`: Unified LLM interaction with structured outputs, schema validation, and dynamic model selection
+  - `common/fetch/content-fetcher.ts`: Universal content fetching with multiple fallback methods (Datura API, Firecrawl API, direct requests, Puppeteer)
+  - `common/blockchain/contract-interface.ts`: Improved contract interaction with gas estimation and transaction tracking
+  - `common/utils/error-handler.ts`: Enhanced error handling with error types, severity levels, and context tracking
+  - `common/index.ts`: Central export point with utility functions like `createAgentConfig()`
+
+- **Standardized Agent Structure**: Consistent organization across all agents
+  - Clean separation between interface, prompts, core logic, and tools
+  - Well-defined types and interfaces with type-only imports to avoid circular dependencies
+  - Comprehensive documentation and examples
+  - Standardized index files for better developer experience
+
+- **Error Handling and Observability**:
+  - Standardized error types (`ErrorType`) and severity levels (`ErrorSeverity`)
+  - Structured error handling with detailed context information
+  - Agent-specific error handlers created via `createAgentErrorHandler()`
+  - Comprehensive error context for easier debugging and recovery paths
+
+- **Performance Optimizations**:
+  - Intelligent request batching and deduplication
+  - Response caching with appropriate TTLs for both API responses and LLM outputs
+  - Smart retries with exponential backoff
+  - Parallel processing with proper error handling
+  - Content fetching with multiple fallback methods
+
+### Refactored Agents
+
+- **Prediction Finder Agent**:
+  - Enhanced search logic with smarter query selection and better filtering
+  - Improved prediction analysis with pre-filtering and parallel processing
+  - Standardized interfaces for better integration with other agents
+  
+- **Source Tracing Agent**:
+  - Enhanced reference chain tracing with better credibility analysis
+  - Improved content extraction with multiple fallback methods
+  - Better source type classification and verification status determination
+  
+- **Bet Grading Agent**:
+  - Improved evidence gathering with structured analysis
+  - Enhanced error handling for graceful degradation
+  - Better integration with external search APIs
+
+### LLM Usage Improvements
+
+- **Dynamic Model Selection**: Automatic model routing based on task complexity via `queryStructuredLLM`
+  - Simpler tasks use smaller, cheaper models (`small_llm`)
+  - Complex tasks use more capable models (`large_llm`)
+  - Processing complexity specified via options: `{ complexity: 'low' | 'medium' | 'high' }`
+- **Optimized Prompts**: Enhanced prompts with better examples and context
+  - Standardized prompt templates with consistent formatting
+  - Clear instructions for structured outputs
+  - Examples that demonstrate ideal responses
+- **Fallback Mechanisms**: Graceful degradation when services are unavailable
+  - Default values provided for all LLM requests
+  - Multiple fallback methods for content fetching
+  - Error recovery paths for critical operations
+- **Result Validation**: Strong typing and schema validation for all LLM outputs
+  - JSON schema validation for structured outputs
+  - TypeScript type checking with Zod schema integration
+  - Error handling for malformed responses
+
+The agents still use a directed graph architecture with:
 - State management for tracking agent progress
 - Multiple specialized tools for different tasks
-- Error handling and retry mechanisms
-- Blockchain integration for on-chain actions
+- Integration with blockchain for on-chain actions
 
 ## Social Media
 
@@ -251,7 +318,15 @@ The agents use a directed graph architecture with:
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please follow these guidelines:
+
+1. **Use the Shared Utilities**: When implementing new functionality, leverage the shared utilities in the `common/` directory.
+2. **Follow the Standard Structure**: Maintain the standardized directory structure for new agents.
+3. **Add Comprehensive Tests**: Include unit tests for core functionality and integration tests for workflows.
+4. **Document Your Changes**: Update relevant documentation and add JSDoc comments.
+5. **Handle Errors Properly**: Use the standardized error handling system for consistent behavior.
+
+Please feel free to submit a Pull Request with your improvements.
 
 ## License
 

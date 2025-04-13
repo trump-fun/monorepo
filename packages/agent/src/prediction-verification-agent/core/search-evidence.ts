@@ -105,7 +105,7 @@ async function searchTavily(query: string, afterDate: string): Promise<Evidence[
         headers: {
           'Content-Type': 'application/json',
           // Use Authorization header with Bearer token as per Tavily API documentation
-          Authorization: `Bearer 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`,
+          Authorization: `Bearer ${config.tavilyApiKey}`,
         },
         timeout: 10000, // 10 second timeout
       }

@@ -81,12 +81,35 @@ export async function traceSourceChain(
   console.log(`After filtering, ${traceUrls.length} URLs remain`);
 
   // Limit the number of URLs to process for better performance
-  const MAX_URLS_TO_PROCESS = 10;
+  const MAX_URLS_TO_PROCESS = 6; // Reduced number of URLs to process
   if (traceUrls.length > MAX_URLS_TO_PROCESS) {
     console.log(
       `Limiting processing to ${MAX_URLS_TO_PROCESS} most relevant URLs out of ${traceUrls.length} total`
     );
-    traceUrls = traceUrls.slice(0, MAX_URLS_TO_PROCESS);
+    // Prioritize news sources first
+    const newsUrls = traceUrls.filter(url => {
+      const lowerUrl = url.toLowerCase();
+      return (
+        lowerUrl.includes('/news/') ||
+        lowerUrl.includes('/article/') ||
+        lowerUrl.includes('reuters.com') ||
+        lowerUrl.includes('apnews.com') ||
+        lowerUrl.includes('nytimes.com') ||
+        lowerUrl.includes('washingtonpost.com') ||
+        lowerUrl.includes('theguardian.com')
+      );
+    });
+    
+    // Use the news URLs first, then add other URLs until we reach the limit
+    if (newsUrls.length > 0) {
+      const remainingSlots = MAX_URLS_TO_PROCESS - newsUrls.length;
+      const otherUrls = traceUrls
+        .filter(url => !newsUrls.includes(url))
+        .slice(0, Math.max(0, remainingSlots));
+      traceUrls = [...newsUrls, ...otherUrls].slice(0, MAX_URLS_TO_PROCESS);
+    } else {
+      traceUrls = traceUrls.slice(0, MAX_URLS_TO_PROCESS);
+    }
   }
 
   // If no URLs to trace, mark tracing as complete but unsuccessful
@@ -110,7 +133,7 @@ export async function traceSourceChain(
   let primarySourceSummary = '';
 
   // Helper function to process a single URL with timeout
-  async function processUrlWithTimeout(url: string, timeoutMs: number = 60000) {
+  async function processUrlWithTimeout(url: string, timeoutMs: number = 30000) {
     return new Promise<{
       primarySourceFound: boolean;
       primarySourceUrl?: string;
@@ -201,11 +224,32 @@ export async function traceSourceChain(
     }
   }
 
-  // Update all chain confidence scores
+  // Update all chain confidence scores and mark chains as complete if they have sources
   for (let i = 0; i < referenceChains.length; i++) {
     const chain = referenceChains[i];
     if (chain) {
+      // If we have sources but chain isn't explicitly marked complete, 
+      // consider it complete if it has at least one quality source
+      if (!chain.is_complete && chain.sources.length > 0) {
+        const hasQualitySource = chain.sources.some(source => 
+          source.source_type === 'news' || 
+          source.contains_original_information ||
+          source.verification_status === 'verified' ||
+          source.verification_status === 'partially_verified'
+        );
+        
+        if (hasQualitySource) {
+          chain.is_complete = true;
+        }
+      }
+      
+      // Calculate confidence score
       chain.confidence_score = calculateChainConfidence(chain);
+      
+      // Ensure minimum confidence for chains with sources
+      if (chain.sources.length > 0 && chain.confidence_score < 0.3) {
+        chain.confidence_score = 0.3;
+      }
     }
   }
 
