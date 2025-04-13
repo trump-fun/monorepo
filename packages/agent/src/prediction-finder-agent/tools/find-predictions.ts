@@ -1,122 +1,22 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { z } from 'zod';
 import axios from 'axios';
+import { z } from 'zod';
 import config from '../../config';
 
-// Define schema for prediction detection
-const _predictionSchema = z.object({
-  prediction_text: z.string().describe('The text of the prediction'),
-  confidence_score: z
-    .number()
-    .min(0)
-    .max(1)
-    .describe('Confidence that this is a genuine prediction (0-1)'),
-  implicit: z.boolean().describe('Whether the prediction is implicit or explicit'),
-  topic_relevance: z
-    .number()
-    .min(0)
-    .max(1)
-    .describe('How relevant the prediction is to the given topic (0-1)'),
-  timeframe: z
-    .enum(['immediate', 'days', 'weeks', 'months', 'years', 'decades', 'uncertain'])
-    .describe('Predicted timeframe for the event'),
-  has_condition: z
-    .boolean()
-    .describe('Whether the prediction has conditional elements (if X then Y)'),
-  prediction_sentiment: z
-    .enum(['positive', 'negative', 'neutral'])
-    .optional()
-    .describe('The sentiment expressed in the prediction'),
-  probability_stated: z
-    .number()
-    .min(0)
-    .max(1)
-    .optional()
-    .describe('Explicit probability mentioned in prediction (0-1)'),
-});
-
-export type PredictionResult = z.infer<typeof _predictionSchema> & {
-  post_id: string;
-  post_url: string;
-  author_username: string;
-  author_name: string;
-  post_date: string;
-  topic: string;
-};
-
-/**
- * Finds X posts containing explicit or implicit predictions related to a Polymarket topic
- *
- * @param topic Polymarket topic to search for predictions about
- * @param limit Maximum number of results to return
- * @returns Array of predictions found on X/Twitter
- */
-export async function findPredictions(
-  topic: string,
-  limit: number = 10
-): Promise<PredictionResult[]> {
-  console.log(`Finding predictions related to topic: ${topic}`);
-
-  // Step 1: Generate search queries related to the topic
-  const searchQueries = await generatePredictionSearchQueries(topic);
-
-  // Step 2: Search for posts using the search queries through Datura API
-  const rawResults = await searchForPredictionPosts(searchQueries, limit);
-
-  // Step 3: Filter and analyze posts to identify predictions
-  const predictions = await analyzePredictionCandidates(rawResults, topic);
-
-  return predictions;
+enum PredictionTimeframe {
+  IMMEDIATE = 'immediate',
+  DAYS = 'days',
+  WEEKS = 'weeks',
+  MONTHS = 'months',
+  YEARS = 'years',
+  DECADES = 'decades',
+  UNCERTAIN = 'uncertain',
 }
 
-/**
- * Generates effective search queries for finding predictions on a topic
- */
-async function generatePredictionSearchQueries(topic: string): Promise<string[]> {
-  const searchQueryPrompt = ChatPromptTemplate.fromMessages([
-    [
-      'system',
-      `You are an expert at generating effective search queries to find predictions on social media platforms like X/Twitter.
-      Given a topic from the prediction market Polymarket, generate 3-5 search queries that would find posts containing predictions related to this topic.
-      
-      For each query:
-      1. Include common prediction phrases like "I predict", "will happen", "going to be", "bet that", etc.
-      2. Include relevant keywords from the topic
-      3. Consider both explicit predictions ("I predict X") and implicit predictions ("X is inevitable")
-      4. Format as proper Twitter search syntax with operators like OR, AND, -filter:replies where appropriate
-      
-      Return ONLY a JSON array of strings, with each string being a search query.`,
-    ],
-    ['human', `Polymarket Topic: ${topic}`],
-  ]);
-
-  try {
-    const formattedPrompt = await searchQueryPrompt.formatMessages({ topic });
-    const result = await config.cheap_large_llm.invoke(formattedPrompt);
-    let queries: string[] = [];
-
-    // Parse the result, which should be a JSON array of strings
-    try {
-      const content = result.content.toString().trim();
-      // Strip any markdown formatting
-      const jsonString = content.replace(/```json|```/g, '').trim();
-      queries = JSON.parse(jsonString);
-    } catch (parseError) {
-      console.error('Error parsing search queries from LLM response:', parseError);
-      // Fallback to basic queries
-      queries = [
-        `${topic} predict OR prediction OR "will happen" OR "going to" -filter:replies`,
-        `${topic} forecast OR outlook OR future -filter:replies`,
-      ];
-    }
-
-    console.log(`Generated ${queries.length} search queries for topic "${topic}":`, queries);
-    return queries;
-  } catch (error) {
-    console.error('Error generating search queries:', error);
-    // Fallback to a basic query
-    return [`${topic} predict OR prediction OR "will happen" OR "going to" -filter:replies`];
-  }
+enum PredictionSentiment {
+  POSITIVE = 'positive',
+  NEGATIVE = 'negative',
+  NEUTRAL = 'neutral',
 }
 
 /**
@@ -172,6 +72,126 @@ interface TwitterScraperTweet {
   is_retweet?: boolean | null;
 }
 
+// Define schemas for structured output
+const predictionAnalysisSchema = z.object({
+  is_prediction: z.boolean().describe('Whether the post contains a prediction or not'),
+  source_text: z.string().optional().describe('The source text of the prediction'),
+  prediction_text: z
+    .string()
+    .optional()
+    .describe(
+      'A short summary describing what the user predicted in their post and how it relates to the topic'
+    ), //CoT
+  confidence_score: z
+    .number()
+    .min(0)
+    .max(1)
+    .describe('Confidence that this is a genuine prediction (0-1)'),
+  implicit: z.boolean().optional().describe('Whether the prediction is implicit or explicit'),
+  topic_relevance: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe('How relevant the prediction is to the given topic (0-1)'),
+  timeframe: z
+    .nativeEnum(PredictionTimeframe)
+    .optional()
+    .describe('Predicted timeframe for the event'),
+  has_condition: z
+    .boolean()
+    .optional()
+    .describe('Whether the prediction has conditional elements (if X then Y)'),
+  prediction_sentiment: z
+    .nativeEnum(PredictionSentiment)
+    .optional()
+    .describe('The sentiment expressed in the prediction'),
+  probability_stated: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe('Explicit probability mentioned in prediction (0-1)'),
+});
+
+// Define schema for search queries
+const searchQueriesSchema = z.object({
+  queries: z.array(z.string()).describe('List of search queries for finding predictions'),
+});
+
+export type PredictionResult = z.infer<typeof predictionAnalysisSchema> & {
+  post_id: string;
+  post_url: string;
+  author_username: string;
+  author_name: string;
+  post_date: string;
+  topic: string;
+};
+
+/**
+ * Finds X posts containing explicit or implicit predictions related to a Polymarket topic
+ *
+ * @param topic Polymarket topic to search for predictions about
+ * @param limit Maximum number of results to return
+ * @returns Array of predictions found on X/Twitter
+ */
+export async function findPredictions(
+  topic: string,
+  limit: number = 10
+): Promise<PredictionResult[]> {
+  console.log(`Finding predictions related to topic: ${topic}`);
+
+  // Step 1: Generate search queries related to the topic
+  const searchQueries = await generatePredictionSearchQueries(topic);
+
+  // Step 2: Search for posts using the search queries through Datura API
+  const rawResults = await searchForPredictionPosts(searchQueries, limit);
+
+  // Step 3: Filter and analyze posts to identify predictions
+  const predictions = await analyzePredictionCandidates(rawResults, topic);
+
+  return predictions;
+}
+
+/**
+ * Generates effective search queries for finding predictions on a topic
+ */
+async function generatePredictionSearchQueries(topic: string): Promise<string[]> {
+  const searchQueryPrompt = ChatPromptTemplate.fromMessages([
+    [
+      'system',
+      `You are an expert at generating effective search queries to find predictions on social media platforms like X/Twitter.
+      Given a topic from the prediction market Polymarket, generate 1-3 search queries that would find posts containing predictions related to this topic.
+      
+      For each query:
+      1. Include common prediction phrases like "I predict", "will happen", "going to be", "bet that", etc.
+      2. Include relevant keywords from the topic
+      3. Consider both explicit predictions ("I predict X") and implicit predictions ("X is inevitable")
+      4. Format as proper Twitter search syntax with operators like OR, AND, -filter:replies where appropriate`,
+    ],
+    ['human', `Polymarket Topic: ${topic}`],
+  ]);
+
+  try {
+    // Create structured output LLM
+    const structuredLlm = config.cheap_large_llm.withStructuredOutput(searchQueriesSchema);
+
+    // Format the prompt into messages and invoke the LLM
+    const formattedPrompt = await searchQueryPrompt.formatMessages({ topic });
+    const result = await structuredLlm.invoke(formattedPrompt);
+
+    console.log(
+      `Generated ${result.queries.length} advanced search queries for topic "${topic}":`,
+      result.queries
+    );
+    return result.queries;
+  } catch (error) {
+    console.error('Error generating search queries:', error);
+    // Fallback to a basic query
+    return [`${topic} predict OR prediction OR "will happen" OR "going to" -filter:replies`];
+  }
+}
+
 /**
  * Searches for posts using the generated queries
  */
@@ -191,7 +211,7 @@ async function searchForPredictionPosts(
         params: {
           query: query,
           count: Math.min(postsPerQuery, 100), // API maximum is 100
-          sort: 'Top', // Must be 'Top' or 'Latest' according to API spec
+          sort: 'Latest', // Must be 'Top' or 'Latest' according to API spec
           lang: 'en', // Language code for English
         },
         headers: {
@@ -342,44 +362,29 @@ async function analyzeSinglePost(
       2. Is the prediction related to the given topic?
       3. How confident are you that this is a genuine prediction?
       4. What timeframe does the prediction cover?
-      
-      If the post does NOT contain a prediction, respond with: { "is_prediction": false }
-      
-      If the post DOES contain a prediction, analyze it according to the specified structure.`,
+      `,
     ],
     [
       'human',
-      `Post: "${postText}"
-      Topic: ${topic}
+      `- Post: "{text}"
+       - Topic: "{topic}"
       
       Does this post contain a prediction related to the topic? If so, analyze it.`,
     ],
   ]);
 
+  console.log(`Analyzing post: ${postText}`);
+
   try {
-    // Create structured output
-    const structuredLlm = config.cheap_large_llm.withStructuredOutput(
-      z.union([
-        z.object({
-          is_prediction: z.literal(false),
-        }),
-        z.object({
-          is_prediction: z.literal(true),
-          prediction_text: z.string(),
-          confidence_score: z.number().min(0).max(1),
-          implicit: z.boolean(),
-          topic_relevance: z.number().min(0).max(1),
-          timeframe: z.string(),
-          has_condition: z.boolean(),
-        }),
-      ])
-    );
+    // Create structured output with the schema
+    const structuredLlm = config.cheap_large_llm.withStructuredOutput(predictionAnalysisSchema);
 
     // Format the prompt into messages and then invoke the LLM
     const formattedPrompt = await predictionPrompt.formatMessages({
-      postText: postText,
-      topic: topic,
+      text: postText,
+      topic,
     });
+
     const result = await structuredLlm.invoke(formattedPrompt);
 
     // If not a prediction, return null
@@ -387,48 +392,17 @@ async function analyzeSinglePost(
       return null;
     }
 
-    // Normalize the timeframe to match our expected values
-    let normalizedTimeframe: string = result.timeframe.toLowerCase();
-    const validTimeframes = [
-      'immediate',
-      'days',
-      'weeks',
-      'months',
-      'years',
-      'decades',
-      'uncertain',
-    ];
-
-    if (!validTimeframes.includes(normalizedTimeframe)) {
-      // Map non-standard timeframes to the closest match
-      if (normalizedTimeframe.includes('day') || normalizedTimeframe.includes('tomorrow')) {
-        normalizedTimeframe = 'days';
-      } else if (normalizedTimeframe.includes('week')) {
-        normalizedTimeframe = 'weeks';
-      } else if (normalizedTimeframe.includes('month')) {
-        normalizedTimeframe = 'months';
-      } else if (normalizedTimeframe.includes('year')) {
-        normalizedTimeframe = 'years';
-      } else if (
-        normalizedTimeframe.includes('decade') ||
-        normalizedTimeframe.includes('century')
-      ) {
-        normalizedTimeframe = 'decades';
-      } else if (normalizedTimeframe.includes('now') || normalizedTimeframe.includes('current')) {
-        normalizedTimeframe = 'immediate';
-      } else {
-        normalizedTimeframe = 'uncertain';
-      }
-    }
-
     // Return the prediction with metadata
     return {
+      is_prediction: result.is_prediction,
       prediction_text: result.prediction_text,
       confidence_score: result.confidence_score,
       implicit: result.implicit,
       topic_relevance: result.topic_relevance,
-      timeframe: normalizedTimeframe as any,
+      timeframe: result.timeframe,
       has_condition: result.has_condition,
+      prediction_sentiment: result.prediction_sentiment,
+      probability_stated: result.probability_stated,
       post_id: postId,
       post_url: postUrl,
       author_username: username,

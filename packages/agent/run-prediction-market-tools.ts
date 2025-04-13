@@ -1,7 +1,7 @@
-import 'dotenv/config';
 import { program } from 'commander';
-import { predictionMarketAgent } from './src/prediction-market-agent/prediction-market-agent';
+import 'dotenv/config';
 import fs from 'fs/promises';
+import { predictionMarketAgent } from './src/prediction-market-agent/prediction-market-agent';
 
 // Configure command line interface
 program
@@ -27,12 +27,10 @@ program
       console.log(`Found ${predictions.length} predictions on topic: ${options.topic}`);
       console.table(
         predictions.map(p => ({
+          ...p,
           prediction:
-            p.prediction_text.substring(0, 100) + (p.prediction_text.length > 100 ? '...' : ''),
-          author: p.author_username,
-          confidence: p.confidence_score.toFixed(2),
-          implicit: p.implicit ? 'Yes' : 'No',
-          url: p.post_url,
+            p.prediction_text?.substring(0, 100) +
+            ((p.prediction_text?.length ?? 0 > 100) ? '...' : ''),
         }))
       );
 
