@@ -5,7 +5,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { validator } from 'hono/validator';
 import { z } from 'zod';
-import type { PredictionResult } from './src/prediction-finder-agent/tools/find-predictions';
+import type { PredictionFinderResult } from './src/prediction-finder-agent/prediction-finder-graph';
 import { predictionMarketAgent } from './src/prediction-market-agent/prediction-market-agent';
 import type { PredictionVerification } from './src/prediction-verification-agent/tools/verify-prediction';
 import type { PredictorProfile } from './src/predictor-profile-agent/tools/build-predictor-profile';
@@ -29,7 +29,7 @@ interface ApiResponse<T> {
 // Using type alias instead of empty interface extension to avoid linter error
 type FindPredictionsResponse = ApiResponse<{
   count: number;
-  predictions: PredictionResult[];
+  predictions: PredictionFinderResult;
 }>;
 
 type SourceTracingResponse = ApiResponse<{
@@ -61,8 +61,6 @@ const sourceTracingSchema = z.object({
 const verifyPredictionSchema = z.object({
   prediction_text: z.string().describe('The prediction text to verify'),
   prediction_date: z.string().describe('When the prediction was made'),
-  prediction_source: z.string().describe('Source of the prediction (URL, post ID)'),
-  predictor_username: z.string().describe('Username of the person who made the prediction'),
 });
 
 const predictorProfileSchema = z.object({
@@ -136,15 +134,7 @@ app.get(
       console.log(`Searching for predictions on topic: ${topic}`);
       const predictions = await predictionMarketAgent.findPredictions(topic, limit);
 
-      const response: FindPredictionsResponse = {
-        status: 'success',
-        data: {
-          count: predictions.length,
-          predictions,
-        },
-      };
-
-      return c.json(response);
+      return c.json(predictions);
     } catch (error) {
       console.error('Error finding predictions:', error);
 
@@ -225,10 +215,13 @@ app.get(
   async c => {
     try {
       // Get validated parameters
-      const prediction = c.req.valid('query');
+      const { prediction_text, prediction_date } = c.req.valid('query');
 
-      console.log(`Verifying prediction: "${prediction.prediction_text}"`);
-      const result = await predictionMarketAgent.verifyPrediction(prediction);
+      console.log(`Verifying prediction: "${prediction_text}"`);
+      const result = await predictionMarketAgent.verifyPrediction({
+        prediction_text,
+        prediction_date,
+      });
 
       const response: VerifyPredictionResponse = {
         status: 'success',
@@ -298,4 +291,5 @@ export default {
   port: PORT,
   fetch: app.fetch,
   idleTimeout: 255, // Maximum allowed timeout (in seconds)
+  hostname: '0.0.0.0', // Bind to all network interfaces
 };

@@ -16,10 +16,13 @@ import {
 export async function analyzePredictionCandidates(
   posts: TwitterScraperTweet[],
   topic: string
-): Promise<{ predictions: PredictionResult[]; not_predictions: TwitterScraperTweet[] }> {
+): Promise<{
+  predictions: PredictionResult[];
+  not_predictions: PredictionResult[];
+}> {
   console.log(`Analyzing ${posts.length} posts for predictions on topic: ${topic}`);
   const predictions: PredictionResult[] = [];
-  const not_predictions: TwitterScraperTweet[] = [];
+  const not_predictions: PredictionResult[] = [];
 
   // Process posts in batches to avoid overwhelming the LLM
   const batchSize = 5;
@@ -35,13 +38,10 @@ export async function analyzePredictionCandidates(
 
     // Separate predictions from non-predictions
     batchResults.forEach((result, index) => {
-      if (result !== null) {
+      if (result !== null && result.is_prediction) {
         predictions.push(result);
-      } else {
-        const nonPredictionPost = batch[index];
-        if (nonPredictionPost) {
-          not_predictions.push(nonPredictionPost);
-        }
+      } else if (result !== null) {
+        not_predictions.push(result);
       }
     });
 
@@ -94,22 +94,9 @@ export async function analyzeSinglePost(
 
     const result = await structuredLlm.invoke(formattedPrompt);
 
-    // If not a prediction, return null
-    if (!result.is_prediction) {
-      return null;
-    }
-
     // Return the prediction with metadata
     return {
-      is_prediction: result.is_prediction,
-      prediction_text: result.prediction_text,
-      confidence_score: result.confidence_score,
-      implicit: result.implicit,
-      topic_relevance: result.topic_relevance,
-      timeframe: result.timeframe,
-      has_condition: result.has_condition,
-      prediction_sentiment: result.prediction_sentiment,
-      probability_stated: result.probability_stated,
+      ...result,
       source_text: postText || '',
       post_id: postId || '',
       post_url: postUrl || '',

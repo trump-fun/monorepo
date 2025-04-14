@@ -8,7 +8,7 @@
  */
 
 import { findPredictions } from '../prediction-finder-agent/prediction-finder-graph';
-import type { PredictionResult } from '../prediction-finder-agent/types';
+import type { PredictionFinderResult } from '../prediction-finder-agent/prediction-finder-graph';
 import {
   verifyPrediction,
   verifyPredictionBatch,
@@ -32,7 +32,7 @@ class PredictionMarketAgent {
    * @param limit Maximum number of predictions to return
    * @returns Array of predictions found
    */
-  async findPredictions(topic: string, limit: number = 50): Promise<PredictionResult[]> {
+  async findPredictions(topic: string, limit: number = 50): Promise<PredictionFinderResult> {
     console.log(`Finding predictions on topic: ${topic} (limit: ${limit})`);
     return findPredictions(topic, limit);
   }
@@ -57,12 +57,8 @@ class PredictionMarketAgent {
   async verifyPrediction(params: {
     prediction_text: string;
     prediction_date: string;
-    prediction_source: string;
-    predictor_username: string;
   }): Promise<PredictionVerification> {
-    console.log(
-      `Verifying prediction: "${params.prediction_text}" by @${params.predictor_username}`
-    );
+    console.log(`Verifying prediction: "${params.prediction_text}"`);
     return verifyPrediction(params);
   }
 

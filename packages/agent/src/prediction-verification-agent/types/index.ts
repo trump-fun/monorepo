@@ -2,8 +2,12 @@ import { z } from 'zod';
 
 // Define schema for prediction verification
 export const predictionVerificationSchema = z.object({
-  prediction_text: z.string().describe('The original prediction text'),
-  prediction_date: z.string().describe('When the prediction was made'),
+  source_text: z.string().describe('The original source text containing a prediction'),
+  prediction_date: z
+    .string()
+    .describe(
+      'When the prediction was made, ensuring the prediction was made before the bets were graded'
+    ),
   matured: z.boolean().describe('Whether the prediction has matured/resolved'),
   outcome: z.enum(['correct', 'partially_correct', 'incorrect', 'unverifiable', 'pending']),
   confidence_score: z

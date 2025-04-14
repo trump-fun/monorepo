@@ -130,19 +130,15 @@ bun run source-tracing https://twitter.com/username/status/1234567890
 
 ```bash
 # Find predictions on a topic
-bun run find-predictions --topic "Biden approval rating" --limit 10
-bun run find-predictions --topic "Tesla stock price" --limit 20 --output predictions.json
+bun run find-predictions --topic "Trump China tariffs"
 
 # Build predictor profile
 bun run build-profile --username "ElonMusk"
-bun run build-profile --username "naval" --output naval-predictions.json
 
 # Verify a prediction
 bun run verify-prediction \
   --prediction "Tesla stock will reach $300 by end of 2023" \
   --date "2023-01-15" \
-  --username "ElonMusk" \
-  --source "https://twitter.com/elonmusk/status/1234567890"
 
 # Batch verify predictions from file
 bun run prediction-tools batch-verify --file predictions.json --output results.json

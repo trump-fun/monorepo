@@ -1,6 +1,6 @@
+import { analyzePredictionEvidence } from './core/analyze-evidence';
 import { extractPredictionClaims } from './core/extract-claims';
 import { searchForVerificationEvidence } from './core/search-evidence';
-import { analyzePredictionEvidence } from './core/analyze-evidence';
 import type { PredictionVerification } from './types';
 
 /**
@@ -32,6 +32,7 @@ export async function verifyPrediction(params: {
   // Step 4: Return the full verification object with defaults for any missing properties
   return {
     ...params,
+    source_text: params.prediction_text,
     matured: verificationResult.matured ?? false,
     outcome: verificationResult.outcome ?? 'pending',
     confidence_score: verificationResult.confidence_score ?? 0,

@@ -1,8 +1,8 @@
 import { program } from 'commander';
 import 'dotenv/config';
 import fs from 'fs/promises';
-import { predictionMarketAgent } from './src/prediction-market-agent/prediction-market-agent';
 import type { PredictionResult } from './src/prediction-finder-agent/types';
+import { predictionMarketAgent } from './src/prediction-market-agent/prediction-market-agent';
 // Configure command line interface
 program
   .name('prediction-market-tools')
@@ -24,11 +24,12 @@ program
         parseInt(options.limit)
       );
 
-      console.log(`Found ${predictions.length} predictions on topic: ${options.topic}`);
+      console.log(`Found ${predictions.predictions.length} predictions on topic: ${options.topic}`);
+      console.log('Queries: ', predictions.search_queries);
 
       // Format predictions for a more readable console output with fewer columns
       console.table(
-        predictions.map((p: PredictionResult, index: number) => ({
+        predictions.predictions.map((p: PredictionResult, index: number) => ({
           id: index,
           author: p.author_username,
           prediction:
@@ -43,7 +44,7 @@ program
 
       // Print full details for each prediction
       console.log('\nDetailed predictions:');
-      predictions.forEach((p, i) => {
+      predictions.predictions.forEach((p, i) => {
         console.log(`\n[${i}] Prediction by @${p.author_username} (${p.author_name || 'Unknown'})`);
         console.log(`URL: ${p.post_url}`);
         console.log(`Date: ${p.post_date}`);
@@ -121,8 +122,6 @@ program
   .description('Verify if a prediction has matured and collect evidence')
   .requiredOption('-p, --prediction <text>', 'Prediction text to verify')
   .requiredOption('-d, --date <date>', 'Date when prediction was made (YYYY-MM-DD)')
-  .requiredOption('-u, --username <username>', 'Predictor username')
-  .requiredOption('-s, --source <url>', 'Source of prediction (URL)')
   .option('-o, --output <file>', 'Output file for results (JSON)')
   .action(async options => {
     try {
@@ -137,7 +136,7 @@ program
       const result = await predictionMarketAgent.verifyPrediction(prediction);
 
       console.log('\n--- VERIFICATION RESULTS ---');
-      console.log(`Prediction: "${result.prediction_text}"`);
+      console.log(`Prediction: "${result.source_text}"`);
       console.log(`Made on: ${new Date(result.prediction_date).toLocaleDateString()}`);
       console.log(`Matured: ${result.matured ? 'Yes' : 'No'}`);
       console.log(`Outcome: ${result.outcome}`);
@@ -150,6 +149,7 @@ program
       result.evidence_urls.forEach((url, i) => {
         console.log(`${i + 1}. ${url}`);
       });
+      console.log('Reasoning: ', result.evidence_text);
 
       // Save to file if specified
       if (options.output) {
@@ -180,12 +180,12 @@ program
       console.log('\n--- BATCH VERIFICATION RESULTS ---');
       console.table(
         results.map(r => ({
-          prediction:
-            r.prediction_text.substring(0, 50) + (r.prediction_text.length > 50 ? '...' : ''),
+          prediction: r.source_text.substring(0, 50) + (r.source_text.length > 50 ? '...' : ''),
           matured: r.matured ? 'Yes' : 'No',
           outcome: r.outcome,
           confidence: r.confidence_score.toFixed(2),
           evidenceCount: r.evidence_urls.length,
+          reasoning: r.evidence_text,
         }))
       );
 

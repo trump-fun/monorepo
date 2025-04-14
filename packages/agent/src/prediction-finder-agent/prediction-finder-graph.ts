@@ -3,7 +3,13 @@ import {
   generatePredictionSearchQueries,
   searchForPredictionPosts,
 } from './core/search-predictions';
-import type { PredictionResult, TwitterScraperTweet } from './types';
+import type { PredictionResult } from './types';
+
+export type PredictionFinderResult = {
+  predictions: PredictionResult[];
+  not_predictions: PredictionResult[];
+  search_queries: string[];
+};
 
 /**
  * Finds X posts containing explicit or implicit predictions related to a topic
@@ -15,7 +21,7 @@ import type { PredictionResult, TwitterScraperTweet } from './types';
 export async function findPredictions(
   topic: string,
   limit: number = 50
-): Promise<{ predictions: PredictionResult[]; not_predictions: TwitterScraperTweet[] }> {
+): Promise<PredictionFinderResult> {
   console.log(`Finding predictions related to topic: ${topic}`);
 
   // Step 1: Generate search queries related to the topic
@@ -28,5 +34,8 @@ export async function findPredictions(
   const result = await analyzePredictionCandidates(posts, topic);
 
   // Return both predictions and non-predictions
-  return result;
+  return {
+    ...result,
+    search_queries: searchQueries,
+  };
 }
