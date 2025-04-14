@@ -12,11 +12,10 @@ import type { PredictionVerification } from './types';
 export async function verifyPrediction(params: {
   prediction_text: string;
   prediction_date: string;
-  prediction_source: string;
-  predictor_username: string;
 }): Promise<PredictionVerification> {
-  console.log(`Verifying prediction: "${params.prediction_text}" by @${params.predictor_username}`);
+  console.log(`Verifying prediction: "${params.prediction_text}"`);
 
+  // Step 0:
   // Step 1: Extract key claim(s) from the prediction
   const claims = await extractPredictionClaims(params.prediction_text);
 
@@ -52,8 +51,6 @@ export async function verifyPredictionBatch(
   predictions: {
     prediction_text: string;
     prediction_date: string;
-    prediction_source: string;
-    predictor_username: string;
   }[]
 ): Promise<PredictionVerification[]> {
   console.log(`Batch verifying ${predictions.length} predictions`);

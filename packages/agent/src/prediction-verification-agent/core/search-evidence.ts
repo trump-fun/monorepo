@@ -72,7 +72,7 @@ async function searchEvidenceForClaim(claim: string, predictionDate: string): Pr
 /**
  * Search for evidence using Tavily API
  */
-async function searchTavily(query: string, afterDate: string): Promise<Evidence[]> {
+async function searchTavily(query: string, afterDate?: string): Promise<Evidence[]> {
   try {
     console.log(`Searching Tavily for: "${query}" (after: ${afterDate})`);
 

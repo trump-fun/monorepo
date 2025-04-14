@@ -51,7 +51,7 @@ type ErrorResponse = ApiResponse<never> & {
 // Zod schemas for validation
 const findPredictionsSchema = z.object({
   topic: z.string().describe('Topic to search for predictions'),
-  limit: z.number().default(10).describe('Number of predictions to return'),
+  limit: z.number().default(50).describe('Number of predictions to return'),
 });
 
 const sourceTracingSchema = z.object({

@@ -2,7 +2,7 @@ import { program } from 'commander';
 import 'dotenv/config';
 import fs from 'fs/promises';
 import { predictionMarketAgent } from './src/prediction-market-agent/prediction-market-agent';
-
+import type { PredictionResult } from './src/prediction-finder-agent/types';
 // Configure command line interface
 program
   .name('prediction-market-tools')
@@ -14,7 +14,7 @@ program
   .command('find-predictions')
   .description('Find X posts containing predictions on a specific topic')
   .requiredOption('-t, --topic <topic>', 'Polymarket topic to search for predictions')
-  .option('-l, --limit <number>', 'Maximum number of results', '10')
+  .option('-l, --limit <number>', 'Maximum number of results', '50')
   .option('-o, --output <file>', 'Output file for results (JSON)')
   .action(async options => {
     try {
@@ -28,7 +28,7 @@ program
 
       // Format predictions for a more readable console output with fewer columns
       console.table(
-        predictions.map((p, index) => ({
+        predictions.map((p: PredictionResult, index: number) => ({
           id: index,
           author: p.author_username,
           prediction:
@@ -138,7 +138,6 @@ program
 
       console.log('\n--- VERIFICATION RESULTS ---');
       console.log(`Prediction: "${result.prediction_text}"`);
-      console.log(`By: @${result.predictor_username}`);
       console.log(`Made on: ${new Date(result.prediction_date).toLocaleDateString()}`);
       console.log(`Matured: ${result.matured ? 'Yes' : 'No'}`);
       console.log(`Outcome: ${result.outcome}`);

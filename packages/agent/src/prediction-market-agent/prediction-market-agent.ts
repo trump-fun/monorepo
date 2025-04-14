@@ -7,19 +7,17 @@
  * 3. Prediction Verification: Verify if predictions have matured with evidence
  */
 
+import { findPredictions } from '../prediction-finder-agent/prediction-finder-graph';
+import type { PredictionResult } from '../prediction-finder-agent/types';
 import {
-  findPredictions,
-  type PredictionResult,
-} from '../prediction-finder-agent/tools/find-predictions';
+  verifyPrediction,
+  verifyPredictionBatch,
+} from '../prediction-verification-agent/prediction-verification-graph';
 import {
   buildPredictorProfile,
   type PredictorProfile,
 } from '../predictor-profile-agent/tools/build-predictor-profile';
-import {
-  verifyPrediction,
-  verifyPredictionBatch,
-  type PredictionVerification,
-} from '../prediction-verification-agent/tools/verify-prediction';
+import type { PredictionVerification } from './types';
 
 /**
  * Prediction Market Intelligence Agent
@@ -34,7 +32,7 @@ class PredictionMarketAgent {
    * @param limit Maximum number of predictions to return
    * @returns Array of predictions found
    */
-  async findPredictions(topic: string, limit: number = 10): Promise<PredictionResult[]> {
+  async findPredictions(topic: string, limit: number = 50): Promise<PredictionResult[]> {
     console.log(`Finding predictions on topic: ${topic} (limit: ${limit})`);
     return findPredictions(topic, limit);
   }

@@ -1,20 +1,25 @@
 import config from '../../config';
-import { TwitterScraperTweet, PredictionResult, predictionAnalysisSchema } from '../types';
 import { predictionAnalysisPrompt } from '../prompts/prediction-analysis';
+import {
+  type PredictionResult,
+  type TwitterScraperTweet,
+  predictionAnalysisSchema,
+} from '../types';
 
 /**
  * Analyzes posts to identify which ones contain predictions
  *
  * @param posts Array of Twitter posts to analyze
  * @param topic Topic to check for relevance
- * @returns Array of prediction results
+ * @returns Object containing arrays of prediction results and non-predictions
  */
 export async function analyzePredictionCandidates(
   posts: TwitterScraperTweet[],
   topic: string
-): Promise<PredictionResult[]> {
+): Promise<{ predictions: PredictionResult[]; not_predictions: TwitterScraperTweet[] }> {
   console.log(`Analyzing ${posts.length} posts for predictions on topic: ${topic}`);
   const predictions: PredictionResult[] = [];
+  const not_predictions: TwitterScraperTweet[] = [];
 
   // Process posts in batches to avoid overwhelming the LLM
   const batchSize = 5;
@@ -28,9 +33,17 @@ export async function analyzePredictionCandidates(
     const batchPromises = batch.map(post => analyzeSinglePost(post, topic));
     const batchResults = await Promise.all(batchPromises);
 
-    // Filter out null results (posts that aren't predictions)
-    const validResults = batchResults.filter(result => result !== null) as PredictionResult[];
-    predictions.push(...validResults);
+    // Separate predictions from non-predictions
+    batchResults.forEach((result, index) => {
+      if (result !== null) {
+        predictions.push(result);
+      } else {
+        const nonPredictionPost = batch[index];
+        if (nonPredictionPost) {
+          not_predictions.push(nonPredictionPost);
+        }
+      }
+    });
 
     // Add a small delay between batches
     if (i + batchSize < posts.length) {
@@ -41,8 +54,10 @@ export async function analyzePredictionCandidates(
   // Sort by confidence score (highest first)
   predictions.sort((a, b) => b.confidence_score - a.confidence_score);
 
-  console.log(`Found ${predictions.length} posts containing predictions`);
-  return predictions;
+  console.log(
+    `Found ${predictions.length} posts containing predictions and ${not_predictions.length} non-predictions`
+  );
+  return { predictions, not_predictions };
 }
 
 /**
@@ -58,12 +73,12 @@ export async function analyzeSinglePost(
   topic: string
 ): Promise<PredictionResult | null> {
   // Extract relevant fields from the post
-  const postText = post.text || '';
-  const postId = post.id || '';
-  const username = post.user?.username || 'unknown';
-  const authorName = post.user?.name || username;
-  const postDate = post.created_at || new Date().toISOString();
-  const postUrl = post.url || `https://x.com/${username}/status/${postId}`;
+  const postText = post.text;
+  const postId = post.id;
+  const username = post.user?.username;
+  const authorName = post.user?.name;
+  const postDate = post.created_at;
+  const postUrl = post.url;
 
   console.log(`Analyzing post: ${postText}`);
 
@@ -95,11 +110,12 @@ export async function analyzeSinglePost(
       has_condition: result.has_condition,
       prediction_sentiment: result.prediction_sentiment,
       probability_stated: result.probability_stated,
-      post_id: postId,
-      post_url: postUrl,
-      author_username: username,
-      author_name: authorName,
-      post_date: postDate,
+      source_text: postText || '',
+      post_id: postId || '',
+      post_url: postUrl || '',
+      author_username: username || '',
+      author_name: authorName || '',
+      post_date: postDate || '',
       topic: topic,
     };
   } catch (error) {

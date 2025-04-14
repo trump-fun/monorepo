@@ -78,12 +78,11 @@ export interface TwitterScraperTweet {
 // Schema for structured output from the LLM
 export const predictionAnalysisSchema = z.object({
   is_prediction: z.boolean().describe('Whether the post contains a prediction or not'),
-  source_text: z.string().optional().describe('The source text of the prediction'),
   prediction_text: z
     .string()
     .optional()
     .describe(
-      'A short summary describing what the user predicted in their post and how it relates to the topic'
+      'Your short summary describing what the user predicted in their post and how it relates to the topic'
     ),
   confidence_score: z
     .number()
@@ -124,6 +123,7 @@ export const searchQueriesSchema = z.object({
 
 // Type for the result of prediction analysis
 export type PredictionResult = z.infer<typeof predictionAnalysisSchema> & {
+  source_text: string;
   post_id: string;
   post_url: string;
   author_username: string;

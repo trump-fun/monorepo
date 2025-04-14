@@ -4,8 +4,6 @@ import { z } from 'zod';
 export const predictionVerificationSchema = z.object({
   prediction_text: z.string().describe('The original prediction text'),
   prediction_date: z.string().describe('When the prediction was made'),
-  prediction_source: z.string().describe('Source of the prediction (URL, post ID)'),
-  predictor_username: z.string().describe('Username of the person who made the prediction'),
   matured: z.boolean().describe('Whether the prediction has matured/resolved'),
   outcome: z.enum(['correct', 'partially_correct', 'incorrect', 'unverifiable', 'pending']),
   confidence_score: z

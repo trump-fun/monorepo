@@ -8,12 +8,12 @@
  */
 
 import { findPredictions } from '../prediction-finder-agent';
-import { buildPredictorProfile } from '../predictor-profile-agent';
 import {
   verifyPrediction,
   verifyPredictionBatch,
 } from '../prediction-verification-agent/tools/verify-prediction';
-import type { PredictionResult, PredictorProfile, PredictionVerification } from './types';
+import { buildPredictorProfile } from '../predictor-profile-agent';
+import type { PredictionResult, PredictionVerification, PredictorProfile } from './types';
 
 /**
  * Find X/Twitter posts containing predictions on a specific topic
@@ -24,7 +24,7 @@ import type { PredictionResult, PredictorProfile, PredictionVerification } from 
  */
 export async function findPredictionsOnTopic(
   topic: string,
-  limit: number = 10
+  limit: number = 50
 ): Promise<PredictionResult[]> {
   console.log(`Finding predictions on topic: ${topic} (limit: ${limit})`);
   return findPredictions(topic, limit);

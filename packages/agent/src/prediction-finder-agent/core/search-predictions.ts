@@ -1,10 +1,8 @@
 import config from '../../config';
 import { searchTwitter } from '../api';
-import {
-  searchQueriesSchema,
-  TwitterScraperTweet,
-} from '../types';
+import { searchTwitterAI } from '../api/datura-api';
 import { searchQueriesPrompt } from '../prompts/prediction-analysis';
+import { searchQueriesSchema, type TwitterScraperTweet } from '../types';
 
 /**
  * Generates effective search queries for finding predictions on a topic
@@ -64,26 +62,38 @@ export async function generatePredictionSearchQueries(topic: string): Promise<st
 /**
  * Searches for posts using the generated queries
  *
+ * @param topic The main topic to search for predictions about
  * @param queries Search query strings to use
  * @param limit Maximum number of total results to return
  * @returns Array of tweet objects
  */
 export async function searchForPredictionPosts(
+  topic: string,
   queries: string[],
-  limit: number
+  limit: number = 50
 ): Promise<TwitterScraperTweet[]> {
-  console.log(`Searching for posts using ${queries.length} queries...`);
+  console.log(`Searching for posts about '${topic}' using ${queries.length} queries...`);
 
   // Get a subset of the queries to avoid too many API calls
-  const maxQueries = Math.min(queries.length, 3);
-  const selectedQueries = queries.slice(0, maxQueries);
 
   // Calculate max results per query
-  const resultsPerQuery = Math.ceil(limit / selectedQueries.length);
+  const resultsPerQuery = Math.ceil(limit / (queries.length + 1)); // +1 for AI search
 
   // Search for each query in parallel
-  const searchPromises = selectedQueries.map(query => searchTwitter(query, resultsPerQuery));
-  const searchResults = await Promise.all(searchPromises);
+  const searchPromises = queries.map(query => searchTwitter(query, resultsPerQuery));
+  // const searchPromises = selectedQueries.map(query => searchTwitter(query, resultsPerQuery));
+
+  // Add the AI-powered search
+
+  console.log(`Searching for posts about '${topic}' using AI...`);
+  const aiSearchPromise = searchTwitterAI(topic);
+
+  // Execute all search requests in parallel
+  const searchResults = await Promise.all([...searchPromises, aiSearchPromise]);
+
+  console.log(
+    `Found ${searchResults.length} result sets in ${queries.length} queries plus AI search`
+  );
 
   // Flatten results from all queries
   const allResults: TwitterScraperTweet[] = searchResults.flat();
@@ -96,5 +106,5 @@ export async function searchForPredictionPosts(
   console.log(`Found ${uniqueResults.length} unique posts across all queries`);
 
   // Limit to requested number
-  return uniqueResults.slice(0, limit);
+  return uniqueResults;
 }

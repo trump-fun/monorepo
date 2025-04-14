@@ -119,7 +119,7 @@ if (CHEAP_LARGE_LLM_PROVIDER === 'anthropic') {
     anthropicApiKey = requireEnv('ANTHROPIC_API_KEY');
   }
   cheap_large_llm = new ChatAnthropic({
-    modelName: ANTHROPIC_SMALL_LLM, // Using small model for cost efficiency
+    modelName: ANTHROPIC_LARGE_LLM, // The only sarcastic line in this file
     anthropicApiKey,
   });
 } else if (CHEAP_LARGE_LLM_PROVIDER === 'google') {
