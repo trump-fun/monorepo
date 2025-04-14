@@ -1,8 +1,9 @@
 import type { CommandContext, Context } from 'grammy';
 import { apolloClient } from '../lib/apolloClient';
 import { GET_POOL } from '../queries';
-import { OrderDirection, Pool_OrderBy, type Pool } from '@trump-fun/common';
 import { formatDate, formatPoints, formatStatus, formatUSD } from '../utils/format';
+import type { Pool } from '@trump-fun/common/src/types/__generated__/graphql';
+import { OrderDirection, Pool_OrderBy } from '@trump-fun/common/src/types/__generated__/graphql';
 
 export const poolCommand = async (ctx: CommandContext<Context>) => {
   if (!ctx.message) {

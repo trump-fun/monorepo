@@ -32,6 +32,7 @@ export type AppConfig = {
   bflApiKey: string; // Need raw API key to make REST requests to image provider, no SDK
   veniceApiKey: string; // Need raw API key to make REST requests to image provider, no SDK
   firecrawlApiKey: string;
+  daturaApiKey: string; // Datura API key for X/Twitter and AI search integration
   maxImagesPerRun: number;
   chainConfig: {
     [chainId: number]: BettingChainConfig;
@@ -118,7 +119,7 @@ if (CHEAP_LARGE_LLM_PROVIDER === 'anthropic') {
     anthropicApiKey = requireEnv('ANTHROPIC_API_KEY');
   }
   cheap_large_llm = new ChatAnthropic({
-    modelName: ANTHROPIC_SMALL_LLM, // Using small model for cost efficiency
+    modelName: ANTHROPIC_LARGE_LLM, // The only sarcastic line in this file
     anthropicApiKey,
   });
 } else if (CHEAP_LARGE_LLM_PROVIDER === 'google') {
@@ -207,7 +208,6 @@ if (
   throw new Error(`Invalid BFL_IMAGE_MODEL: ${BFL_IMAGE_MODEL}`);
 }
 
-console.log('DATURA_API_KEY', process.env.DATURA_API_KEY);
 // Export config object for convenience
 export const config = {
   tavilyApiKey: requireEnv('TAVILY_API_KEY'),
