@@ -1,17 +1,14 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/\_/husky.sh"
-
 echo "🏗️ Running type generation before commit..."
 
 # Build contract types
 
 echo "📝 Building contract types..."
-bun run --cwd packages/contracts build:types
+bun run --cwd packages/contracts generate-types
 
 # Generate subgraph types
 
 echo "📊 Generating subgraph types..."
-bun run --cwd packages/subgraph codegen
+bun run --cwd packages/graph codegen
 
 # Generate frontend and common types
 

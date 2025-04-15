@@ -5,7 +5,7 @@ const config: CodegenConfig = {
   schema: 'https://api.studio.thegraph.com/query/105510/trump-fun/version/latest',
   documents: ['src/**/*.tsx', 'src/**/*.ts'],
   generates: {
-    'src/types/__generated__/gql.ts': {
+    'src/types/__generated__/': {
       preset: 'client',
       plugins: [],
       presetConfig: {

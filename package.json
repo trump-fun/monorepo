@@ -37,7 +37,8 @@
     "build:contract-types": "bun run --cwd packages/contracts build:types",
     "prepare": "husky",
     "lint-staged": "lint-staged",
-    "fix:unused": "eslint --fix --ext .ts,.tsx ."
+    "fix:unused": "eslint --fix --ext .ts,.tsx .",
+    "db-types": "bun run --cwd packages/common db-types"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
