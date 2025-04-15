@@ -20,6 +20,7 @@ rsync -avz --exclude-from=.gitignore \
 echo "Files transferred successfully!"
 
 # SSH into the server and install dependencies selectively using install.sh
+# The below don't need to be build on the server because they're deployed elsewhere and the server has limited space
 echo "Installing dependencies for required packages (excluding frontend, graph, and contracts)..."
 ssh $SERVER "cd $REMOTE_DIR && \
   export SKIP_PACKAGES='frontend graph contracts' && \

@@ -1,10 +1,10 @@
 import { BettingPost } from '@/components/betting-post';
-import { GetPoolsQuery, TokenType } from '@/types/__generated__/graphql';
+import { Pool, TokenType } from '@trump-fun/common';
 import { getBetTotals, getVolumeForTokenType } from '@/utils/betsInfo';
 import Image from 'next/image';
 
 interface PoolListProps {
-  pools: GetPoolsQuery['pools'];
+  pools: Pool[];
   isLoading: boolean;
   tokenType: TokenType;
   hasMore?: boolean;

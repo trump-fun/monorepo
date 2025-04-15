@@ -27,7 +27,7 @@ export function formatTokenAmount(amount: string | number, _tokenType: number) {
 
   if (isNaN(numericAmount)) return '0';
 
-  // const decimals = tokenType === 0 ? USDC_DECIMALS : POINTS_DECIMALS;
+  // const decimals = tokenType === 0 ? USDC_DECIMALS : FREEDOM_DECIMALS;
   // return (numericAmount / Math.pow(10, decimals)).toLocaleString();
   return numericAmount.toLocaleString();
 }

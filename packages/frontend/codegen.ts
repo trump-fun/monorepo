@@ -7,13 +7,18 @@ const config: CodegenConfig = {
   generates: {
     'src/types/__generated__/': {
       preset: 'client',
+      plugins: [],
       presetConfig: {
         gqlTagName: 'gql',
-        importTypeModifiers: ['type'],
+        fragmentMasking: false,
       },
-    },
-    './graphql.schema.json': {
-      plugins: ['introspection'],
+      config: {
+        useTypeImports: true,
+        skipTypename: false,
+        withHooks: true,
+        withHOC: false,
+        withComponent: false,
+      },
     },
   },
   ignoreNoDocuments: true,

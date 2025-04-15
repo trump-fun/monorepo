@@ -59,7 +59,7 @@ export function UserBettingPost({
     typeof tokenType === 'string'
       ? tokenType === 'USD' || tokenType === 'USDC'
         ? TokenType.Usdc
-        : TokenType.Points
+        : TokenType.Freedom
       : tokenType;
 
   const symbol = resolvedTokenType === TokenType.Usdc ? '💲' : '🦅';

@@ -32,6 +32,7 @@ export type AppConfig = {
   bflApiKey: string; // Need raw API key to make REST requests to image provider, no SDK
   veniceApiKey: string; // Need raw API key to make REST requests to image provider, no SDK
   firecrawlApiKey: string;
+  daturaApiKey: string; // Datura API key for X/Twitter and AI search integration
   maxImagesPerRun: number;
   chainConfig: {
     [chainId: number]: BettingChainConfig;
@@ -207,7 +208,6 @@ if (
   throw new Error(`Invalid BFL_IMAGE_MODEL: ${BFL_IMAGE_MODEL}`);
 }
 
-console.log('DATURA_API_KEY', process.env.DATURA_API_KEY);
 // Export config object for convenience
 export const config = {
   tavilyApiKey: requireEnv('TAVILY_API_KEY'),

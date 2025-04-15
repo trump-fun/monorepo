@@ -1,15 +1,8 @@
-import {
-  Bet_OrderBy,
-  GetBetsQueryVariables,
-  GetPayoutClaimedQueryVariables,
-  OrderDirection,
-  PayoutClaimed_OrderBy,
-  PoolStatus,
-} from '@/types/__generated__/graphql';
+import { Bet_OrderBy, OrderDirection, PayoutClaimed_OrderBy, PoolStatus } from '@trump-fun/common';
 import { useMemo } from 'react';
 export function useFilterConfig(address?: string, activeFilter: string = 'active') {
   return useMemo(() => {
-    const filterConfigs: Record<string, GetPayoutClaimedQueryVariables | GetBetsQueryVariables> = {
+    const filterConfigs: Record<string, any> = {
       active: {
         orderBy: Bet_OrderBy.UpdatedAt,
         orderDirection: OrderDirection.Desc,

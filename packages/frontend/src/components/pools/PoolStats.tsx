@@ -1,11 +1,11 @@
 import CountdownTimer from '@/components/Timer';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { GetPoolQuery } from '@/types';
 import { calculateBettors } from '@/utils/calculateBettors';
+import { Pool } from '@trump-fun/common';
 import { Clock, TrendingUp, Users } from 'lucide-react';
 
 interface PoolStatsProps {
-  pool: GetPoolQuery['pool'];
+  pool: Pool;
   totalVolume: string;
 }
 

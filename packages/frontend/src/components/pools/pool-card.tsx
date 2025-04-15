@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { GetPoolsQuery } from '@/types/__generated__/graphql';
 import { calculateOptionPercentages, calculateVolume } from '@/utils/betsInfo';
 import { formatDistance } from 'date-fns';
 import Image from 'next/image';
@@ -12,8 +11,9 @@ import Link from 'next/link';
 import TruthSocial from '../common/truth-social';
 import CountdownTimer from '../Timer';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Pool } from '@trump-fun/common';
 
-export function PoolCard({ pool }: { pool: GetPoolsQuery['pools'][number] }) {
+export function PoolCard({ pool }: { pool: Pool[][number] }) {
   const { tokenType } = useTokenContext();
 
   const percentages = calculateOptionPercentages(pool, tokenType);

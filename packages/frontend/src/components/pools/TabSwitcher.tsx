@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BetPlaced, Pool, TokenType } from '@/types/__generated__/graphql';
+import { BetPlaced, Pool, TokenType } from '@trump-fun/common';
 import { RefetchOptions } from '@tanstack/react-query';
 import { Tables, formatTokenAmount, getTokenName } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
@@ -116,9 +116,9 @@ export const TabSwitcher = ({
                 <div className='font-medium'>
                   {formatTokenAmount(
                     bet.amount,
-                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Points
+                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom
                   )}{' '}
-                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Points)}
+                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom)}
                 </div>
               </div>
             ))}

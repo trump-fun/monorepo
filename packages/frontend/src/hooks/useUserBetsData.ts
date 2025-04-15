@@ -1,14 +1,16 @@
 import { useWalletAddress } from '@/hooks/useWalletAddress';
-import { GET_BET_WITHDRAWALS, GET_BETS, GET_PAYOUT_CLAIMED } from '@/lib/queries';
+import { useQuery } from '@apollo/client';
 import {
   Bet_Filter,
   Bet_OrderBy,
   BetWithdrawal_OrderBy,
+  GET_BET_WITHDRAWALS,
+  GET_BETS,
+  GET_PAYOUT_CLAIMED,
   OrderDirection,
   PayoutClaimed_Filter,
   PayoutClaimed_OrderBy,
-} from '@/types/__generated__/graphql';
-import { useQuery } from '@apollo/client';
+} from '@trump-fun/common';
 import { useFilterConfig } from './useFilterConfig';
 
 export function useUserBetsData(activeFilter: string) {

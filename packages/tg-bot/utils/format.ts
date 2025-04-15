@@ -1,9 +1,5 @@
-import {
-  PoolStatus,
-  formatUSDC,
-  formatFreedom,
-  formatDate as formatDateCommon,
-} from '@trump-fun/common';
+import { formatDate as formatDateCommon, formatFreedom, formatUSDC } from '@trump-fun/common';
+import { PoolStatus } from '@trump-fun/common/src/types/__generated__/graphql';
 
 /**
  * Format a USDC amount with $ sign

@@ -1,11 +1,11 @@
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { GetPoolQuery, GetPoolsQuery } from '@/types';
 import { getBetTotals } from '@/utils/betsInfo';
+import { Pool } from '@trump-fun/common';
 
 interface BettingProgressProps {
   percentages: number[];
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
+  pool: Pool | Pool[][number];
   totalVolume: string;
   compact?: boolean;
 }

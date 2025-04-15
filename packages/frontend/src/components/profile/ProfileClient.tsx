@@ -12,7 +12,7 @@ import { useUserBetsData } from '@/hooks/useUserBetsData';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { useWithdraw } from '@/hooks/useWithdraw';
-import { Bet, PayoutClaimed } from '@/types/__generated__/graphql';
+import { Bet, PayoutClaimed } from '@trump-fun/common';
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 

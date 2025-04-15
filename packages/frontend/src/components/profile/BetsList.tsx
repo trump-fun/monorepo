@@ -1,5 +1,5 @@
 import { UserBettingPost } from '@/components/user-betting-post';
-import { Bet, PayoutClaimed } from '@/types/__generated__/graphql';
+import { Bet, PayoutClaimed } from '@trump-fun/common';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { Loader } from 'lucide-react';
 

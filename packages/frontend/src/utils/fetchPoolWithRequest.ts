@@ -2,7 +2,7 @@
  * Alternative to fetchPool.ts since apolloClient is tempermental when called w/ a backend route
  */
 import { graphqlClient } from '@/lib/graphql-client';
-import { GetPoolQuery, GetPoolQueryVariables } from '@/types/__generated__/graphql';
+import { Pool } from '@trump-fun/common';
 
 type FetchPoolOptions = {
   headers?: HeadersInit;
@@ -51,15 +51,11 @@ const POOL_QUERY = `
 export async function fetchPoolWithRequest(
   poolId: string,
   options?: FetchPoolOptions
-): Promise<GetPoolQuery['pool'] | null> {
+): Promise<Pool | null> {
   try {
-    const data = await graphqlClient.request<GetPoolQuery, GetPoolQueryVariables>(
-      POOL_QUERY,
-      { poolId },
-      options?.headers
-    );
+    const data = await graphqlClient.request(POOL_QUERY, { poolId }, options?.headers);
 
-    return data.pool;
+    return (data as any).pool as Pool;
   } catch (error) {
     console.error('Error in fetchPoolWithRequest:', error);
     throw error;

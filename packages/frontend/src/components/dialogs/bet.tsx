@@ -57,7 +57,8 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
   const placeBetWithHook = usePlaceBet({
     writeContract,
     ready: !!wallets?.length,
-    publicClient,
+    // Using type assertion to avoid version conflicts
+    publicClient: publicClient as any,
     accountAddress: account.address,
     tokenAddress,
     tokenType,
