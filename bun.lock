@@ -13,6 +13,7 @@
         "@types/react-dom": "^19.0.4",
         "eslint": "^9.23.0",
         "eslint-config-prettier": "^10.1.1",
+        "husky": "^9.1.7",
         "lint-staged": "^15.5.0",
         "prettier": "^3.5.3",
         "prettier-plugin-solidity": "^1.4.2",
@@ -24,7 +25,6 @@
       "name": "@trump-fun/agent",
       "version": "1.0.0",
       "dependencies": {
-        "@grammyjs/conversations": "^2.0.1",
         "@langchain/anthropic": "^0.3.15",
         "@langchain/community": "^0.3.37",
         "@langchain/core": "^0.3.43",
@@ -1709,9 +1709,9 @@
 
     "dateformat": ["dateformat@4.6.3", "", {}, "sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA=="],
 
-    "dayjs": ["dayjs@1.11.13", "", {}, "sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg=="],
-
     "datura-js": ["datura-js@0.0.9", "", { "dependencies": { "axios": "^0.21.4", "cross-fetch": "^4.0.0", "dotenv": "^16.4.7" } }, "sha512-5d2+k+P7Ya92C+GeWAqzUpYTpmesYD0Lj2cb9KnC5Y7CLjDoi4nSEj+vGzvhkiSZFEjChlt/ykeFuwO0K/if2g=="],
+
+    "dayjs": ["dayjs@1.11.13", "", {}, "sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg=="],
 
     "death": ["death@1.1.0", "", {}, "sha512-vsV6S4KVHvTGxbEcij7hkWRv0It+sGGWVOM67dQde/o5Xjnr+KmLjxWJii2uEObIrt1CcM9w0Yaovx+iOlIL+w=="],
 

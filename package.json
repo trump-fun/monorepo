@@ -34,7 +34,7 @@
     "run:build-profile": "bun run --cwd packages/agent build-profile",
     "run:verify-prediction": "bun run --cwd packages/agent verify-prediction",
     "codegen": "bun run --cwd packages/common codegen && bun run --cwd packages/frontend codegen && bun run format",
-    "db-types": "bun run --cwd packages/common db-types",
+    "build:contract-types": "bun run --cwd packages/contracts build:types",
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "fix:unused": "eslint --fix --ext .ts,.tsx ."
@@ -45,14 +45,15 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.8.2",
-    "prettier": "^3.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.11",
-    "prettier-plugin-solidity": "^1.4.2",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
+    "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4"
+    "prettier": "^3.5.3",
+    "prettier-plugin-solidity": "^1.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "typescript": "^5.8.2"
   }
 }

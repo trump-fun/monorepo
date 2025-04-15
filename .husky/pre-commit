@@ -1,9 +1,28 @@
-# Run lint-staged for formatting and linting
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/\_/husky.sh"
 
-bun lint-staged
+echo "🏗️ Running type generation before commit..."
 
-# Run build to catch TypeScript errors
+# Build contract types
 
-# bun run build --no-lint
+echo "📝 Building contract types..."
+bun run --cwd packages/contracts build:types
 
-bun run build
+# Generate subgraph types
+
+echo "📊 Generating subgraph types..."
+bun run --cwd packages/subgraph codegen
+
+# Generate frontend and common types
+
+echo "🔄 Running codegen for frontend and common packages..."
+bun run codegen
+
+# Generate database types
+
+echo "🗃️ Generating database types..."
+bun run db-types
+
+# Run lint-staged (keep existing lint checks)
+
+bun run lint-staged
