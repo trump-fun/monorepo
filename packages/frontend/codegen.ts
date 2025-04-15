@@ -5,15 +5,20 @@ const config: CodegenConfig = {
   schema: 'https://api.studio.thegraph.com/query/105510/trump-fun/version/latest',
   documents: ['src/**/*.tsx', 'src/**/*.ts'],
   generates: {
-    'src/types/__generated__/': {
+    'src/types/__generated__/gql.ts': {
       preset: 'client',
+      plugins: [],
       presetConfig: {
         gqlTagName: 'gql',
-        importTypeModifiers: ['type'],
+        fragmentMasking: false,
       },
-    },
-    './graphql.schema.json': {
-      plugins: ['introspection'],
+      config: {
+        useTypeImports: true,
+        skipTypename: false,
+        withHooks: true,
+        withHOC: false,
+        withComponent: false,
+      },
     },
   },
   ignoreNoDocuments: true,

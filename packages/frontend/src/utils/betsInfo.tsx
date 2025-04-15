@@ -1,5 +1,5 @@
 import { TOKEN_SYMBOLS } from '@/hooks/useTokenContext';
-import { GetPoolQuery, GetPoolsQuery, Pool, TokenType } from '@/types';
+import { Pool, TokenType } from '@/types';
 import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import React from 'react';
 
@@ -14,7 +14,7 @@ const formatTokenAmount = (
   return floor ? Math.floor(value) : value;
 };
 export const getVolumeForTokenType = (
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
+  pool: Pool | Pool[][number],
   tokenType: TokenType,
   raw = false
 ) => {
@@ -37,10 +37,7 @@ export const getFormattedVolumeForTokenType = (pool: Pool, tokenType: TokenType,
   return Number(volume).toLocaleString();
 };
 
-export const calculateVolume = (
-  pool: GetPoolsQuery['pools'][number],
-  tokenType: TokenType
-): React.ReactNode => {
+export const calculateVolume = (pool: Pool[][number], tokenType: TokenType): React.ReactNode => {
   if (!pool) return tokenType === TokenType.Usdc ? '0' : '0';
 
   try {
@@ -62,7 +59,7 @@ export const calculateVolume = (
 };
 
 export const getBetTotals = (
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
+  pool: Pool | Pool[][number],
   tokenType: TokenType | string,
   option: number
 ): string => {
@@ -87,7 +84,7 @@ export const getBetTotals = (
  * Calculate percentages for each option in a pool
  */
 export const calculateOptionPercentages = (
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
+  pool: Pool | Pool[][number],
   tokenType: TokenType
 ): number[] => {
   if (!pool) return [];
@@ -131,10 +128,10 @@ export const calculateOptionPercentages = (
  * Calculate relative volume percentages for multiple pools
  */
 export const calculateRelativeVolumePercentages = (
-  pools: GetPoolsQuery['pools'],
+  pools: Pool[],
   tokenType: TokenType
 ): {
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
+  pool: Pool | Pool[][number];
   percentage: number;
   displayVolume: number | string;
 }[] => {

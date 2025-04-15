@@ -2,12 +2,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
-import { GetPoolQuery, GetPoolsQuery, TokenBalance } from '@/types';
+import { TokenBalance } from '@/types';
+import { Pool } from '@trump-fun/common';
 
 import { ReactNode } from 'react';
 
 interface BettingFormProps {
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number]; // Replace with proper typing
+  pool: Pool | Pool[][number]; // Replace with proper typing
   handlePercentageClick: (percentage: number) => void;
   sliderValue: number[];
   setSliderValue: (value: number[]) => void;

@@ -14,12 +14,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
-import { GET_POOL } from '@/lib/queries';
-import { gql as apolloGql } from '@apollo/client';
-import { GET_BET_PLACED_STRING, GET_BETS_STRING } from '@trump-fun/common/src/graphql/queries';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
+import { gql as apolloGql } from '@apollo/client';
 import { POLLING_INTERVALS, Tables } from '@trump-fun/common';
+import {
+  GET_BET_PLACED_STRING,
+  GET_BETS_STRING,
+  GET_POOL,
+} from '@trump-fun/common/src/graphql/queries';
 
 import { useBettingForm } from '@/hooks/useBettingForm';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
@@ -39,7 +42,7 @@ import {
   BetPlaced_OrderBy,
   OrderDirection,
   PoolStatus,
-} from '@/types/__generated__/graphql';
+} from '@trump-fun/common';
 
 type PoolDetailClientProps = {
   id: string;

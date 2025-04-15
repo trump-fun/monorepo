@@ -74,7 +74,7 @@ export async function setRateLimit(walletAddress: string): Promise<void> {
 
 /**
  * Check if user is new (never received tokens before)
- * @param walletAddress The user's wallet address 
+ * @param walletAddress The user's wallet address
  * @returns boolean indicating if user is new
  */
 export async function isNewUser(walletAddress: string): Promise<boolean> {
@@ -126,7 +126,7 @@ export async function airdropTokens(walletAddress: string): Promise<AirdropResul
     // Define a proper interface for the contract to ensure TypeScript knows the methods
     const abiFragment = [
       'function mint(address to, uint256 amount) external',
-      'function balanceOf(address account) external view returns (uint256)'
+      'function balanceOf(address account) external view returns (uint256)',
     ];
     const freedomContract = new ethers.Contract(freedomAddress, abiFragment, wallet);
 
@@ -141,12 +141,12 @@ export async function airdropTokens(walletAddress: string): Promise<AirdropResul
     if (amountToAdd > 0) {
       // Convert to token units (with 6 decimals)
       const amountInWei = ethers.parseUnits(amountToAdd.toString(), 6);
-      
+
       // Mint tokens - ensure the method exists before calling it
       if (!freedomContract.mint) {
         throw new Error('Contract mint function not available');
       }
-      
+
       const tx = await freedomContract.mint(walletAddress, amountInWei);
       await setRateLimit(walletAddress);
 

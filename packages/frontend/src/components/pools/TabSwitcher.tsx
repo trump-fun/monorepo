@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BetPlaced, Pool, TokenType } from '@/types/__generated__/graphql';
+import { BetPlaced, Pool, TokenType } from '@trump-fun/common';
 import { RefetchOptions } from '@tanstack/react-query';
 import { Tables, formatTokenAmount, getTokenName } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';

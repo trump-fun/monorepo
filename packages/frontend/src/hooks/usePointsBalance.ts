@@ -8,7 +8,7 @@ import { useNetwork } from './useNetwork';
 import { useTokenContext } from './useTokenContext';
 
 export const useBalance = () => {
-  const { usdcAddress, pointsAddress } = useNetwork();
+  const { usdcAddress, freedomAddress } = useNetwork();
   const { tokenType } = useTokenContext();
   const [balance, setBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
@@ -16,7 +16,7 @@ export const useBalance = () => {
   const { embeddedWallet, currentChainId, isLoading: isWalletLoading } = useEmbeddedWallet();
   const { ready: walletsReady } = useWallets();
 
-  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : pointsAddress;
+  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : freedomAddress;
 
   const fetchUsdcBalance = useCallback(async () => {
     // Reset state at the beginning of each fetch attempt
@@ -74,7 +74,7 @@ export const useBalance = () => {
       // Handle specific error types
       if (error instanceof Error) {
         if (error.message.includes('contract not deployed')) {
-          setError(`USDC contract not deployed at address: ${pointsAddress}`);
+          setError(`USDC contract not deployed at address: ${freedomAddress}`);
         } else if (error.message.includes('network changed')) {
           setError('Network changed during balance fetch. Please try again.');
         } else if (error.message.includes('user rejected')) {
@@ -100,7 +100,7 @@ export const useBalance = () => {
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [walletsReady, isWalletLoading, embeddedWallet, currentChainId, tokenAddress, pointsAddress]);
+  }, [walletsReady, isWalletLoading, embeddedWallet, currentChainId, tokenAddress, freedomAddress]);
 
   // Trigger a balance fetch when dependencies change
   useEffect(() => {

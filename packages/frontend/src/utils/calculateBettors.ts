@@ -1,6 +1,6 @@
-import { GetPoolQuery } from '@/types';
+import { Pool } from '@trump-fun/common';
 
-export const calculateBettors = (pool: GetPoolQuery['pool']) => {
+export const calculateBettors = (pool: Pool) => {
   if (!pool) return 0;
 
   // If we have bet data, use real data from smart contract
