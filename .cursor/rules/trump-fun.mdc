@@ -1,7 +1,7 @@
 ---
 description: 
-globs: 
-alwaysApply: true
+globs: packages/frontend/*
+alwaysApply: false
 ---
 ---
 description: Frontend development guidelines for Trump.fun prediction market platform

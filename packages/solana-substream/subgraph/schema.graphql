@@ -1,0 +1,97 @@
+# Schema definitions for Pool and Bet entities and related events
+type Pool @entity {
+  id: ID!
+  poolIntId: BigInt!
+  question: String!
+  options: [String!]!
+  betsCloseAt: BigInt!
+  decisionTime: BigInt!
+  usdcBetTotalsByOption: [BigInt!]!
+  pointsBetTotalsByOption: [BigInt!]!
+  winningOption: BigInt!
+  status: String!
+  isDraw: Boolean!
+  createdAt: BigInt!
+  category: String!
+  creatorName: String!
+  creatorId: String!
+  closureCriteria: String!
+  closureInstructions: String!
+  mediaUrl: String!
+  mediaType: String!
+  twitterPostId: String!
+  creationTxHash: String!
+}
+
+type Bet @entity {
+  id: ID!
+  betIntId: BigInt!
+  poolIntId: BigInt!
+  pool: Pool!
+  userAddress: String!
+  optionIndex: BigInt!
+  amount: BigInt!
+  createdAt: BigInt!
+  isPayedOut: Boolean!
+  outcome: String!
+  tokenType: String!
+  txHash: String!
+}
+
+type PoolCreated @entity {
+  id: ID!
+  txHash: String!
+  poolId: BigInt!
+  question: String!
+  options: [String!]!
+  betsCloseAt: BigInt!
+  mediaUrl: String!
+  mediaType: String!
+  category: String!
+  creatorName: String!
+  creatorId: String!
+  closureCriteria: String!
+  closureInstructions: String!
+  createdAt: BigInt!
+}
+
+type BetPlaced @entity {
+  id: ID!
+  betId: BigInt!
+  poolId: BigInt!
+  user: String!
+  optionIndex: BigInt!
+  amount: BigInt!
+  tokenType: String!
+  createdAt: BigInt!
+  txHash: String!
+  bet: Bet!
+  pool: Pool!
+}
+
+type PoolMediaSet @entity {
+  id: ID!
+  poolId: BigInt!
+  mediaUrl: String!
+  mediaType: String!
+  txHash: String!
+  pool: Pool!
+}
+
+type PayoutClaimed @entity {
+  id: ID!
+  txHash: String!
+  betId: BigInt!
+  poolId: BigInt!
+  user: String!
+  amount: BigInt!
+  tokenType: String!
+}
+
+type PoolClosed @entity {
+  id: ID!
+  txHash: String!
+  poolId: BigInt!
+  selectedOption: BigInt!
+  decisionTime: BigInt!
+}

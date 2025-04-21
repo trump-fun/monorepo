@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package substreams.v1.program;
+
+message Data {
+    repeated BetPlaced_Event bet_placed_event_list = 1;
+    repeated PayoutClaimed_Event payout_claimed_event_list = 2;
+    repeated PoolClosed_Event pool_closed_event_list = 3;
+    repeated PoolCreated_Event pool_created_event_list = 4;
+    repeated PoolImageSet_Event pool_image_set_event_list = 5;
+    repeated ClaimPayout_Instruction claim_payout_instruction_list = 6;
+    repeated CreatePool_Instruction create_pool_instruction_list = 7;
+    repeated GradeBet_Instruction grade_bet_instruction_list = 8;
+    repeated Initialize_Instruction initialize_instruction_list = 9;
+    repeated PlaceBet_Instruction place_bet_instruction_list = 10;
+    repeated SetImage_Instruction set_image_instruction_list = 11;
+}
+
+message BetPlaced_Event {
+  string trx_hash = 1;
+  uint64 bet_id = 2;
+  uint64 pool_id = 3;
+  string user = 4;
+  uint64 option_index = 5;
+  uint64 amount = 6;
+  TokenTypeEnum token_type = 7;
+  int64 created_at = 8;
+}
+
+message PayoutClaimed_Event {
+  string trx_hash = 1;
+  uint64 bet_id = 2;
+  uint64 pool_id = 3;
+  string user = 4;
+  uint64 amount = 5;
+  TokenTypeEnum token_type = 6;
+}
+
+message PoolClosed_Event {
+  string trx_hash = 1;
+  uint64 pool_id = 2;
+  uint64 selected_option = 3;
+  int64 decision_time = 4;
+}
+
+message PoolCreated_Event {
+  string trx_hash = 1;
+  uint64 pool_id = 2;
+  string question = 3;
+  repeated string options = 4;
+  int64 bets_close_at = 5;
+  string original_truth_social_post_id = 6;
+  string image_url = 7;
+  int64 created_at = 8;
+}
+
+message PoolImageSet_Event {
+  string trx_hash = 1;
+  uint64 pool_id = 2;
+  string image_url = 3;
+}
+
+message ClaimPayout_Instruction {
+  string trx_hash = 1;
+    string acct_betting_pools = 2;
+    string acct_pool = 3;
+    string acct_bet = 4;
+    string acct_bettor = 5;
+    string acct_bettor_token_account = 6;
+    string acct_program_token_account = 7;
+}
+
+message CreatePool_Instruction {
+  string trx_hash = 1;
+    string question = 2;
+    repeated string options = 3;
+    int64 bets_close_at = 4;
+    string original_truth_social_post_id = 5;
+    string image_url = 6;
+    string acct_betting_pools = 7;
+    string acct_pool = 8;
+    string acct_authority = 9;
+}
+
+message GradeBet_Instruction {
+  string trx_hash = 1;
+    uint64 response_option = 2;
+    string acct_betting_pools = 3;
+    string acct_pool = 4;
+    string acct_authority = 5;
+}
+
+message Initialize_Instruction {
+  string trx_hash = 1;
+    string usdc_mint = 2;
+    string freedom_mint = 3;
+    string acct_betting_pools = 4;
+    string acct_authority = 5;
+}
+
+message PlaceBet_Instruction {
+  string trx_hash = 1;
+    uint64 option_index = 2;
+    uint64 amount = 3;
+    TokenTypeEnum token_type = 4;
+    string acct_betting_pools = 5;
+    string acct_pool = 6;
+    string acct_bet = 7;
+    string acct_bettor = 8;
+    string acct_bettor_token_account = 9;
+    string acct_program_token_account = 10;
+}
+
+message SetImage_Instruction {
+  string trx_hash = 1;
+    string image_url = 2;
+    string acct_pool = 3;
+    string acct_betting_pools = 4;
+    string acct_authority = 5;
+}
+
+enum TokenTypeEnum {
+    TOKEN_TYPE_USDC = 0;
+    TOKEN_TYPE_POINTS = 1;
+}
