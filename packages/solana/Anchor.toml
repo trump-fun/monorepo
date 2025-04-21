@@ -5,15 +5,18 @@ package_manager = "pnpm"
 resolution = true
 skip-lint = false
 
+[programs.devnet]
+solana = "5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ"
+
 [programs.localnet]
-solana = "2bgWZ93G9WXKncPHJufrFAcLRDQFf1GjTVyotWrm1bsk"
+solana = "5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+cluster = "devnet"
+wallet = "~/.config/solana/trump-fun.json"
 
 [scripts]
 test = "pnpm ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

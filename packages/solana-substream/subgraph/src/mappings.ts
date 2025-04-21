@@ -13,28 +13,36 @@ import { Data as protoData } from './pb/substreams/v1/program/Data';
 
 function mapTokenType(tokenType: i32): string {
   if (tokenType === 0) return 'USDC';
-  if (tokenType === 1) return 'POINTS';
+  if (tokenType === 1) return 'Freedom';
   return 'USDC';
 }
 
 function mapMediaType(mediaType: i32): string {
   if (mediaType === 0) return 'X';
-  if (mediaType === 1) return 'TIKTOK';
-  if (mediaType === 2) return 'INSTAGRAM';
-  if (mediaType === 3) return 'FACEBOOK';
-  if (mediaType === 4) return 'IMAGE';
-  if (mediaType === 5) return 'VIDEO';
-  if (mediaType === 6) return 'EXTERNAL_LINK';
-  return 'IMAGE';
+  if (mediaType === 1) return 'TikTok';
+  if (mediaType === 2) return 'Instagram';
+  if (mediaType === 3) return 'Facebook';
+  if (mediaType === 4) return 'Image';
+  if (mediaType === 5) return 'Video';
+  if (mediaType === 6) return 'ExternalLink';
+  return 'Image';
 }
 
 function mapBetOutcome(outcome: i32): string {
-  if (outcome === 0) return 'NONE';
-  if (outcome === 1) return 'WON';
-  if (outcome === 2) return 'LOST';
-  if (outcome === 3) return 'VOIDED';
-  if (outcome === 4) return 'DRAW';
-  return 'NONE';
+  if (outcome === 0) return 'None';
+  if (outcome === 1) return 'Won';
+  if (outcome === 2) return 'Lost';
+  if (outcome === 3) return 'Voided';
+  if (outcome === 4) return 'Draw';
+  return 'None';
+}
+
+function mapPoolStatus(status: i32): string {
+  if (status === 0) return 'None';
+  if (status === 1) return 'Pending';
+  if (status === 2) return 'Graded';
+  if (status === 3) return 'Regraded';
+  return 'Pending';
 }
 
 export function handleTriggers(bytes: Uint8Array): void {
@@ -50,8 +58,8 @@ export function handleTriggers(bytes: Uint8Array): void {
     pc.betsCloseAt = BigInt.fromI64(event.betsCloseAt);
     // Use imageUrl from event
     pc.mediaUrl = event.imageUrl;
-    // No mediaType provided, default to IMAGE
-    pc.mediaType = 'IMAGE';
+    // No mediaType provided, default to Image
+    pc.mediaType = 'Image';
     // Default values for unused fields
     pc.category = '';
     pc.creatorName = '';
@@ -70,7 +78,7 @@ export function handleTriggers(bytes: Uint8Array): void {
     pool.usdcBetTotalsByOption = [BigInt.fromI64(0), BigInt.fromI64(0)];
     pool.pointsBetTotalsByOption = [BigInt.fromI64(0), BigInt.fromI64(0)];
     pool.winningOption = BigInt.fromI64(0);
-    pool.status = 'PENDING';
+    pool.status = 'Pending';
     pool.isDraw = false;
     pool.createdAt = BigInt.fromI64(event.createdAt);
     pool.category = '';
@@ -80,8 +88,8 @@ export function handleTriggers(bytes: Uint8Array): void {
     pool.closureInstructions = '';
     // Use imageUrl from event
     pool.mediaUrl = event.imageUrl;
-    // No mediaType provided, default to IMAGE
-    pool.mediaType = 'IMAGE';
+    // No mediaType provided, default to Image
+    pool.mediaType = 'Image';
     pool.twitterPostId = '';
     pool.creationTxHash = event.trxHash;
     pool.save();
@@ -99,7 +107,7 @@ export function handleTriggers(bytes: Uint8Array): void {
     bet.amount = BigInt.fromU64(event.amount);
     bet.createdAt = BigInt.fromI64(event.createdAt);
     bet.isPayedOut = false;
-    bet.outcome = 'NONE';
+    bet.outcome = 'None';
     bet.tokenType = mapTokenType(event.tokenType);
     bet.txHash = event.trxHash;
     bet.save();
@@ -140,7 +148,7 @@ export function handleTriggers(bytes: Uint8Array): void {
     const pms = new PoolMediaSet(id);
     pms.poolId = BigInt.fromU64(event.poolId);
     pms.mediaUrl = event.imageUrl;
-    pms.mediaType = mapMediaType(4); //image
+    pms.mediaType = mapMediaType(4); // image, default to Image
     pms.txHash = event.trxHash;
     pms.pool = event.poolId.toString();
     pms.save();
@@ -148,7 +156,7 @@ export function handleTriggers(bytes: Uint8Array): void {
     const pool = Pool.load(event.poolId.toString());
     if (pool) {
       pool.mediaUrl = event.imageUrl;
-      pool.mediaType = mapMediaType(4); //image
+      pool.mediaType = mapMediaType(4); // image, default to Image
       pool.save();
     }
   });
@@ -158,7 +166,38 @@ export function handleTriggers(bytes: Uint8Array): void {
     const id = event.trxHash.toString();
     const pc = new PayoutClaimed(id);
     pc.txHash = event.trxHash;
+    pc.betId = BigInt.fromU64(event.betId);
+    pc.poolId = BigInt.fromU64(event.poolId);
+    pc.user = event.user;
+    pc.amount = BigInt.fromU64(event.amount);
+    pc.tokenType = mapTokenType(event.tokenType);
     pc.save();
+
+    // Update the Bet entity
+    const betId = event.betId.toString();
+    const bet = Bet.load(betId);
+    if (bet) {
+      bet.isPayedOut = true;
+
+      // Determine bet outcome based on pool's winning option
+      const poolId = event.poolId.toString();
+      const pool = Pool.load(poolId);
+
+      if (pool) {
+        const betOption = bet.optionIndex;
+        const winningOption = pool.winningOption;
+
+        if (pool.isDraw) {
+          bet.outcome = 'Draw';
+        } else if (betOption.equals(winningOption)) {
+          bet.outcome = 'Won';
+        } else {
+          bet.outcome = 'Lost';
+        }
+      }
+
+      bet.save();
+    }
   });
 
   // PoolClosed events
@@ -166,6 +205,30 @@ export function handleTriggers(bytes: Uint8Array): void {
     const id = event.trxHash.toString();
     const pc = new PoolClosed(id);
     pc.txHash = event.trxHash;
+    pc.poolId = BigInt.fromU64(event.poolId);
+    pc.selectedOption = BigInt.fromU64(event.selectedOption);
+    pc.decisionTime = BigInt.fromI64(event.decisionTime);
     pc.save();
+
+    // Update the Pool entity
+    const pool = Pool.load(event.poolId.toString());
+    if (pool) {
+      // In the Solana contract, response_option determines the outcome:
+      // 0 -> option 0 wins, 1 -> option 1 wins, 2 -> draw
+      const selectedOption = event.selectedOption;
+
+      if (selectedOption === 2) {
+        // This is a draw according to the Solana contract
+        pool.isDraw = true;
+        pool.winningOption = BigInt.fromI64(0); // No winner
+      } else {
+        pool.winningOption = BigInt.fromU64(selectedOption);
+        pool.isDraw = false;
+      }
+
+      pool.decisionTime = BigInt.fromI64(event.decisionTime);
+      pool.status = 'Graded';
+      pool.save();
+    }
   });
 }

@@ -6,7 +6,7 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: substreams
-    name: my_project
+    name: trump-fun-solana
     network: solana-devnet
     source:
       package:
