@@ -1,6 +1,6 @@
 import { TOKEN_SYMBOLS } from '@/hooks/useTokenContext';
-import { GetPoolQuery, GetPoolsQuery, Pool, TokenType } from '@/types';
-import { POINTS_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { Pool, TokenType } from '@/types';
+import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import React from 'react';
 
 // Helper function to safely convert token amounts
@@ -14,7 +14,7 @@ const formatTokenAmount = (
   return floor ? Math.floor(value) : value;
 };
 export const getVolumeForTokenType = (
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
+  pool: Pool | Pool[][number],
   tokenType: TokenType,
   raw = false
 ) => {
@@ -26,7 +26,7 @@ export const getVolumeForTokenType = (
     return rawValue;
   }
 
-  const decimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
+  const decimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
   const value = Number(rawValue) / Math.pow(10, decimals);
 
   return Math.ceil(value);
@@ -37,16 +37,13 @@ export const getFormattedVolumeForTokenType = (pool: Pool, tokenType: TokenType,
   return Number(volume).toLocaleString();
 };
 
-export const calculateVolume = (
-  pool: GetPoolsQuery['pools'][number],
-  tokenType: TokenType
-): React.ReactNode => {
+export const calculateVolume = (pool: Pool[][number], tokenType: TokenType): React.ReactNode => {
   if (!pool) return tokenType === TokenType.Usdc ? '0' : '0';
 
   try {
     const isUsdc = tokenType === TokenType.Usdc;
     const rawAmount = isUsdc ? pool.usdcVolume : pool.pointsVolume;
-    const decimals = isUsdc ? USDC_DECIMALS : POINTS_DECIMALS;
+    const decimals = isUsdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
     const value = formatTokenAmount(rawAmount, decimals, !isUsdc);
 
     return (
@@ -62,7 +59,7 @@ export const calculateVolume = (
 };
 
 export const getBetTotals = (
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
+  pool: Pool | Pool[][number],
   tokenType: TokenType | string,
   option: number
 ): string => {
@@ -73,7 +70,7 @@ export const getBetTotals = (
     const betTotals = isUsdc ? pool.usdcBetTotals : pool.pointsBetTotals;
     if (!betTotals) return isUsdc ? '$0' : '0';
 
-    const decimals = isUsdc ? USDC_DECIMALS : POINTS_DECIMALS;
+    const decimals = isUsdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
     const value = formatTokenAmount(betTotals[option], decimals, !isUsdc);
 
     return value.toLocaleString();
@@ -87,7 +84,7 @@ export const getBetTotals = (
  * Calculate percentages for each option in a pool
  */
 export const calculateOptionPercentages = (
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
+  pool: Pool | Pool[][number],
   tokenType: TokenType
 ): number[] => {
   if (!pool) return [];
@@ -111,7 +108,7 @@ export const calculateOptionPercentages = (
       : pool.options.map(() => 0);
 
   return pool.options.map((_, index) => {
-    if (tokenType === TokenType.Points && totalPoints > BigInt(0)) {
+    if (tokenType === TokenType.Freedom && totalPoints > BigInt(0)) {
       return pointsPercentages[index];
     } else if (tokenType === TokenType.Usdc && totalUsdc > BigInt(0)) {
       return usdcPercentages[index];
@@ -131,10 +128,10 @@ export const calculateOptionPercentages = (
  * Calculate relative volume percentages for multiple pools
  */
 export const calculateRelativeVolumePercentages = (
-  pools: GetPoolsQuery['pools'],
+  pools: Pool[],
   tokenType: TokenType
 ): {
-  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
+  pool: Pool | Pool[][number];
   percentage: number;
   displayVolume: number | string;
 }[] => {

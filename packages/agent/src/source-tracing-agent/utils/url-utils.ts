@@ -15,18 +15,28 @@ export function normalizeUrl(url: string): string {
 
     // Try to parse the URL
     const parsedUrl = new URL(url);
-    
+
     // Strip unnecessary query parameters which might cause duplication
     // (like UTM tracking parameters, analytics tags, etc.)
     const searchParams = new URLSearchParams(parsedUrl.search);
-    const paramsToRemove = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 
-                           'fbclid', 'gclid', 'msclkid', 'ref', 'source'];
-    
+    const paramsToRemove = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_term',
+      'utm_content',
+      'fbclid',
+      'gclid',
+      'msclkid',
+      'ref',
+      'source',
+    ];
+
     paramsToRemove.forEach(param => searchParams.delete(param));
-    
+
     // Rebuild the URL without the tracking parameters
     parsedUrl.search = searchParams.toString();
-    
+
     // Return the normalized URL
     return parsedUrl.toString();
   } catch (error) {
@@ -42,10 +52,10 @@ export function normalizeUrl(url: string): string {
  */
 export function extractUrlsFromHtml(html: string): string[] {
   const urls: string[] = [];
-  
+
   try {
     const $ = load(html);
-    
+
     // Extract URLs from anchor tags
     $('a').each((_, element) => {
       const href = $(element).attr('href');
@@ -100,7 +110,8 @@ export function extractDeepLinksFromContent(content: string): string[] {
     });
 
     // Check for special patterns like "available at domain.com" or "see: domain.com"
-    const domainRegex = /(?:available at|see:|visit:|check out|on|at)\s+([a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z0-9-.]+)/gi;
+    const domainRegex =
+      /(?:available at|see:|visit:|check out|on|at)\s+([a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z0-9-.]+)/gi;
     const domainMatches = content.matchAll(domainRegex);
 
     for (const match of domainMatches) {

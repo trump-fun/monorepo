@@ -1,11 +1,5 @@
-import { GET_POOLS } from '@/lib/queries';
-import {
-  GetPoolsQuery,
-  OrderDirection,
-  Pool_OrderBy,
-  PoolStatus,
-  TokenType,
-} from '@/types/__generated__/graphql';
+import { GET_POOLS, Pool } from '@trump-fun/common';
+import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
 import { useQuery } from '@apollo/client';
 import { useMemo, useState } from 'react';
 
@@ -64,7 +58,7 @@ export function usePools(tokenType: TokenType) {
     loading: isLoading,
     fetchMore,
     refetch: refetchPools,
-  } = useQuery<GetPoolsQuery>(GET_POOLS, {
+  } = useQuery(GET_POOLS, {
     variables: {
       filter: activeConfig.filter,
       orderBy: activeConfig.orderBy,
@@ -82,7 +76,7 @@ export function usePools(tokenType: TokenType) {
     if (!searchQuery.trim()) return pools;
 
     const query = searchQuery.toLowerCase().trim();
-    return pools.filter((pool) => pool.question.toLowerCase().includes(query));
+    return pools.filter((pool: Pool) => pool.question.toLowerCase().includes(query));
   }, [data, searchQuery]);
 
   const handleFilterChange = (newFilter: FilterType) => {

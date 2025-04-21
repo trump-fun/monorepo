@@ -55,6 +55,7 @@
     "datura-js": "^0.0.9",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
+    "grammy": "^1.35.1",
     "graphql": "^16.10.0",
     "graphql-request": "^7.1.2",
     "hono": "^4.0.10",

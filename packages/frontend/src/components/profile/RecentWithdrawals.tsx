@@ -24,7 +24,7 @@ export function RecentWithdrawals({ withdrawals }: { withdrawals?: WithdrawalDat
 }
 
 function WithdrawalItem({ withdrawal }: { withdrawal: WithdrawalData }) {
-  const resolvedTokenType = withdrawal.bet?.tokenType === 0 ? TokenType.Usdc : TokenType.Points;
+  const resolvedTokenType = withdrawal.bet?.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom;
   const symbol = resolvedTokenType === TokenType.Usdc ? '💲' : '🦅';
   // Use centralized utility to format the amount with fallback to prevent errors
   const formattedAmount = withdrawal.bet?.amount

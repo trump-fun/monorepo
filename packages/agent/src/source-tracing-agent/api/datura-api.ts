@@ -94,14 +94,15 @@ export async function extractContentWithDatura(url: string): Promise<string | nu
       console.log('Attempting direct HTTP request as last resort fallback');
       const response = await axios.get(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml',
-          'Accept-Language': 'en-US,en;q=0.9'
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml',
+          'Accept-Language': 'en-US,en;q=0.9',
         },
         timeout: 15000,
-        maxContentLength: 5 * 1024 * 1024 // 5MB limit
+        maxContentLength: 5 * 1024 * 1024, // 5MB limit
       });
-      
+
       if (response.data && typeof response.data === 'string') {
         console.log(`Retrieved ${response.data.length} chars with direct HTTP request`);
         return response.data;
@@ -183,7 +184,7 @@ export async function searchForSourcesWithDatura(
 
   console.log(`Searching for additional sources related to: ${topic}`);
   const allUrls: string[] = [...existingUrls];
-  let uniqueUrls: string[] = [];
+  const uniqueUrls: string[] = [];
 
   try {
     // Use the webLinksSearch endpoint for the most relevant web search results
@@ -219,14 +220,36 @@ export async function searchForSourcesWithDatura(
     }
 
     // Only search Hacker News for tech and science topics
-    const techScienceKeywords = ['technology', 'tech', 'software', 'programming', 'code', 'computer', 'data', 
-      'ai', 'artificial intelligence', 'machine learning', 'blockchain', 'crypto', 'science', 'research', 'physics', 
-      'chemistry', 'biology', 'engineering', 'algorithm', 'hardware', 'network', 'security', 'cyber'];
-      
-    const isTechOrScience = techScienceKeywords.some(keyword => 
+    const techScienceKeywords = [
+      'technology',
+      'tech',
+      'software',
+      'programming',
+      'code',
+      'computer',
+      'data',
+      'ai',
+      'artificial intelligence',
+      'machine learning',
+      'blockchain',
+      'crypto',
+      'science',
+      'research',
+      'physics',
+      'chemistry',
+      'biology',
+      'engineering',
+      'algorithm',
+      'hardware',
+      'network',
+      'security',
+      'cyber',
+    ];
+
+    const isTechOrScience = techScienceKeywords.some(keyword =>
       topic.toLowerCase().includes(keyword.toLowerCase())
     );
-    
+
     if (isTechOrScience) {
       try {
         console.log(`Topic is tech/science related. Searching Hacker News for: ${topic}`);
@@ -266,7 +289,9 @@ export async function searchForSourcesWithDatura(
           console.log(`Using Firecrawl as backup for Hacker News search: ${topic}`);
           const firecrawl = new FirecrawlApp({ apiKey: config.firecrawlApiKey });
           const hnUrl = `https://hn.algolia.com/?q=${encodeURIComponent(topic)}`;
-          const scrapeResponse = await firecrawl.scrapeUrl(hnUrl, { formats: ['html', 'markdown'] });
+          const scrapeResponse = await firecrawl.scrapeUrl(hnUrl, {
+            formats: ['html', 'markdown'],
+          });
 
           if (scrapeResponse.success) {
             const response = scrapeResponse as any;

@@ -70,7 +70,7 @@ export const topUpBalance = async (params: TopUpBalanceParams): Promise<TopUpBal
         10 ** USDC_DECIMALS
       ).toLocaleString();
       showSuccessToast(
-        `Thanks for dropping by! We've topped up your wallet with ${formattedAmount} POINTS, game on!`
+        `Thanks for dropping by! We've topped up your wallet with ${formattedAmount} FREEDOM, game on!`
       );
     } else if (data.success && parseFloat(data.amountMinted) === 0) {
       // Still count as a successful top-up attempt for today

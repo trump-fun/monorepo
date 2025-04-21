@@ -131,7 +131,7 @@ export const useNetwork = () => {
       sepolia,
     },
     usdcAddress: networkInfo.usdcAddress,
-    pointsAddress: networkInfo.freedomAddress,
+    freedomAddress: networkInfo.freedomAddress,
     appAddress: networkInfo.appAddress,
     switchNetwork: handleSwitchNetwork,
     isSwitchingNetwork: isPending,

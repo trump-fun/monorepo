@@ -1,25 +1,25 @@
 import { TokenType } from '../types/__generated__/graphql';
-import { USDC_DECIMALS, POINTS_DECIMALS } from '../config';
+import { USDC_DECIMALS, FREEDOM_DECIMALS } from '../config';
 
 // Constants for token names
 export const TOKEN_NAMES = {
   [TokenType.Usdc]: 'USDC',
-  [TokenType.Points]: 'FREEDOM',
+  [TokenType.Freedom]: 'FREEDOM',
 };
 
 /**
  * Get the number of decimals for a token type
- * @param tokenType Type of token (USDC or Points)
+ * @param tokenType Type of token (USDC or Freedom)
  * @returns Number of decimals
  */
 export function getTokenDecimals(tokenType: TokenType): number {
-  return tokenType === TokenType.Usdc ? USDC_DECIMALS : POINTS_DECIMALS;
+  return tokenType === TokenType.Usdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
 }
 
 /**
  * Convert raw token amount to human-readable decimal form
  * @param amount Raw token amount (with decimals)
- * @param tokenType Type of token (USDC or Points)
+ * @param tokenType Type of token (USDC or Freedom)
  * @returns Number in human-readable form
  */
 export function toDecimal(amount: string | number | bigint, tokenType: TokenType): number {
@@ -39,7 +39,7 @@ export function toDecimal(amount: string | number | bigint, tokenType: TokenType
 /**
  * Convert human-readable decimal value to raw token amount with proper decimals
  * @param amount Human-readable decimal amount
- * @param tokenType Type of token (USDC or Points)
+ * @param tokenType Type of token (USDC or Freedom)
  * @returns Raw token amount as BigInt
  */
 export function toRawAmount(amount: number, tokenType: TokenType): bigint {
@@ -49,7 +49,7 @@ export function toRawAmount(amount: number, tokenType: TokenType): bigint {
 
 /**
  * Get the divisor to convert raw amounts to decimal
- * @param tokenType Type of token (USDC or Points)
+ * @param tokenType Type of token (USDC or Freedom)
  * @returns The divisor as a bigint
  */
 export function getTokenDivisor(tokenType: TokenType): bigint {
@@ -60,7 +60,7 @@ export function getTokenDivisor(tokenType: TokenType): bigint {
 /**
  * Format a raw token amount to a locale string
  * @param amount Raw token amount (with decimals)
- * @param tokenType Type of token (USDC or Points)
+ * @param tokenType Type of token (USDC or Freedom)
  * @param options Locale string options
  * @returns Formatted string (without currency symbol)
  */
@@ -91,7 +91,7 @@ export function formatUSDC(amount: string | number, options?: Intl.NumberFormatO
  * @returns Formatted string
  */
 export function formatFreedom(amount: string | number, options?: Intl.NumberFormatOptions): string {
-  const value = toDecimal(amount, TokenType.Points);
+  const value = toDecimal(amount, TokenType.Freedom);
   return value.toLocaleString('en-US', { maximumFractionDigits: 2, ...options });
 }
 
@@ -148,5 +148,32 @@ export function formatAbbreviatedAmount(amount: string | number, tokenType: Toke
     return `${(value / 1_000).toFixed(1)}K`;
   } else {
     return value.toFixed(1);
+  }
+}
+
+/**
+ * Gets time remaining until a timestamp in human-readable format
+ * @param timestamp Unix timestamp in seconds
+ * @returns Formatted time remaining string or empty if in past
+ */
+export function getTimeRemaining(timestamp: number | string): string {
+  const endTime = typeof timestamp === 'string' ? parseInt(timestamp) * 1000 : timestamp * 1000;
+  const now = Date.now();
+  const remainingMs = endTime - now;
+
+  if (remainingMs <= 0) {
+    return '';
+  }
+
+  const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  } else if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  } else {
+    return `${minutes}m`;
   }
 }

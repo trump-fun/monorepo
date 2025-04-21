@@ -47,11 +47,12 @@ async function runSourceTracing() {
             console.log(`  Type: ${source.source_type || 'Unknown'}`);
             console.log(`  Primary: ${source.contains_original_information || false}`);
             console.log(`  Verification: ${source.verification_status || 'Unknown'}`);
-            
+
             if (source.content_summary) {
-              const summaryPreview = source.content_summary.length > 300 
-                ? `${source.content_summary.substring(0, 300)}...` 
-                : source.content_summary;
+              const summaryPreview =
+                source.content_summary.length > 300
+                  ? `${source.content_summary.substring(0, 300)}...`
+                  : source.content_summary;
               console.log(`  Summary: ${summaryPreview}`);
             } else {
               console.log(`  Summary: No content available`);
@@ -63,10 +64,10 @@ async function runSourceTracing() {
         }
       });
     } else {
-      console.log(`No reference chains were created. Check if source tracing completed successfully.`);
+      console.log(
+        `No reference chains were created. Check if source tracing completed successfully.`
+      );
     }
-
-
 
     return result;
   } catch (error) {

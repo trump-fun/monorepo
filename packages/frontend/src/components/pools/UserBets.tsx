@@ -1,12 +1,11 @@
 'use client';
-import { GetBetsQuery, GetPoolQuery, TokenType } from '@/types/__generated__/graphql';
-import { formatTokenAmount } from '@trump-fun/common';
+import { Bet, formatTokenAmount, Pool, TokenType } from '@trump-fun/common';
 import { format } from 'date-fns';
 import { ReactNode } from 'react';
 
 interface UserBetsProps {
-  placedBets: GetBetsQuery['bets'];
-  pool: GetPoolQuery['pool'];
+  placedBets: Bet[];
+  pool: Pool;
   tokenLogo: ReactNode;
   symbol: string;
 }

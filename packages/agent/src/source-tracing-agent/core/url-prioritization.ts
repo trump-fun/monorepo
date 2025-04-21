@@ -1,5 +1,3 @@
-import { extractDomain } from '../utils/url-utils';
-
 /**
  * Score domains based on their likelihood of containing primary sources
  * @param domain Domain to score
@@ -7,29 +5,29 @@ import { extractDomain } from '../utils/url-utils';
  */
 function scoreDomain(domain: string): number {
   if (!domain) return 0;
-  
+
   const domainLower = domain.toLowerCase();
-  
+
   // Government domains are likely primary sources
   if (domainLower.endsWith('.gov') || domainLower.includes('.gov.')) {
     return 5.0;
   }
-  
+
   // Educational institutions often host primary research
   if (domainLower.endsWith('.edu') || domainLower.includes('.edu.')) {
     return 4.5;
   }
-  
+
   // International organizations
   if (domainLower.endsWith('.int') || domainLower.includes('.int.')) {
     return 4.0;
   }
-  
+
   // Non-profit organizations may have primary information
   if (domainLower.endsWith('.org') || domainLower.includes('.org.')) {
     return 3.5;
   }
-  
+
   // Official company websites
   if (domainLower.endsWith('.com') || domainLower.includes('.com.')) {
     // Official research repositories
@@ -41,7 +39,7 @@ function scoreDomain(domain: string): number {
     ) {
       return 3.7;
     }
-    
+
     // Financial/business information
     if (
       domainLower.includes('investor') ||
@@ -51,7 +49,7 @@ function scoreDomain(domain: string): number {
     ) {
       return 4.0;
     }
-    
+
     // News organizations
     if (
       domainLower.includes('news') ||
@@ -63,7 +61,7 @@ function scoreDomain(domain: string): number {
     ) {
       return 2.5;
     }
-    
+
     // Social media (rarely primary sources)
     if (
       domainLower.includes('twitter') ||
@@ -74,11 +72,11 @@ function scoreDomain(domain: string): number {
     ) {
       return 1.2;
     }
-    
+
     // Default commercial site
     return 2.0;
   }
-  
+
   // Default score for other domains
   return 1.0;
 }
@@ -90,10 +88,10 @@ function scoreDomain(domain: string): number {
  */
 function scorePath(path: string): number {
   if (!path) return 0;
-  
+
   const pathLower = path.toLowerCase();
   let score = 0;
-  
+
   // Document indicators
   if (
     pathLower.includes('document') ||
@@ -104,7 +102,7 @@ function scorePath(path: string): number {
   ) {
     score += 0.5;
   }
-  
+
   // Official content indicators
   if (
     pathLower.includes('official') ||
@@ -114,7 +112,7 @@ function scorePath(path: string): number {
   ) {
     score += 0.7;
   }
-  
+
   // Research indicators
   if (
     pathLower.includes('research') ||
@@ -124,7 +122,7 @@ function scorePath(path: string): number {
   ) {
     score += 0.6;
   }
-  
+
   // Legal/regulatory indicators
   if (
     pathLower.includes('regulation') ||
@@ -135,7 +133,7 @@ function scorePath(path: string): number {
   ) {
     score += 0.65;
   }
-  
+
   // Financial indicators
   if (
     pathLower.includes('financial') ||
@@ -145,7 +143,7 @@ function scorePath(path: string): number {
   ) {
     score += 0.55;
   }
-  
+
   // Negative indicators (less likely to be primary sources)
   if (
     pathLower.includes('blog') ||
@@ -155,7 +153,7 @@ function scorePath(path: string): number {
   ) {
     score -= 0.3;
   }
-  
+
   return score;
 }
 
@@ -169,45 +167,45 @@ export function prioritizeUrls(urls: string[], maxResults: number = 10): string[
   if (!urls || urls.length === 0) {
     return [];
   }
-  
+
   // Score and sort the URLs
   const scoredUrls = urls.map(url => {
     try {
       const parsedUrl = new URL(url);
       const domain = parsedUrl.hostname;
       const path = parsedUrl.pathname;
-      
+
       // Calculate domain score
       const domainScore = scoreDomain(domain);
-      
+
       // Calculate path score
       const pathScore = scorePath(path);
-      
+
       // Calculate total score
       const totalScore = domainScore + pathScore;
-      
+
       return {
         url,
-        score: totalScore
+        score: totalScore,
       };
     } catch (error) {
       // If URL parsing fails, give a low score
       return {
         url,
-        score: 0.5
+        score: 0.5,
       };
     }
   });
-  
+
   // Sort by score, descending
   scoredUrls.sort((a, b) => b.score - a.score);
-  
+
   // Log prioritization results for top URLs
   console.log('URL prioritization results (top ' + Math.min(3, scoredUrls.length) + '):');
   scoredUrls.slice(0, 3).forEach(item => {
     console.log(`  Score ${item.score.toFixed(3)}: ${item.url}`);
   });
-  
+
   // Return the top URLs
   return scoredUrls.slice(0, maxResults).map(item => item.url);
 }

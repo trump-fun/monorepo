@@ -21,31 +21,31 @@ export async function fetchWithDirectRequest(url: string): Promise<string | null
   try {
     // Select a random user agent
     const userAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
-    
+
     console.log(`Fetching with direct request: ${url}`);
-    
+
     const response = await axios.get(url, {
       headers: {
         'User-Agent': userAgent,
-        'Accept': 'text/html,application/xhtml+xml,application/xml',
+        Accept: 'text/html,application/xhtml+xml,application/xml',
         'Accept-Language': 'en-US,en;q=0.9',
       },
       timeout: 10000,
       maxContentLength: 10 * 1024 * 1024, // 10MB max
     });
-    
+
     if (response.status === 200 && response.data) {
       // Process HTML content
       const $ = load(response.data);
-      
+
       // Remove scripts, styles, and other non-content elements
       $('script, style, meta, link, svg, path, iframe').remove();
-      
+
       // Get text content
       const text = $('body').text().trim();
       return text;
     }
-    
+
     return null;
   } catch (error: any) {
     console.error('Error with direct request:', error.message);
@@ -61,25 +61,25 @@ export async function fetchWithDirectRequest(url: string): Promise<string | null
  */
 export async function fetchContentFromUrl(url: string): Promise<string> {
   console.log(`Fetching content from: ${url}`);
-  
+
   // Try Datura API first for high-quality content extraction
   const daturaContent = await extractContentWithDatura(url);
   if (daturaContent) {
     return daturaContent;
   }
-  
+
   // Try Firecrawl API next for JS-rendered content
   const firecrawlContent = await fetchWithFirecrawl(url, 2, 2000);
   if (firecrawlContent) {
     return firecrawlContent;
   }
-  
+
   // Try direct request
   const directContent = await fetchWithDirectRequest(url);
   if (directContent) {
     return directContent;
   }
-  
+
   // Try Puppeteer as last resort for complex JS-rendered pages
   try {
     console.log('Attempting to fetch with Puppeteer');
@@ -90,7 +90,7 @@ export async function fetchContentFromUrl(url: string): Promise<string> {
   } catch (error: any) {
     console.error('Error with Puppeteer fetch:', error.message);
   }
-  
+
   return `Failed to fetch content from ${url}`;
 }
 

@@ -2,7 +2,7 @@
 
 import { isPoolFactsd, savePoolFacts } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
-import { PoolStatus } from '@/types/__generated__/graphql';
+import { PoolStatus } from '@trump-fun/common';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
 import { USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';

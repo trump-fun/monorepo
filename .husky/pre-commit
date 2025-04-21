@@ -1,9 +1,25 @@
-# Run lint-staged for formatting and linting
+echo "🏗️ Running type generation before commit..."
 
-bun lint-staged
+# Build contract types
 
-# Run build to catch TypeScript errors
+echo "📝 Building contract types..."
+bun run --cwd packages/contracts generate-types
 
-# bun run build --no-lint
+# Generate subgraph types
 
-bun run build
+echo "📊 Generating subgraph types..."
+bun run --cwd packages/graph codegen
+
+# Generate frontend and common types
+
+echo "🔄 Running codegen for frontend and common packages..."
+bun run codegen
+
+# Generate database types
+
+echo "🗃️ Generating database types..."
+bun run db-types
+
+# Run lint-staged (keep existing lint checks)
+
+bun run lint-staged

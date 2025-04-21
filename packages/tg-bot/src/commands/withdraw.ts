@@ -1,8 +1,10 @@
-import { bettingContractAbi, CHAIN_CONFIG } from '@trump-fun/common';
+import { CHAIN_CONFIG, USDC_DECIMALS, FREEDOM_DECIMALS } from '@trump-fun/common';
+import { bettingContractAbi } from '@trump-fun/common/abi/contract.types';
 import { ethers } from 'ethers';
 import type { Context } from 'grammy';
-import { privy } from '../lib/privy';
-import { getWallet } from '../utils/getWallet';
+import { privy } from '@/lib/privy';
+import { getWallet } from '@/utils/wallet';
+import config from '@/config';
 
 //TODO fix this, shouldn't be hardcoded at all, have user provide network and load the relevant config
 const APP_ADDRESS = CHAIN_CONFIG[84532].appAddress as `0x${string}`;
@@ -12,7 +14,7 @@ const USDC_ADDRESS = CHAIN_CONFIG[84532].usdcAddress as `0x${string}`;
 // Token type enum to match the contract
 enum TokenType {
   USDC = 0,
-  POINTS = 1,
+  FREEDOM = 1,
 }
 
 export const withdrawCommand = async (ctx: Context) => {
@@ -25,8 +27,12 @@ export const withdrawCommand = async (ctx: Context) => {
     return ctx.reply('No wallet found. Please set up your wallet first with /setup.');
   }
 
+  const provider = new ethers.JsonRpcProvider(config.chain.rpcUrl, {
+    chainId: config.chain.id,
+    name: 'sepolia',
+  });
+
   const params = ctx.message?.text?.split(' ').filter(Boolean) || [];
-  const provider = new ethers.JsonRpcProvider('https://sepolia.base.org'); //TODO Avoid hardcoding
 
   // If just /withdraw, show balance and options
   if (params.length === 1) {
@@ -63,13 +69,13 @@ export const withdrawCommand = async (ctx: Context) => {
       exactAmount = parseFloat(amountOrDestination);
       destinationAddress = possibleDestination?.startsWith('0x') ? possibleDestination : null;
     } else if (option.toLowerCase() === 'points50') {
-      tokenType = TokenType.POINTS;
+      tokenType = TokenType.FREEDOM;
       percentageAmount = 50;
     } else if (option.toLowerCase() === 'points100') {
-      tokenType = TokenType.POINTS;
+      tokenType = TokenType.FREEDOM;
       percentageAmount = 100;
     } else if (option.toLowerCase() === 'pointsx') {
-      tokenType = TokenType.POINTS;
+      tokenType = TokenType.FREEDOM;
       if (!amountOrDestination || isNaN(parseFloat(amountOrDestination))) {
         return ctx.reply('❌ Please specify a valid amount to withdraw.');
       }
@@ -89,7 +95,7 @@ export const withdrawCommand = async (ctx: Context) => {
 
     if (balance <= 0) {
       return ctx.reply(
-        `❌ You have no ${tokenType === TokenType.USDC ? 'USDC' : 'POINTS'} balance to withdraw.`
+        `❌ You have no ${tokenType === TokenType.USDC ? 'USDC' : 'FREEDOM'} balance to withdraw.`
       );
     }
 
@@ -102,7 +108,7 @@ export const withdrawCommand = async (ctx: Context) => {
       if (withdrawAmount > balance) {
         return ctx.reply(
           `❌ Insufficient funds! Your balance: ${balance.toFixed(6)} ${
-            tokenType === TokenType.USDC ? 'USDC' : 'POINTS'
+            tokenType === TokenType.USDC ? 'USDC' : 'FREEDOM'
           }\n` + `You requested to withdraw ${withdrawAmount.toFixed(6)}.`
         );
       }
@@ -115,7 +121,7 @@ export const withdrawCommand = async (ctx: Context) => {
     }
 
     // Start the withdrawal process
-    const tokenName = tokenType === TokenType.USDC ? 'USDC' : 'POINTS';
+    const tokenName = tokenType === TokenType.USDC ? 'USDC' : 'FREEDOM';
     const statusMsg = await ctx.reply(
       `🔄 Processing your withdrawal...\n\n` +
         `Amount: ${withdrawAmount.toFixed(6)} ${tokenName}\n` +
@@ -128,7 +134,7 @@ export const withdrawCommand = async (ctx: Context) => {
     const maxPriorityFeePerGas = '0x' + ethers.parseUnits('1.5', 'gwei').toString(16);
     const nonce = await provider.getTransactionCount(wallet.address);
 
-    // Format the amount based on token type (USDC = 6 decimals, POINTS = 18 decimals)
+    // Format the amount based on token type (USDC = 6 decimals, FREEDOM = 18 decimals)
     const tokenDecimals = tokenType === TokenType.USDC ? 6 : 18;
     const tokenAmount = ethers.parseUnits(withdrawAmount.toString(), tokenDecimals);
 
@@ -247,20 +253,20 @@ async function showWithdrawOptions(ctx: Context, wallet: any, provider: ethers.J
   try {
     // Fetch both balances
     const usdcBalance = await getUserBalance(provider, wallet.address, TokenType.USDC);
-    const pointsBalance = await getUserBalance(provider, wallet.address, TokenType.POINTS);
+    const pointsBalance = await getUserBalance(provider, wallet.address, TokenType.FREEDOM);
 
     return ctx.reply(
       `💰 Withdraw Funds\n\n` +
         `Your balances:\n` +
         `- ${usdcBalance.toFixed(6)} USDC\n` +
-        `- ${pointsBalance.toFixed(6)} POINTS\n\n` +
+        `- ${pointsBalance.toFixed(6)} FREEDOM\n\n` +
         `Options:\n` +
         `1. /withdraw usdc50 [destination] - Withdraw 50% of your USDC\n` +
         `2. /withdraw usdc100 [destination] - Withdraw 100% of your USDC\n` +
         `3. /withdraw usdcx [amount] [destination] - Withdraw specific USDC amount\n` +
-        `4. /withdraw points50 [destination] - Withdraw 50% of your POINTS\n` +
-        `5. /withdraw points100 [destination] - Withdraw 100% of your POINTS\n` +
-        `6. /withdraw pointsx [amount] [destination] - Withdraw specific POINTS amount\n\n` +
+        `4. /withdraw points50 [destination] - Withdraw 50% of your FREEDOM\n` +
+        `5. /withdraw points100 [destination] - Withdraw 100% of your FREEDOM\n` +
+        `6. /withdraw pointsx [amount] [destination] - Withdraw specific FREEDOM amount\n\n` +
         `Examples:\n` +
         `/withdraw usdc100\n` +
         `/withdraw pointsx 50\n` +
@@ -288,8 +294,8 @@ async function getUserBalance(
 
     const balanceWei = await contract.userBalances(address, BigInt(tokenType));
 
-    // Format based on token decimals (USDC = 6, POINTS = 18)
-    const decimals = tokenType === TokenType.USDC ? 6 : 18;
+    // Format based on token decimals (USDC = 6, FREEDOM = 6)
+    const decimals = tokenType === TokenType.USDC ? USDC_DECIMALS : FREEDOM_DECIMALS;
     return parseFloat(ethers.formatUnits(balanceWei, decimals));
   } catch (error) {
     console.error('Error checking balance:', error);

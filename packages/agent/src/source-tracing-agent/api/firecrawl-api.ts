@@ -31,7 +31,7 @@ export async function fetchWithFirecrawl(
       // Use the scrapeUrl method to get the content
       // Note: The SDK uses different parameter names than the direct API
       const scrapeResponse = await firecrawl.scrapeUrl(url, {
-        formats: ['html', 'markdown']
+        formats: ['html', 'markdown'],
         // Additional options can be added if supported by the SDK
       });
 
@@ -39,19 +39,22 @@ export async function fetchWithFirecrawl(
       if (!scrapeResponse.success) {
         const errorMessage = scrapeResponse.error || 'Unknown error';
         console.error(`Firecrawl error: ${errorMessage}`);
-        
+
         // Check if this is a domain support issue
-        if (errorMessage.includes('no longer supported') || errorMessage.includes('not supported')) {
+        if (
+          errorMessage.includes('no longer supported') ||
+          errorMessage.includes('not supported')
+        ) {
           console.log('Domain not supported by Firecrawl, trying direct request fallback...');
           return fetchWithDirectRequest(url);
         }
-        
+
         throw new Error(`Failed to scrape: ${errorMessage}`);
       }
 
       // Extract content - type assertion to handle potential type issues
       const response = scrapeResponse as any;
-      
+
       // Check if the content is available directly
       if (response.formats?.html) {
         return response.formats.html;
@@ -103,20 +106,22 @@ async function fetchWithDirectRequest(url: string): Promise<string | null> {
     console.log('Fetching with direct request:', url);
     const response = await axios.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml',
-        'Accept-Language': 'en-US,en;q=0.9'
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
       timeout: 15000,
-      maxContentLength: 10 * 1024 * 1024 // 10MB limit
+      maxContentLength: 10 * 1024 * 1024, // 10MB limit
     });
-    
+
     if (response.status === 200 && response.data) {
-      const content = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      const content =
+        typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
       console.log(`Successfully fetched ${content.length} chars with direct request`);
       return content;
     }
-    
+
     console.log(`Direct request failed with status ${response.status}`);
     return null;
   } catch (error: any) {
@@ -142,11 +147,11 @@ export async function pollFirecrawlJob(
 
       // Use the SDK's checkCrawlStatus method to get the job status
       const statusResponse = await firecrawl.checkCrawlStatus(jobId);
-      
+
       if (!statusResponse.success) {
         throw new Error(`Failed to check crawl status: ${statusResponse.error}`);
       }
-      
+
       // Type assertion to handle potential type issues
       const response = statusResponse as any;
       const jobStatus = response.status;

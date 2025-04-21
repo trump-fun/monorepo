@@ -2,7 +2,7 @@ import { arbitrumSepolia, baseSepolia } from 'viem/chains';
 
 export const DEFAULT_CHAIN_ID = baseSepolia.id; // Base chain ID
 export const USDC_DECIMALS = 6;
-export const POINTS_DECIMALS = 6;
+export const FREEDOM_DECIMALS = 6;
 export const POLLING_INTERVALS: Record<string, number> = {
   'landing-pools': 3000,
   'pool-listing': 5000,

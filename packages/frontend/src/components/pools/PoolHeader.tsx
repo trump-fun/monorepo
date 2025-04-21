@@ -2,12 +2,13 @@ import TruthSocial from '@/components/common/truth-social';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { CardHeader, CardTitle } from '@/components/ui/card';
-import { GetPoolQuery, PoolStatus } from '@/types';
+import { PoolStatus } from '@/types';
+import { Pool } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
 
 interface PoolHeaderProps {
-  pool: GetPoolQuery['pool'];
+  pool: Pool;
 }
 
 export const PoolHeader = ({ pool }: PoolHeaderProps) => {

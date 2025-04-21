@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { extractDeepLinksFromContent } from '../utils/url-utils';
 import { fetchContentFromUrl } from '../utils/content-extraction';
 import { extractSourceInformation } from './source-extraction';
@@ -61,7 +60,7 @@ export async function followReferenceChain(
 
     // Extract source information
     const sourceInfo = await extractSourceInformation(url, content);
-    
+
     // Add URL to the source info
     const sourceWithUrl = {
       ...sourceInfo,
@@ -72,21 +71,20 @@ export async function followReferenceChain(
     chain.sources.push(sourceWithUrl);
 
     // Check if this is a primary source
-    const isPrimarySource = 
-      sourceInfo.source_type === 'primary' && 
-      sourceInfo.contains_original_information;
+    const isPrimarySource =
+      sourceInfo.source_type === 'primary' && sourceInfo.contains_original_information;
 
     if (isPrimarySource) {
       // Generate a summary of the primary source
       let primarySourceSummary = '';
-      
+
       try {
         // Use the primary source summary prompt with the LLM
         const formattedPrompt = await primarySourceSummaryPrompt.formatMessages({
           url,
           content: content.substring(0, 8000), // Limit content length
         });
-        
+
         // Get summarization
         const summaryResult = await config.cheap_large_llm.invoke(formattedPrompt);
         primarySourceSummary = (summaryResult as any).content || '';
@@ -97,9 +95,9 @@ export async function followReferenceChain(
 
       // Mark chain as complete since we found a primary source
       chain.is_complete = true;
-      
+
       console.log(`Found valid source chain endpoint: ${url}`);
-      
+
       return {
         chain,
         primarySourceFound: true,
@@ -110,7 +108,7 @@ export async function followReferenceChain(
 
     // Extract referenced URLs
     let referencedUrls = sourceInfo.referenced_urls;
-    
+
     // If we didn't get enough URLs from the source info, try extracting deep links
     if (referencedUrls.length < 3) {
       const deepLinks = extractDeepLinksFromContent(content);
@@ -125,10 +123,10 @@ export async function followReferenceChain(
     // Check if we have any new URLs to follow
     if (newUrls.length === 0) {
       console.log('No new URLs to follow, ending chain');
-      
+
       // If this source has no references, it might be an endpoint
       if (sourceInfo.chain_distance_markers.has_no_references) {
-        // Even if it's not explicitly marked as primary, it could be 
+        // Even if it's not explicitly marked as primary, it could be
         // a terminal node in our chain if it has no references
         console.log(`Source has no references, treating as potential endpoint: ${url}`);
         return {
@@ -138,7 +136,7 @@ export async function followReferenceChain(
           primarySourceSummary: sourceInfo.content_summary,
         };
       }
-      
+
       return {
         chain,
         primarySourceFound: false,
@@ -158,13 +156,15 @@ export async function followReferenceChain(
     for (const refUrl of prioritizedUrls) {
       // Skip URLs from the same domain to prevent cycles
       if (isSameDomain(url, refUrl)) {
-        console.log(`URL from same domain ${url} is already in the chain, skipping to prevent cycles`);
+        console.log(
+          `URL from same domain ${url} is already in the chain, skipping to prevent cycles`
+        );
         continue;
       }
 
       // Follow the reference
       const result = await followReferenceChain(refUrl, chain, depth + 1);
-      
+
       // If primary source found, capture it and stop processing
       if (result.primarySourceFound) {
         primarySourceFound = true;

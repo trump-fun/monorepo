@@ -70,7 +70,7 @@ ssh $SERVER "cd $REMOTE_DIR && /root/.nvm/versions/node/v23.10.0/bin/bun install
 npm install -g pm2
 
 # Start your bot with PM2
-pm2 start bot.ts --interpreter=bun
+pm2 start index.ts --interpreter=bun
 
 # Make it auto-restart on server reboot
 pm2 startup

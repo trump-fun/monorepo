@@ -1,10 +1,9 @@
+import { apolloClient } from '@/lib/apolloClient';
+import { PoolStatus, TokenType, formatTokenAmount, type Bet } from '@trump-fun/common';
 import type { Context } from 'grammy';
 import { InlineKeyboard } from 'grammy';
-import { apolloClient } from '../lib/apolloClient';
-import { GET_BETS } from '../queries';
-import { getWallet } from '../utils/getWallet';
-import type { Bet } from '@trump-fun/common/src/types/__generated__/graphql';
-import { PoolStatus } from '@trump-fun/common/src/types/__generated__/graphql';
+import { GET_BETS } from '../../queries';
+import { getWallet } from '../utils/wallet';
 
 enum FilterType {
   ACTIVE = 'active',
@@ -23,16 +22,58 @@ function formatBetsMessage(bets: Bet[], filterType: string): string {
     return `No ${filterType} bets found.`;
   }
 
-  let message = `Your ${filterType} bets:\n\n`;
+  let message = `<b>Your ${filterType} bets:</b>\n\n`;
 
   bets.forEach((bet, index) => {
+    // Get raw amount and convert properly based on token type
     const amount = typeof bet.amount === 'string' ? bet.amount : '0';
-    const formattedAmount = parseFloat(amount).toLocaleString(undefined, {
-      maximumFractionDigits: 2,
-    });
+    // Format using the bet's token type
+    const formattedAmount = formatTokenAmount(amount, bet.tokenType);
+    const question = bet.pool.question?.trim() || 'Untitled Pool';
 
-    message += `${index + 1}. ${bet.pool.question} - ${formattedAmount} tokens\n`;
-    message += `   Status: ${bet.pool.status}\n\n`;
+    // Format betting date if available
+    const betDate = bet.createdAt ? new Date(parseInt(bet.createdAt.toString()) * 1000) : null;
+    const dateString = betDate
+      ? betDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : '';
+    const timeString = betDate
+      ? betDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      : '';
+    const dateTimeString = betDate ? `${dateString} at ${timeString}` : '';
+
+    // Format status with emoji
+    let statusEmoji = '⏳';
+    let outcomeText = '';
+
+    if (bet.pool.status === PoolStatus.Graded) {
+      // We don't have direct winner/loser properties, so we need to check
+      // if the user has won or lost based on other information
+      const userAddress = bet.user.toString().toLowerCase();
+      const userOption = Number(bet.option);
+      const winningOption = bet.pool.winningOption ? Number(bet.pool.winningOption) : -1;
+
+      if (winningOption === userOption) {
+        statusEmoji = '🏆';
+        outcomeText = ' (You won!)';
+      } else if (winningOption !== -1) {
+        statusEmoji = '❌';
+        outcomeText = ' (You lost)';
+      }
+    } else if (bet.pool.status === PoolStatus.Regraded) {
+      statusEmoji = '🔄';
+    }
+
+    message += `<b>${index + 1}.</b> ${question}\n`;
+    const tokenName = bet.tokenType === TokenType.Freedom ? 'FREEDOM' : 'USDC';
+    message += `   <b>Amount:</b> ${formattedAmount} ${tokenName}\n`;
+    message += `   <b>Status:</b> ${statusEmoji} ${bet.pool.status}${outcomeText}`;
+
+    // Add date if available
+    if (dateTimeString) {
+      message += `\n   <b>Placed:</b> ${dateTimeString}`;
+    }
+
+    message += `\n\n`;
   });
 
   return message;
@@ -187,7 +228,14 @@ export const handleBetsFilter = async (ctx: Context): Promise<void> => {
       reply_markup: createFilterKeyboard(),
       parse_mode: 'HTML',
     });
-  } catch (err) {
+  } catch (err: any) {
+    // Check if this is a "message not modified" error (which is not a critical error)
+    if (err.description && err.description.includes('message is not modified')) {
+      // Just log it but don't show an error to the user
+      console.log('Bets filter produced identical message content - ignoring');
+      return;
+    }
+
     console.error('Error in bets filter handler:', err);
     await ctx.answerCallbackQuery('An error occurred processing your request.');
   }

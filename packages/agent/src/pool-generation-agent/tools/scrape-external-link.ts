@@ -122,21 +122,21 @@ export async function extractAndScrapeExternalLink(
         console.log('Attempting to fetch URL with Firecrawl SDK');
         // Initialize the Firecrawl SDK with the API key
         const firecrawl = new FirecrawlApp({ apiKey: config.firecrawlApiKey });
-        
+
         // Use the scrapeUrl method to get the content as shown in the documentation
         const scrapeResponse = await firecrawl.scrapeUrl(externalLink, {
-          formats: ['markdown', 'html']
+          formats: ['markdown', 'html'],
         });
-        
+
         // Check if the scrape was successful
         if (!scrapeResponse.success) {
           throw new Error(`Failed to scrape: ${scrapeResponse.error}`);
         }
-        
+
         // Extract content based on response structure
         // Using type assertion with 'any' to access properties since TypeScript definitions may not match actual response
         const response = scrapeResponse as any;
-        
+
         if (response.formats?.markdown) {
           content = response.formats.markdown;
           console.log('Successfully fetched markdown content with Firecrawl SDK');

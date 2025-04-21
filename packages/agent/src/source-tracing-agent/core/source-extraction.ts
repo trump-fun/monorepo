@@ -49,17 +49,29 @@ export async function extractSourceInformation(
 
     // Call the LLM
     let result = await structuredLlm.invoke(formattedPrompt);
-    
+
     // Ensure all required fields have values and aren't undefined
     result = {
       ...result,
       title: result.title || url.split('/').pop() || url,
       content_summary: result.content_summary || `Content from ${url}`,
-      contains_original_information: result.contains_original_information === undefined ? false : result.contains_original_information,
+      contains_original_information:
+        result.contains_original_information === undefined
+          ? false
+          : result.contains_original_information,
       chain_distance_markers: {
-        has_no_references: result.chain_distance_markers?.has_no_references === undefined ? true : result.chain_distance_markers.has_no_references,
-        is_directly_cited: result.chain_distance_markers?.is_directly_cited === undefined ? false : result.chain_distance_markers.is_directly_cited,
-        cites_primary_sources: result.chain_distance_markers?.cites_primary_sources === undefined ? false : result.chain_distance_markers.cites_primary_sources,
+        has_no_references:
+          result.chain_distance_markers?.has_no_references === undefined
+            ? true
+            : result.chain_distance_markers.has_no_references,
+        is_directly_cited:
+          result.chain_distance_markers?.is_directly_cited === undefined
+            ? false
+            : result.chain_distance_markers.is_directly_cited,
+        cites_primary_sources:
+          result.chain_distance_markers?.cites_primary_sources === undefined
+            ? false
+            : result.chain_distance_markers.cites_primary_sources,
       },
       verification_status: result.verification_status || 'unverified',
       key_claims: result.key_claims || [],
@@ -71,28 +83,30 @@ export async function extractSourceInformation(
       try {
         // Extract source type from Datura if available
         const summary = daturaMetadata.completion.summary;
-        
+
         if (summary) {
           // Look for indicators of primary source
-          const isPrimary = 
-            summary.includes('primary source') || 
+          const isPrimary =
+            summary.includes('primary source') ||
             summary.includes('official document') ||
             summary.includes('original research') ||
             summary.includes('SEC filing');
-            
+
           if (isPrimary && result.source_type !== 'primary') {
             console.log('Enhancing source type from Datura analysis: primary');
             result.source_type = 'primary';
             result.contains_original_information = true;
           }
-          
+
           // Look for publication date in Datura data
-          const dateMatch = summary.match(/published (?:on|in) ([A-Za-z]+ \d{1,2},? \d{4}|\d{1,2} [A-Za-z]+ \d{4}|\d{4}-\d{2}-\d{2})/i);
+          const dateMatch = summary.match(
+            /published (?:on|in) ([A-Za-z]+ \d{1,2},? \d{4}|\d{1,2} [A-Za-z]+ \d{4}|\d{4}-\d{2}-\d{2})/i
+          );
           if (dateMatch && dateMatch[1] && !result.publication_date) {
             result.publication_date = dateMatch[1];
           }
         }
-        
+
         // Add any links from Datura that weren't found by the LLM
         if (daturaMetadata.completion_links && daturaMetadata.completion_links.length > 0) {
           const existingUrls = new Set(result.referenced_urls);
@@ -111,7 +125,7 @@ export async function extractSourceInformation(
     return result;
   } catch (error: any) {
     console.error('Error extracting source information:', error.message);
-    
+
     // Return a fallback object if LLM processing fails
     return {
       title: url,
@@ -132,7 +146,7 @@ export async function extractSourceInformation(
 
 /**
  * Calculate confidence in a specific source
- * @param sourceInfo Source information 
+ * @param sourceInfo Source information
  * @returns Confidence score between 0 and 1
  */
 export function calculateSourceConfidence(

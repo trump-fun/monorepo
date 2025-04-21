@@ -1,6 +1,6 @@
 'use client';
 
-import { Bet, PayoutClaimed } from '@/types/__generated__/graphql';
+import { Bet, PayoutClaimed } from '@trump-fun/common';
 import { calculateVolume } from '@/utils/betsCalculations';
 import { useMemo } from 'react';
 import { useUserBetsData } from './useUserBetsData';

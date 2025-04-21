@@ -11,11 +11,11 @@ import { TokenType } from '@/types';
 export function TokenSwitch() {
   const { tokenType, setTokenType, tokenLogo } = useTokenContext();
 
-  // For POINTS, always use the zero address
+  // For FREEDOM, always use the zero address
   const { formattedBalance, symbol } = useTokenBalance();
 
   const handleToggle = (checked: boolean) => {
-    setTokenType(checked ? TokenType.Points : TokenType.Usdc);
+    setTokenType(checked ? TokenType.Freedom : TokenType.Usdc);
   };
 
   return (
@@ -34,12 +34,12 @@ export function TokenSwitch() {
             >
               <span>{tokenLogo}</span>
               <span className='ml-1 hidden sm:inline'>
-                {tokenType === TokenType.Points ? 'FREEDOM' : 'USDC'}
+                {tokenType === TokenType.Freedom ? 'FREEDOM' : 'USDC'}
               </span>
             </Badge>
           </Tooltip.Trigger>
           <Tooltip.Content>
-            <p>{tokenType === TokenType.Points ? 'Trump Points' : 'USD'}</p>
+            <p>{tokenType === TokenType.Freedom ? 'Trump Freedom' : 'USD'}</p>
             <p className='mt-1 text-xs text-gray-400'>
               Balance: {formattedBalance} {symbol}
             </p>
@@ -48,7 +48,7 @@ export function TokenSwitch() {
       </Tooltip.Provider>
 
       <Switch
-        checked={tokenType === TokenType.Points}
+        checked={tokenType === TokenType.Freedom}
         onCheckedChange={handleToggle}
         className={cn('data-[state=checked]:bg-orange-500')}
       />

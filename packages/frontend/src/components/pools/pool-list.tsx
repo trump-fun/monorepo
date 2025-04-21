@@ -1,21 +1,15 @@
 'use client';
 
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { GET_POOLS } from '@/lib/queries';
-import {
-  GetPoolsQuery,
-  OrderDirection,
-  Pool_OrderBy,
-  PoolStatus,
-  TokenType,
-} from '@/types/__generated__/graphql';
+import { GET_POOLS, Pool } from '@trump-fun/common';
+import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
 import { NetworkStatus, useQuery } from '@apollo/client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PoolCard } from './pool-card';
 
 export function PoolList() {
   const { tokenType } = useTokenContext();
-  const [pools, setPools] = useState<GetPoolsQuery['pools']>([]);
+  const [pools, setPools] = useState<Pool[]>([]);
   const isFirstRenderRef = useRef(true);
 
   const volumeOrderBy =
@@ -31,7 +25,7 @@ export function PoolList() {
     first: 9,
   };
 
-  const { data, loading, error, networkStatus } = useQuery<GetPoolsQuery>(GET_POOLS, {
+  const { data, loading, error, networkStatus } = useQuery(GET_POOLS, {
     variables,
     context: { name: 'mainSearch' },
     notifyOnNetworkStatusChange: true,

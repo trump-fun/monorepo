@@ -21,10 +21,16 @@ export const TOKEN_SYMBOLS: Record<
     logo: <Image src='/usdc.svg' alt='USD' width={16} height={16} style={{ display: 'inline' }} />,
     decimals: 6, // Don't use USDC_DECIMALS, this "TOKEN_CONFIG" will eventually be our authority for token details
   },
-  [TokenType.Points]: {
+  [TokenType.Freedom]: {
     symbol: 'FREEDOM',
     logo: (
-      <Image src='/points2.png' alt='POINTS' width={16} height={16} style={{ display: 'inline' }} />
+      <Image
+        src='/points2.png'
+        alt='FREEDOM'
+        width={16}
+        height={16}
+        style={{ display: 'inline' }}
+      />
     ),
     decimals: 6,
   },
@@ -50,7 +56,7 @@ const TokenContext = createContext<TokenContextType>({
 });
 
 export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
-  const { usdcAddress, pointsAddress } = useNetwork();
+  const { usdcAddress, freedomAddress } = useNetwork();
   const [tokenType, setTokenType] = useState<TokenType>(TokenType.Usdc);
 
   // Get token information
@@ -60,14 +66,14 @@ export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
     decimals: tokenDecimals,
   } = TOKEN_SYMBOLS[tokenType];
 
-  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : pointsAddress;
+  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : freedomAddress;
 
   // Load saved preference from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('trump-fun-token-type');
       if (saved !== null) {
-        if (saved === TokenType.Usdc || saved === TokenType.Points) {
+        if (saved === TokenType.Usdc || saved === TokenType.Freedom) {
           setTokenType(saved as TokenType);
         }
       }
