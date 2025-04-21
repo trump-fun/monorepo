@@ -2,7 +2,8 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { z } from 'zod';
 import axios from 'axios';
 import config from '../../config';
-import { PredictionResult as BasePredictionResult } from '../../prediction-finder-agent/tools/find-predictions';
+import { PredictionTimeframe } from '../../prediction-finder-agent/types';
+import type { PredictionResult as BasePredictionResult } from '../../prediction-finder-agent/tools/find-predictions';
 
 // Extend the PredictionResult type to include the outcome property
 interface PredictionResult extends BasePredictionResult {
@@ -82,12 +83,12 @@ export async function buildPredictorProfile(username: string): Promise<Predictor
     expertise_areas: predictionAnalysis.expertise_areas,
     prediction_style: predictionAnalysis.prediction_style,
     past_predictions: predictions.map(p => ({
-      prediction_text: p.prediction_text,
-      prediction_date: p.post_date,
-      post_id: p.post_id,
-      post_url: p.post_url,
-      topic: p.topic,
-      implicit: p.implicit,
+      prediction_text: p.prediction_text || 'Unknown prediction', // Ensure not undefined
+      prediction_date: p.post_date || new Date().toISOString(),
+      post_id: p.post_id || 'unknown-id',
+      post_url: p.post_url || '#',
+      topic: p.topic || 'general',
+      implicit: p.implicit ?? false, // Use nullish coalescing to handle undefined
       confidence_score: p.confidence_score,
       outcome: p.outcome,
     })),
@@ -233,94 +234,132 @@ async function identifyPredictionInPost(post: any): Promise<PredictionResult | n
   const postDate = post.created_at || new Date().toISOString();
   const postUrl = post.url || `https://x.com/${username}/status/${postId}`;
 
-  // Skip very short posts as they're unlikely to contain predictions
-  if (postText.length < 30) {
+  // Skip very short posts and retweets
+  if (postText.length < 30 || postText.startsWith('RT @')) {
     return null;
   }
 
+  // Create a simple prompt without JSON structure references
   const predictionPrompt = ChatPromptTemplate.fromMessages([
     [
       'system',
-      `You are an expert at identifying predictions in social media posts.
-      
-      Analyze the given post to determine if it contains a prediction.
-      A prediction is a statement about future events or outcomes. It can be:
-      - Explicit: "I predict X will happen"
-      - Implicit: "X is inevitable" or "X won't last long"
-      
-      If the post does NOT contain a prediction, respond with: { "is_prediction": false }
-      
-      If the post DOES contain a prediction:
-      1. Extract the specific prediction text
-      2. Determine if it's implicit or explicit
-      3. Identify the topic area of the prediction
-      4. Assess the timeframe (immediate, days, weeks, months, years)
-      5. Note if it has conditional elements ("if X then Y")
-      6. Rate your confidence that this is a genuine prediction (0-1)
-      
-      Focus on finding genuine forecasts about the future, not just opinions.`,
+      "You analyze social media posts to identify predictions. Look for statements about future events, either explicit (using words like 'predict', 'will happen') or implicit ('inevitable', 'bound to'). For posts containing predictions, provide details on topic, explicitness, confidence level (0-1), and timeframe. For posts without predictions, say 'No prediction found'.",
     ],
     [
       'human',
-      `Post: "{post_text}"
-      
-      Does this post contain a prediction? If so, analyze it.`,
+      `I need to analyze this post to see if it contains a prediction:\n\n${postText}\n\nDoes this post contain a prediction about future events?`,
     ],
   ]);
 
   try {
-    // Create structured output
-    const structuredLlm = config.cheap_large_llm.withStructuredOutput(
-      z.union([
-        z.object({
-          is_prediction: z.literal(false),
-        }),
-        z.object({
-          is_prediction: z.literal(true),
-          prediction_text: z.string(),
-          implicit: z.boolean(),
-          topic: z.string(),
-          timeframe: z.enum([
-            'immediate',
-            'days',
-            'weeks',
-            'months',
-            'years',
-            'decades',
-            'uncertain',
-          ]),
-          has_condition: z.boolean(),
-          confidence_score: z.number().min(0).max(1),
-        }),
-      ])
-    );
+    // Use raw LLM without structured output to avoid parsing errors
+    const formattedPrompt = await predictionPrompt.formatMessages({});
+    const rawResponse = await config.cheap_large_llm.invoke(formattedPrompt);
+    const responseText = rawResponse.content.toString().toLowerCase();
 
-    // Format the messages and call the LLM
-    const formattedPrompt = await predictionPrompt.formatMessages({ post_text: postText });
-    const result = await structuredLlm.invoke(formattedPrompt);
+    // Simple heuristic check to determine if no prediction
+    if (
+      responseText.includes('no prediction') ||
+      responseText.includes('does not contain') ||
+      responseText.includes('is not a prediction')
+    ) {
+      return null; // Not a prediction
+    }
 
-    // If not a prediction, return null
-    if (!result.is_prediction) {
-      return null;
+    // Extract prediction information using regex patterns
+    let topic = 'general';
+    const topicMatch =
+      responseText.match(/topic[:\s]+(.*?)(?:\.|\n|$)/i) ||
+      responseText.match(/about[:\s]+(.*?)(?:\.|\n|$)/i);
+    if (topicMatch && topicMatch[1]) {
+      topic = topicMatch[1].trim();
+    }
+
+    let confidence = 0.7; // Default confidence
+    const confidenceMatch = responseText.match(/confidence[:\s]+(0\.\d+|\d+)/i);
+    if (confidenceMatch && confidenceMatch[1]) {
+      confidence = parseFloat(confidenceMatch[1]);
+    }
+
+    const isImplicit = responseText.includes('implicit');
+
+    // Determine timeframe
+    let timeframe: any = PredictionTimeframe.UNCERTAIN;
+    if (
+      responseText.includes('immediate') ||
+      responseText.includes('today') ||
+      responseText.includes('tomorrow')
+    ) {
+      timeframe = PredictionTimeframe.DAYS;
+    } else if (responseText.includes('day')) {
+      timeframe = PredictionTimeframe.DAYS;
+    } else if (responseText.includes('week')) {
+      timeframe = PredictionTimeframe.WEEKS;
+    } else if (responseText.includes('month')) {
+      timeframe = PredictionTimeframe.MONTHS;
+    } else if (responseText.includes('year')) {
+      timeframe = PredictionTimeframe.YEARS;
+    } else if (responseText.includes('decade')) {
+      timeframe = PredictionTimeframe.YEARS;
+    }
+
+    // Check if conditional
+    const hasCondition =
+      postText.toLowerCase().includes('if ') || responseText.includes('conditional');
+
+    // Extract prediction text if possible
+    let predictionText = postText.substring(0, 150); // Default to beginning of post
+    const predictTextMatch =
+      responseText.match(/prediction text[:\s]+"(.*?)"/i) ||
+      responseText.match(/prediction[:\s]+"(.*?)"/i);
+    if (predictTextMatch && predictTextMatch[1]) {
+      predictionText = predictTextMatch[1];
     }
 
     // Return the prediction with metadata
     return {
-      prediction_text: result.prediction_text,
-      implicit: result.implicit,
+      is_prediction: true,
+      prediction_text: predictionText || postText.substring(0, 100),
+      implicit: isImplicit,
       post_id: postId,
       post_url: postUrl,
       author_username: username,
       author_name: authorName,
       post_date: postDate,
-      topic: result.topic,
-      timeframe: result.timeframe,
-      has_condition: result.has_condition,
-      confidence_score: result.confidence_score,
-      topic_relevance: 1.0, // Always relevant since we're extracting the topic from the prediction itself
+      topic: topic,
+      timeframe: timeframe,
+      has_condition: hasCondition,
+      confidence_score: confidence,
+      topic_relevance: 0.8, // Good default value
     };
   } catch (error) {
     console.error(`Error analyzing post ${postId}:`, error);
+
+    // Simple heuristic fallback
+    if (
+      postText.toLowerCase().includes('predict') ||
+      postText.toLowerCase().includes('will happen') ||
+      postText.toLowerCase().includes('expect') ||
+      postText.toLowerCase().includes('going to be')
+    ) {
+      // Basic heuristic detection
+      return {
+        is_prediction: true,
+        prediction_text: postText.substring(0, 100),
+        implicit: false,
+        post_id: postId,
+        post_url: postUrl,
+        author_username: username,
+        author_name: authorName,
+        post_date: postDate,
+        topic: 'general',
+        timeframe: PredictionTimeframe.UNCERTAIN,
+        has_condition: postText.toLowerCase().includes('if '),
+        confidence_score: 0.6,
+        topic_relevance: 0.5,
+      };
+    }
+
     return null;
   }
 }

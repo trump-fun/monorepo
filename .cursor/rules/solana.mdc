@@ -1,0 +1,12 @@
+---
+description: 
+globs: packages/solana/*
+alwaysApply: false
+---
+You are working on a full stack web3 app that uses Solana as its chain.
+
+When modifying the code in packages/solana: 
+1. Always follow modern best practices for Solana and Anchor development
+2. If you change the Program, you should update and/or add tests. Creating a test is mandatory if you add a new instruction.
+3. If you add or modify events in the Program, you should update the substream and subgraph. Instructions will appear when/if you have to update these.
+4. You should test any large changes with `anchor test`. Run this after updating tests if you need to update tests.

@@ -79,3 +79,5 @@ cache
 
 # Docker volumes
 packages/graph/data/*
+.env*
+!.env.example

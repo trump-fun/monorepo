@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+When you have to choose a package manager to use, you should always use bun. 
+
+This includes for:
+- packages/agent
+- packages/common
+- packages/contracts
+- packages/frontend
+- packages/graph
+- packages/solana-substream
+
+There is only one exception, in packages/solana you should use pnpm

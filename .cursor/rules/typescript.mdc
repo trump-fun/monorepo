@@ -1,0 +1,9 @@
+---
+description: 
+globs: packages/frontend/**/*.ts,packages/solana/**/*.ts,packages/agent/**/*.ts
+alwaysApply: false
+---
+- Do not use any
+- Do not type cast to any
+- Avoid type casting as a solution to type errors
+- If you are looking at types related to something in Supabase, check [database.types.ts](mdc:packages/common/src/database.types.ts) for something that already exists

@@ -1,0 +1,30 @@
+---
+description: 
+globs: packages/solana-substream/*
+alwaysApply: false
+---
+If you have to make any modifications to instruction headers, enums, or events in the 
+
+# (Solana) Instructions for adding or modifying instructions, struct, enums, or events.
+
+
+If you have to make any modifications to events, enums, accounts, or instruction function headers, please do the following to update the substream and subgraph
+1. First start by running  `anchor build` in `packages/solana` to generate a new idl
+2. Replace [program.json](mdc:packages/solana-substream/idls/program.json) with the newly generated idl from the build located at packages/solana/target/idl/*.json  Do not try to analyze program.json, just replace it with a cp command to replace the file (ex: `cp packages/solana/target/idl/*.json packages/solana-substream/idls/*.json`) 
+
+
+3. If you created a new instruction or modified fields in an existing instruction, account, or event, you must update the substream protobuf at [program.proto](mdc:packages/solana-substream/proto/program.proto)
+4. If you had to update the substream protobuf, you now must run `substream protogen`
+3. If you had to update the substream protobuf, you now must update the handlers in [lib.rs](mdc:packages/solana-substream/src/lib.rs) (notice that this lib.rs is not our main program, it's the one in the substream's src folder)
+4. Finally run `substreams build` in solana/canibeton_solana to confirm that the substream can build.
+
+After you have the substream building, if you had to modify any code in the substreams, you need to update the subgraph.
+
+1. We will start by changing [schema.graphql](mdc:packages/solana-substream/subgraph/schema.graphql) (notice that this is schema.graphql in packages/substream/subgraph). You may have to make multiple changes to this file depending on what you have added or modified.
+    - If you added a new event, you must add an entity representing that event to schema.graphql, and you should check if you need to update any of the aggregate/non-event types (Pool, Bet, and if it exists User).
+    - If you modified or added fields to an existing event, you should update the entity representing that event in schema.graphql and check if any of the aggregate types have a copy of those event fields and update it as well.
+    - If you added or modified fields in an account, you most likely have to update one of the aggregate types to include those fields.
+    - Make sure to add relationships where they exist
+2. If you had to make changes to schema.graphql, run `bun run generate` in solana/canibeton_solana/subgraph to get new types
+3. If you had to update @schema.graphql, update [mappings.ts](mdc:packages/solana-substream/subgraph/src/mappings.ts) with logic to capture the new or modified entities
+4. Finally confirm your new schema changes and mappings.ts change worked with `bun run build` in solana/canibeton_solana/subgraph

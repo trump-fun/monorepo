@@ -1,0 +1,128 @@
+# Schema definitions for Pool and Bet entities and related events
+
+enum PoolStatus {
+  None 
+  Pending
+  Graded
+  Regraded
+}
+
+enum TokenType {
+  USDC
+  Freedom
+}
+
+enum BetOutcome {
+  None
+  Won
+  Lost
+  Voided
+  Draw
+}
+
+enum MediaType {
+  X
+  TikTok
+  Instagram
+  Facebook
+  Image
+  Video
+  ExternalLink
+}
+
+type Pool @entity {
+  id: ID!
+  poolIntId: BigInt!
+  question: String!
+  options: [String!]!
+  betsCloseAt: BigInt!
+  decisionTime: BigInt!
+  usdcBetTotalsByOption: [BigInt!]!
+  pointsBetTotalsByOption: [BigInt!]!
+  winningOption: BigInt!
+  status: PoolStatus!
+  isDraw: Boolean!
+  createdAt: BigInt!
+  category: String!
+  creatorName: String!
+  creatorId: String!
+  closureCriteria: String!
+  closureInstructions: String!
+  mediaUrl: String!
+  mediaType: MediaType!
+  twitterPostId: String!
+  creationTxHash: String!
+}
+
+type Bet @entity {
+  id: ID!
+  betIntId: BigInt!
+  poolIntId: BigInt!
+  pool: Pool!
+  userAddress: String!
+  optionIndex: BigInt!
+  amount: BigInt!
+  createdAt: BigInt!
+  isPayedOut: Boolean!
+  outcome: BetOutcome!
+  tokenType: TokenType!
+  txHash: String!
+}
+
+type PoolCreated @entity {
+  id: ID!
+  txHash: String!
+  poolId: BigInt!
+  question: String!
+  options: [String!]!
+  betsCloseAt: BigInt!
+  mediaUrl: String!
+  mediaType: MediaType!
+  category: String!
+  creatorName: String!
+  creatorId: String!
+  closureCriteria: String!
+  closureInstructions: String!
+  createdAt: BigInt!
+}
+
+type BetPlaced @entity {
+  id: ID!
+  betId: BigInt!
+  poolId: BigInt!
+  user: String!
+  optionIndex: BigInt!
+  amount: BigInt!
+  tokenType: TokenType!
+  createdAt: BigInt!
+  txHash: String!
+  bet: Bet!
+  pool: Pool!
+}
+
+type PoolMediaSet @entity {
+  id: ID!
+  poolId: BigInt!
+  mediaUrl: String!
+  mediaType: MediaType!
+  txHash: String!
+  pool: Pool!
+}
+
+type PayoutClaimed @entity {
+  id: ID!
+  txHash: String!
+  betId: BigInt!
+  poolId: BigInt!
+  user: String!
+  amount: BigInt!
+  tokenType: TokenType!
+}
+
+type PoolClosed @entity {
+  id: ID!
+  txHash: String!
+  poolId: BigInt!
+  selectedOption: BigInt!
+  decisionTime: BigInt!
+}
