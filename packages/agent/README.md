@@ -79,7 +79,7 @@ A comprehensive prediction intelligence ecosystem that discovers, tracks, analyz
 ### Pool Creation Agent
 
 ```bash
-bun run run-pool-creation-agent.ts
+bun run:pool-creation
 ```
 
 This agent:
@@ -92,7 +92,7 @@ This agent:
 ### Bet Grading Agent
 
 ```bash
-bun run run-bet-grading-agent.ts
+bun run:bet-grading
 ```
 
 This agent:
@@ -105,7 +105,7 @@ This agent:
 ### Source Tracing Agent
 
 ```bash
-bun run source-tracing <url>
+bun run:source-tracing <url>
 ```
 
 This agent:
@@ -120,28 +120,28 @@ Example:
 
 ```bash
 # Trace a news article back to primary sources
-bun run source-tracing https://example.com/news-article
+bun run:source-tracing https://example.com/news-article
 
 # Trace a social media post with an external link
-bun run source-tracing https://twitter.com/username/status/1234567890
+bun run:source-tracing https://twitter.com/username/status/1234567890
 ```
 
 ### Prediction Market Intelligence Tools
 
 ```bash
 # Find predictions on a topic
-bun run find-predictions --topic "Trump China tariffs"
+bun run:find-predictions --topic "Trump China tariffs"
 
 # Build predictor profile
-bun run build-profile --username "ElonMusk"
+bun run:build-profile --username "ElonMusk"
 
 # Verify a prediction
-bun run verify-prediction \
-  --prediction "Tesla stock will reach $300 by end of 2023" \
-  --date "2023-01-15" \
+bun run run:verify-prediction \
+  --prediction "Tesla will double vehicle output in the United States within the next two years" \
+  --date "2025-03-12"
 
 # Batch verify predictions from file
-bun run prediction-tools batch-verify --file predictions.json --output results.json
+bun run:prediction-tools batch-verify --file predictions.json --output results.json
 ```
 
 These tools work together to form a complete prediction intelligence system:
