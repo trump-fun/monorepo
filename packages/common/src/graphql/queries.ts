@@ -184,7 +184,6 @@ export const GET_BET_PLACED_STRING = `
       betId
       poolId
       user
-      option
       optionIndex      
       amount
       tokenType
@@ -193,15 +192,6 @@ export const GET_BET_PLACED_STRING = `
       transactionHash
       chainName
       chainId
-      bet {
-        ${BET_FIELDS}
-        pool {
-          ${POOL_FIELDS}
-        }
-      }
-      pool {
-        ${POOL_FIELDS}
-      }
     }
   }
 `;

@@ -58,6 +58,7 @@ export function usePools(tokenType: TokenType) {
     loading: isLoading,
     fetchMore,
     refetch: refetchPools,
+    error,
   } = useQuery(GET_POOLS, {
     variables: {
       filter: activeConfig.filter,

@@ -1,141 +1,133 @@
 'use client';
 
+import { addComment } from '@/app/actions/comment-actions';
 import { toggleLike } from '@/app/actions/like-actions';
-import { isCommentLiked, saveCommentLike } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
+import { CommentWithReplies, MessageToSign } from '@/types/comments';
+import { isCommentLiked, saveCommentLike } from '@/utils/comment-storage';
 import { formatDate } from '@/utils/formatDate';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
-import { Tables } from '@trump-fun/common';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { RandomAvatar } from 'react-random-avatars';
 
 interface CommentItemProps {
-  comment: Tables<'comments'>;
+  comment: CommentWithReplies;
+  initialReplies?: CommentWithReplies[];
+  onReplyAdded?: () => Promise<void>;
 }
 
-// Define local CommentData interface for this component
-interface CommentData {
-  id: string;
-  commentID?: string;
-  parent_id?: string;
-  user_address: string;
-  body: string;
-  created_at: string;
-  upvotes?: number;
-}
-
-const CommentItem = ({ comment }: CommentItemProps) => {
+const CommentItemBase = ({ comment, onReplyAdded }: CommentItemProps) => {
   const [upvotes, setUpvotes] = useState<number>(comment.upvotes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [replies, setReplies] = useState<CommentData[]>([]);
-  const [isLoadingReplies, setIsLoadingReplies] = useState(false);
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState('');
   const [showReplies, setShowReplies] = useState(false);
-  const [hasTrumpReplies, setHasTrumpReplies] = useState(false);
+
   const { login, authenticated } = usePrivy();
   const { wallets } = useWallets();
   const { signMessage } = useSignMessage();
 
-  const isWalletConnected = authenticated && wallets && wallets.length > 0 && wallets[0]?.address;
+  const replies = useMemo(() => comment.replies || [], [comment.replies]);
+  const sortedReplies = useMemo(() => {
+    return [...replies].sort((a, b) => {
+      const timestampA = new Date(a.created_at).getTime();
+      const timestampB = new Date(b.created_at).getTime();
+      return timestampB - timestampA; // Sort by date, newest first
+    });
+  }, [replies]);
 
-  // Check for Trump replies when component mounts
-  useEffect(() => {
-    const checkForTrumpReplies = async () => {
-      if (!comment.id) return;
+  const handleReplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyText.trim() || isSubmitting) return;
 
-      try {
-        const response = await fetch(`/api/comment?comment_id=${comment.id}`);
-        if (!response.ok) throw new Error('Failed to fetch replies');
+    setIsSubmitting(true);
+    try {
+      const wallet = wallets?.[0];
 
-        const data = await response.json();
-
-        // Log the response to debug
-
-        // Check if there are any Trump replies
-        let trumpReplies: CommentData[] = [];
-        if (data.comments && Array.isArray(data.comments)) {
-          trumpReplies = data.comments.filter(
-            (reply: CommentData) =>
-              reply.user_address === '0xRealDonaldTrump2025' &&
-              (String(reply.commentID) === String(comment.id) ||
-                String(reply.parent_id) === String(comment.id))
-          );
-        } else if (Array.isArray(data)) {
-          trumpReplies = data.filter(
-            (reply: CommentData) =>
-              reply.user_address === '0xRealDonaldTrump2025' &&
-              (String(reply.commentID) === String(comment.id) ||
-                String(reply.parent_id) === String(comment.id))
-          );
+      if (!wallet || !wallet.address) {
+        if (!authenticated) {
+          login();
         }
-
-        // Set whether there are Trump replies
-        setHasTrumpReplies(trumpReplies.length > 0);
-
-        // Save the replies in state in case the user wants to view them
-        setReplies(trumpReplies);
-      } catch (error) {
-        console.error('Error checking for Trump replies:', error);
+        return;
       }
-    };
 
-    checkForTrumpReplies();
-  }, [comment.id]);
+      const messageObj: MessageToSign = {
+        action: 'add_comment',
+        poolId: String(comment.pool_id),
+        commentID: String(comment.id),
+        content: replyText,
+        timestamp: new Date().toISOString(),
+        account: wallet.address.toLowerCase(),
+      };
 
-  // Fetch replies when the user clicks to view replies
-  useEffect(() => {
-    const fetchReplies = async () => {
-      if (!comment.id || !showReplies || replies.length > 0) return;
+      const messageStr = JSON.stringify(messageObj);
 
-      setIsLoadingReplies(true);
-      try {
-        // We already have the replies from the initial check, no need to fetch again
-        // unless we need to refresh the data
-        setIsLoadingReplies(false);
-      } catch (error) {
-        console.error('Error fetching replies:', error);
-        setIsLoadingReplies(false);
+      const { signature } = await signMessage(
+        { message: messageStr },
+        {
+          uiOptions: {
+            title: 'Sign your reply',
+            description: 'Sign this message to verify you are the author of this reply',
+            buttonText: 'Sign Reply',
+          },
+          address: wallet.address,
+        }
+      );
+
+      await addComment(comment.pool_id, replyText, signature, messageStr, parseInt(comment.id));
+
+      // Clear form and refresh comments
+      setReplyText('');
+      setShowReplyForm(false);
+      if (onReplyAdded) {
+        await onReplyAdded();
       }
-    };
+      setShowReplies(true); // Show replies after adding one
 
-    fetchReplies();
-  }, [comment.id, showReplies, replies.length]);
+      import('@/utils/toast').then(({ showSuccessToast }) => {
+        showSuccessToast('Reply posted successfully');
+      });
+    } catch (error) {
+      console.error('Error posting reply:', error);
+      import('@/utils/toast').then(({ showErrorToast }) => {
+        showErrorToast('Failed to post reply');
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Define hooks at the top level before any conditional returns
   const handleLike = useCallback(async () => {
-    if (!comment || !comment.id) return;
-
-    if (!isWalletConnected) {
+    if (!authenticated) {
       login();
       return;
     }
 
-    if (isSubmitting) return;
+    // Return early if already processing
+    if (isSubmitting) {
+      return;
+    }
+
+    if (isSubmitting || !comment?.id) return;
 
     setIsSubmitting(true);
 
     try {
       const wallet = wallets?.[0];
-
-      if (!wallet || !wallet.address) {
+      if (!wallet?.address) {
         setIsSubmitting(false);
         return;
       }
 
-      // Determine action without updating state yet
       const newIsLiked = !isLiked;
+      const optimisticUpvotes = newIsLiked ? upvotes + 1 : Math.max(0, upvotes - 1);
 
-      // Calculate the correct upvote count based on the current state
-      // and whether the user is liking or unliking
-      let newUpvotes = upvotes;
-      if (newIsLiked) {
-        // If user is liking and wasn't liked before
-        newUpvotes = upvotes + 1;
-      } else {
-        // If user is unliking and was liked before
-        newUpvotes = Math.max(0, upvotes - 1);
-      }
+      // Optimistically update UI
+      setIsLiked(newIsLiked);
+      setUpvotes(optimisticUpvotes);
 
       const messageObj = {
         action: 'toggle_like',
@@ -159,22 +151,23 @@ const CommentItem = ({ comment }: CommentItemProps) => {
         }
       );
 
-      // Call API first to ensure the data is saved
       const result = await toggleLike(
-        comment.id,
+        Number(comment.id),
         newIsLiked ? 'like' : 'unlike',
         signature,
         messageStr
       );
 
       if (result.success) {
-        setIsLiked(newIsLiked);
-        setUpvotes(result.upvotes ?? newUpvotes);
-
-        // Update localStorage after successful server update
-        saveCommentLike(comment.id, newIsLiked);
+        // Update with server response
+        const newUpvotes = typeof result.upvotes === 'number' ? result.upvotes : optimisticUpvotes;
+        setUpvotes(newUpvotes);
+        await saveCommentLike(String(comment.id), newIsLiked);
       } else {
-        console.error('Error toggling comment like:', result.error);
+        // Revert optimistic update on error
+        setIsLiked(!newIsLiked);
+        setUpvotes(upvotes);
+        throw new Error(result.error || 'Failed to toggle like');
       }
     } catch (error) {
       // Only log errors that aren't user rejections
@@ -185,119 +178,148 @@ const CommentItem = ({ comment }: CommentItemProps) => {
         !error.message.includes('user rejected')
       ) {
         console.error('Error handling comment FACTS:', error);
+        import('@/utils/toast').then(({ showErrorToast }) => {
+          showErrorToast('Failed to update FACTS');
+        });
       }
     } finally {
       setIsSubmitting(false);
     }
-  }, [isLiked, isSubmitting, isWalletConnected, login, wallets, signMessage, comment, upvotes]);
+  }, [isLiked, isSubmitting, login, wallets, signMessage, comment, upvotes, authenticated]);
 
-  const toggleReplies = useCallback(() => {
-    setShowReplies(!showReplies);
-  }, [showReplies]);
-
-  // Check localStorage when component mounts to see if this comment was liked before
+  // Check if comment is liked when component mounts
   useEffect(() => {
-    if (typeof window !== 'undefined' && comment?.id) {
-      const wasLiked = isCommentLiked(comment.id);
-      setIsLiked(wasLiked);
-    }
-  }, [comment?.id, authenticated]);
-
-  if (!comment || !comment.id) {
-    return null;
-  }
+    const checkLikeStatus = async () => {
+      if (comment?.id) {
+        const liked = await isCommentLiked(String(comment.id));
+        setIsLiked(liked);
+      }
+    };
+    checkLikeStatus();
+  }, [comment?.id]);
 
   return (
-    <div className='border-b pb-4 last:border-0'>
-      <div className='flex gap-3'>
+    <div className='relative space-y-3'>
+      <div className='flex items-start gap-4'>
         <div className='relative h-10 w-10 overflow-hidden rounded-full'>
-          <RandomAvatar size={40} name={comment.user_address} />
+          <RandomAvatar name={wallets?.[0]?.address || 'guest'} />
         </div>
-
-        <div className='flex-1'>
-          <div className='mb-1 flex items-center gap-2'>
-            <span className='font-medium'>
-              {comment.user_address.slice(0, 6)}...{comment.user_address.slice(-4)}
-            </span>
-
-            <span className='text-sm text-gray-500'>{formatDate(comment.created_at)}</span>
-          </div>
-
-          <p className='mb-3'>{comment.body}</p>
-
+        <div className='flex-1 space-y-2'>
           <div className='flex items-center gap-2'>
+            <span className='text-sm font-medium'>
+              {comment.user_address === '0xRealDonaldTrump2025' ? (
+                <span className='flex items-center gap-1'>
+                  Donald J. Trump
+                  <Image
+                    src='/verified.svg'
+                    alt='Verified'
+                    width={16}
+                    height={16}
+                    className='inline'
+                  />
+                </span>
+              ) : (
+                `${comment.user_address.slice(0, 6)}...${comment.user_address.slice(-4)}`
+              )}
+            </span>
+            <span className='text-xs text-gray-500'>{formatDate(comment.created_at)}</span>
+          </div>
+          <p className='text-sm text-gray-100'>{comment.body}</p>
+          <div className='flex items-center gap-4'>
             <Button
               variant='ghost'
               size='sm'
-              className={`h-9 gap-2 px-3 ${
-                isLiked
-                  ? 'font-bold text-orange-500 hover:text-orange-600'
-                  : 'text-orange-500 hover:text-orange-500 focus:text-orange-500 active:text-orange-500'
-              }`}
+              className='flex items-center gap-1 text-xs'
               onClick={handleLike}
               disabled={isSubmitting}
             >
-              <span>FACTS</span>
-              {isLiked && <span className='ml-1.5'>🦅</span>}
-              <span className='ml-1.5'>{upvotes}</span>
+              <span>{upvotes} FACTS</span>
+              {isLiked ? '🔥' : '👀'}
             </Button>
-
-            {/* Only show Trump reply button if there are replies */}
-            {hasTrumpReplies && (
+            <Button
+              variant='ghost'
+              size='sm'
+              className='text-xs'
+              onClick={() => setShowReplyForm(!showReplyForm)}
+            >
+              Reply
+            </Button>
+            {replies.length > 0 && (
               <Button
                 variant='ghost'
                 size='sm'
-                className='h-9 gap-2 px-3 text-blue-500 hover:text-blue-600'
-                onClick={toggleReplies}
+                className='text-xs'
+                onClick={() => setShowReplies(!showReplies)}
               >
-                <span>{showReplies ? 'Hide Trump Replies' : 'Show Trump Replies'}</span>
-                <span className='ml-1.5'>🇺🇸</span>
+                {showReplies ? 'Hide' : `Show ${replies.length}`}{' '}
+                {replies.length === 1 ? 'reply' : 'replies'}
               </Button>
             )}
           </div>
-
-          {/* Replies section - only show when showReplies is true */}
-          {showReplies && hasTrumpReplies && (
-            <div className='mt-3 border-l-2 border-red-200 pl-4'>
-              {isLoadingReplies ? (
-                <div className='mt-3 pl-4 text-sm text-gray-500'>Loading Trump replies...</div>
-              ) : replies && replies.length > 0 ? (
-                <>
-                  <h4 className='mb-2 text-sm font-semibold text-gray-700'>
-                    Trump Responses ({replies.length})
-                  </h4>
-                  {replies.map((reply) => (
-                    <div key={reply.id} className='mb-3 border-t border-gray-100 pt-2'>
-                      <div className='mb-1 flex items-center gap-2'>
-                        <div className='flex items-center'>
-                          <div className='relative h-6 w-6 overflow-hidden rounded-full'>
-                            <Image
-                              src='/trump.jpeg'
-                              alt='Trump Avatar'
-                              fill
-                              className='object-cover'
-                              sizes='100%'
-                            />
-                          </div>
-                          <span className='ml-2 text-sm font-bold'>@realDonaldTrump</span>
-                        </div>
-                        <span className='text-xs text-gray-500'>
-                          {formatDate(reply.created_at)}
-                        </span>
-                      </div>
-                      <p className='ml-8 text-sm'>{reply.body}</p>
-                    </div>
-                  ))}
-                </>
-              ) : (
-                <div className='mt-3 pl-4 text-sm text-gray-500'>No Trump replies yet</div>
-              )}
-            </div>
-          )}
         </div>
       </div>
+
+      {showReplyForm && (
+        <form onSubmit={handleReplySubmit} className='mt-2 ml-14'>
+          <div className='flex gap-2'>
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder='Write a reply...'
+              className='flex-1 rounded-lg border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none'
+              rows={2}
+            />
+            <Button type='submit' disabled={isSubmitting || !replyText.trim()} className='self-end'>
+              {isSubmitting ? 'Posting...' : 'Post'}
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {showReplies && replies.length > 0 && (
+        <div className='ml-14 space-y-4'>
+          {sortedReplies.map((reply) => (
+            <div key={reply.id} className='flex items-start gap-4'>
+              <div className='relative h-8 w-8 overflow-hidden rounded-full'>
+                <RandomAvatar name={wallets?.[0]?.address || 'guest'} />
+              </div>
+              <div className='flex-1 space-y-1'>
+                <div className='flex items-center gap-2'>
+                  <span className='text-sm font-medium'>
+                    {reply.user_address === '0xRealDonaldTrump2025' ? (
+                      <span className='flex items-center gap-1'>
+                        Donald J. Trump
+                        <Image
+                          src='/verified.svg'
+                          alt='Verified'
+                          width={14}
+                          height={14}
+                          className='inline'
+                        />
+                      </span>
+                    ) : (
+                      `${reply.user_address.slice(0, 6)}...${reply.user_address.slice(-4)}`
+                    )}
+                  </span>
+                  <span className='text-xs text-gray-500'>{formatDate(reply.created_at)}</span>
+                </div>
+                <p className='text-sm text-gray-100'>{reply.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
+
+const CommentItem = memo(CommentItemBase, (prevProps, nextProps) => {
+  return (
+    prevProps.comment.id === nextProps.comment.id &&
+    prevProps.comment.upvotes === nextProps.comment.upvotes &&
+    prevProps.comment.body === nextProps.comment.body &&
+    prevProps.comment.replies?.length === nextProps.comment.replies?.length
+  );
+});
 
 export default CommentItem;

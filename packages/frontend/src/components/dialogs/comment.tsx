@@ -16,14 +16,7 @@ import { Textarea } from '../ui/textarea';
 
 import { addComment } from '@/app/actions/comment-actions';
 import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
-
-type MessageToSign = {
-  action: string;
-  poolId: string;
-  comment: string;
-  timestamp: string;
-  account: string;
-};
+import { MessageToSign } from '@/types/comments';
 
 interface CommentPostModalProps {
   isOpen: boolean;
@@ -82,7 +75,7 @@ export const CommentModal: FC<CommentPostModalProps> = ({
       const messageObj: MessageToSign = {
         action: 'add_comment',
         poolId,
-        comment,
+        content: comment,
         timestamp: new Date().toISOString(),
         account: wallet.address.toLowerCase(),
       };

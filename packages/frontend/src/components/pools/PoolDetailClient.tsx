@@ -17,7 +17,7 @@ import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
 import { gql as apolloGql } from '@apollo/client';
-import { POLLING_INTERVALS, Tables } from '@trump-fun/common';
+import { POLLING_INTERVALS } from '@trump-fun/common';
 import {
   GET_BET_PLACED_STRING,
   GET_BETS_STRING,
@@ -44,9 +44,19 @@ import {
   PoolStatus,
 } from '@trump-fun/common';
 
+import { CommentWithReplies } from '@/types/comments';
+
 type PoolDetailClientProps = {
   id: string;
-  initialComments: Tables<'comments'>[] | null;
+  initialComments: {
+    comments: CommentWithReplies[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      hasMore: boolean;
+    };
+  } | null;
 };
 
 export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
@@ -60,8 +70,6 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
   const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
-  const [_isDataLoading, _setIsDataLoading] = useState(false);
-  const [_error, _setError] = useState<string | null>(null);
 
   const { data: hash, isPending, writeContract } = useWriteContract();
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
@@ -171,26 +179,53 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     }
   }, [isConfirmed, refreshData]);
 
+  type CommentsResponse = {
+    comments: CommentWithReplies[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      hasMore: boolean;
+    };
+  };
+
   const {
     data: commentsData,
     isLoading: isCommentsLoading,
     error: commentsError,
     refetch: refetchComments,
-  } = useQuery({
+  } = useQuery<CommentsResponse, Error>({
     queryKey: ['comments', id],
-    queryFn: async () => {
-      const res = await fetch(`/api/comments?poolId=${id}`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
+    queryFn: async (): Promise<CommentsResponse> => {
+      const page = commentsData?.pagination?.page || 1;
+      const pageSize = commentsData?.pagination?.pageSize || 10;
+      const res = await fetch(
+        `/api/comments?poolId=${id}&includeReplies=true&page=${page}&pageSize=${pageSize}`
+      );
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Network response was not ok: ${errorText}`);
+      }
+      const data = await res.json();
+      return {
+        comments: data.comments,
+        pagination: data.pagination,
+      };
     },
-    initialData: initialComments,
-    staleTime: 60000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    initialData: initialComments ? initialComments : undefined,
+    staleTime: 30000, // Reduced stale time to ensure fresher data
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000, // Poll every minute for new comments
   });
 
   const comments = useMemo(
-    () => commentsData?.comments || initialComments || [],
+    () => commentsData?.comments || initialComments?.comments || [],
+    [commentsData, initialComments]
+  );
+
+  const commentsPagination = useMemo(
+    () => commentsData?.pagination || initialComments?.pagination,
     [commentsData, initialComments]
   );
 
@@ -360,9 +395,10 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
             pool={pool}
             bets={betPlacedData}
             comments={comments}
+            commentsPagination={commentsPagination}
             isCommentsLoading={isCommentsLoading}
             commentsError={commentsError}
-            onCommentsUpdated={refetchComments} // Pass this function to refresh comments
+            onCommentsUpdated={refetchComments}
           />
         </CardContent>
       </Card>

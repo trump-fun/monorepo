@@ -94,6 +94,7 @@ export type Database = {
       }
       agents: {
         Row: {
+<<<<<<< HEAD
           chain_name: Database["public"]["Enums"]["chain_name"]
           character_card: string | null
           created_at: string
@@ -365,6 +366,74 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+          character_card: string | null;
+          color: string;
+          created_at: string;
+          creator_id: number;
+          display_name: string;
+          earnings: number | null;
+          endpoint: string;
+          eth_wallet_address: string | null;
+          id: number;
+          image_url: string;
+          last_health_check: string | null;
+          platform: string;
+          single_sentence_summary: string | null;
+          sol_wallet_address: string | null;
+          status: string | null;
+          type: string;
+          updated_at: string;
+        };
+        Insert: {
+          character_card?: string | null;
+          color: string;
+          created_at?: string;
+          creator_id: number;
+          display_name: string;
+          earnings?: number | null;
+          endpoint: string;
+          eth_wallet_address?: string | null;
+          id?: number;
+          image_url: string;
+          last_health_check?: string | null;
+          platform: string;
+          single_sentence_summary?: string | null;
+          sol_wallet_address?: string | null;
+          status?: string | null;
+          type?: string;
+          updated_at?: string;
+        };
+        Update: {
+          character_card?: string | null;
+          color?: string;
+          created_at?: string;
+          creator_id?: number;
+          display_name?: string;
+          earnings?: number | null;
+          endpoint?: string;
+          eth_wallet_address?: string | null;
+          id?: number;
+          image_url?: string;
+          last_health_check?: string | null;
+          platform?: string;
+          single_sentence_summary?: string | null;
+          sol_wallet_address?: string | null;
+          status?: string | null;
+          type?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'agents_creator_id_fkey';
+            columns: ['creator_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+>>>>>>> 85321c6 (feat: add pagination to comments and add replies)
       comments: {
         Row: {
           body: string
