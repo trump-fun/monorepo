@@ -19,11 +19,26 @@ export const predictionVerificationSchema = z.object({
   evidence_text: z.string().describe('Text explaining the evidence for verification'),
   verification_date: z.string().describe('When this verification was performed'),
   // Additional detailed analysis fields
-  key_facts: z.array(z.string()).optional().describe('List of key facts extracted from the evidence that support the outcome'),
-  counter_evidence: z.array(z.string()).optional().describe('List of any evidence that contradicts the outcome'),
-  timeline_analysis: z.string().optional().describe('Analysis of the timing aspects of the prediction and evidence'),
-  sources_quality: z.string().optional().describe('Assessment of the quality and reliability of the evidence sources'),
-  reasoning: z.string().optional().describe('Detailed reasoning explaining the analysis process and conclusion')
+  key_facts: z
+    .array(z.string())
+    .optional()
+    .describe('List of key facts extracted from the evidence that support the outcome'),
+  counter_evidence: z
+    .array(z.string())
+    .optional()
+    .describe('List of any evidence that contradicts the outcome'),
+  timeline_analysis: z
+    .string()
+    .optional()
+    .describe('Analysis of the timing aspects of the prediction and evidence'),
+  sources_quality: z
+    .string()
+    .optional()
+    .describe('Assessment of the quality and reliability of the evidence sources'),
+  reasoning: z
+    .string()
+    .optional()
+    .describe('Detailed reasoning explaining the analysis process and conclusion'),
 });
 
 export type PredictionVerification = z.infer<typeof predictionVerificationSchema>;
