@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteName = 'Trump.fun';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://trump-fun.vercel.app/';
   const poolUrl = `${baseUrl}/pools/${id}`;
-  const imageUrl = pool?.imageUrl || '/default-pool-image.jpg';
+  const imageUrl = pool?.mediaUrl || '/default-pool-image.jpg';
 
   return {
     title: poolQuestion

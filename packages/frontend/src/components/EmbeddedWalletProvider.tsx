@@ -1,6 +1,6 @@
 'use client';
 
-import { usePrivy, useWallets, WalletWithMetadata } from '@privy-io/react-auth';
+import { usePrivy, useSolanaWallets, WalletWithMetadata } from '@privy-io/react-auth';
 import { DEFAULT_CHAIN_ID } from '@trump-fun/common';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
@@ -36,21 +36,23 @@ export const useEmbeddedWallet = () => useContext(EmbeddedWalletContext);
 
 export const EmbeddedWalletProvider = ({ children }: { children: ReactNode }) => {
   const { ready: privyReady } = usePrivy();
-  const { ready: readyWallets, wallets } = useWallets();
+  // const { ready: readyWallets, wallets } = useWallets();
+  const { ready: readySolanaWallets, wallets: solanaWallets } = useSolanaWallets();
+
   const [embeddedWallet, setEmbeddedWallet] = useState<EmbeddedWallet | null>(null);
   const [currentChainId, setCurrentChainId] = useState<number>(DEFAULT_CHAIN_ID);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Find the embedded wallet when wallets are ready
   useEffect(() => {
-    if (readyWallets) {
-      const wallet = wallets.find(wallet => wallet.walletClientType === 'privy') as
+    if (readySolanaWallets) {
+      const wallet = solanaWallets.find((wallet) => wallet.walletClientType === 'privy') as
         | EmbeddedWallet
         | undefined;
 
       setEmbeddedWallet(wallet || null);
     }
-  }, [readyWallets, wallets]);
+  }, [readySolanaWallets, solanaWallets]);
 
   // Update chain ID and config when embedded wallet changes or its chain ID changes
   useEffect(() => {

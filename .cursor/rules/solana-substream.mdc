@@ -24,7 +24,7 @@ After you have the substream building, if you had to modify any code in the subs
     - If you added a new event, you must add an entity representing that event to schema.graphql, and you should check if you need to update any of the aggregate/non-event types (Pool, Bet, and if it exists User).
     - If you modified or added fields to an existing event, you should update the entity representing that event in schema.graphql and check if any of the aggregate types have a copy of those event fields and update it as well.
     - If you added or modified fields in an account, you most likely have to update one of the aggregate types to include those fields.
-    - Make sure to add relationships where they exist
+    - Make sure to add relationships where they exist. Follow this guide one that happens: https://thegraph.com/docs/en/subgraphs/developing/creating/ql-schema/#entity-relationships
 2. If you had to make changes to schema.graphql, run `bun run generate` in solana/canibeton_solana/subgraph to get new types
 3. If you had to update @schema.graphql, update [mappings.ts](mdc:packages/solana-substream/subgraph/src/mappings.ts) with logic to capture the new or modified entities
 4. Finally confirm your new schema changes and mappings.ts change worked with `bun run build` in solana/canibeton_solana/subgraph

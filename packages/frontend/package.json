@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "deploy": "sh deploy.sh",
-    "codegen": "graphql-codegen && grep -v \"PoolId = 'pool__id',\\|BetId = 'bet__id',\" src/types/__generated__/graphql.ts > temp.ts && mv temp.ts src/types/__generated__/graphql.ts"
+    "codegen": "graphql-codegen && grep -v \"PoolId = 'pool__id',|BetId = 'bet__id',\" src/types/__generated__/graphql.ts > temp.ts && mv temp.ts src/types/__generated__/graphql.ts && sed -i '' 's/const documents = [[]][]];/const documents: any[[]][]] = [[]][]];/' src/types/__generated__/graphql.ts"
   },
   "dependencies": {
     "@apollo/client": "^3.13.5",

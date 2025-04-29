@@ -139,7 +139,7 @@ async function getUserInfo(username: string): Promise<any> {
 /**
  * Gets recent posts from a user
  */
-async function getUserPosts(username: string, count: number = 100): Promise<any[]> {
+async function getUserPosts(username: string, count: number = 20): Promise<any[]> {
   try {
     console.log(`Getting up to ${count} recent posts for @${username}`);
 
