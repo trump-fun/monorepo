@@ -36,6 +36,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
     "@hono/zod-validator": "^0.4.3",
     "@langchain/anthropic": "^0.3.15",
     "@langchain/community": "^0.3.37",
@@ -44,9 +45,10 @@
     "@langchain/langgraph": "^0.2.60",
     "@langchain/openai": "^0.5.0",
     "@mendable/firecrawl-js": "^1.22.1",
+    "@solana/spl-token": "^0.4.13",
     "@supabase/supabase-js": "^2.49.3",
     "@tavily/core": "^0.3.4",
-    "@trump-fun/common": "workspace:*",
+    "@trump-fun/common": "file:../common",
     "@types/uuid": "^10.0.0",
     "@wagmi/chains": "^1.8.0",
     "axios": "^1.8.4",

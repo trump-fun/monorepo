@@ -1,5 +1,5 @@
+import { PublicKey } from '@solana/web3.js';
 import { arbitrumSepolia, baseSepolia } from 'viem/chains';
-
 export const DEFAULT_CHAIN_ID = baseSepolia.id; // Base chain ID
 export const USDC_DECIMALS = 6;
 export const FREEDOM_DECIMALS = 6;
@@ -40,4 +40,11 @@ export const CHAIN_CONFIG: Record<SupportedChainIds, ChainConfig> = {
     freedomAddress: '0x743E76aA58Af8efa0169f5da412975ed84B95CBE',
     appAddress: '0x6104aFE7215de0b7A3c727aC08d71Fa349Ec37C9',
   },
+};
+
+export const SOLANA_DEVNET_CONFIG = {
+  rpcUrl: 'https://api.devnet.solana.com',
+  programId: new PublicKey('5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ'),
+  freedomMint: new PublicKey('F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5'),
+  usdcMint: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
 };

@@ -1,9 +1,9 @@
-import { load } from 'cheerio';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import type { SingleResearchItemState } from '../single-betting-pool-graph';
+import FirecrawlApp from '@mendable/firecrawl-js';
+import { load } from 'cheerio';
 import config from '../../config';
 import { fetchWithPuppeteer } from '../../puppeteer-stealth-request';
-import FirecrawlApp from '@mendable/firecrawl-js';
+import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
 /**
  * Extracts a URL from HTML content
@@ -193,14 +193,17 @@ export async function extractAndScrapeExternalLink(
       ],
       [
         'human',
-        `Here is web content from ${externalLink} that needs to be summarized:
+        `Here is web content from {externalLink} that needs to be summarized:
         
-        ${content}`,
+        {content}`,
       ],
     ]);
 
     // Get the formatted prompt
-    const formattedPrompt = await summarizePrompt.formatMessages({});
+    const formattedPrompt = await summarizePrompt.formatMessages({
+      externalLink,
+      content,
+    });
 
     // Get summary from LLM
     const summaryResponse = await config.cheap_large_llm.invoke(formattedPrompt);

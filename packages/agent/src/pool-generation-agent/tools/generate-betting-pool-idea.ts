@@ -1,5 +1,5 @@
 import config from '../../config';
-import type { SingleResearchItem } from '../../types/research-item';
+import type { ResearchItem } from '../../types/research-item';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
 /**
@@ -58,7 +58,7 @@ export async function generateBettingPoolIdea(
     const sevenDaysFormatted = sevenDaysFromNow.toLocaleString();
 
     // Include any existing research data in the prompt
-    const researchItemTyped = researchItem as SingleResearchItem;
+    const researchItemTyped = researchItem satisfies ResearchItem;
     const newsInfo = researchItemTyped.related_news_search_results
       ? `Related news: ${researchItemTyped.related_news_search_results.join(', ')}`
       : 'No related news yet';

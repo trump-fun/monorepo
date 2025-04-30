@@ -154,7 +154,7 @@ function parseGoogleImageResponse(response: any): {
  * Generates an image prompt and image for a single betting pool idea using Venice AI
  * This enhances the betting pool with a visual element
  */
-export async function generateImage(
+export async function generateImageVenice(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
   console.log('Generating image for betting pool idea');

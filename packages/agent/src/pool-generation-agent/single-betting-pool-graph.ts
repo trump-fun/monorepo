@@ -12,27 +12,26 @@
  */
 import type { BaseMessage } from '@langchain/core/messages';
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
-import type { BettingChainConfig } from '../config';
-import { DEFAULT_CHAIN_ID, config } from '../config';
-import type { SingleResearchItem } from '../types/research-item';
-import { createBettingPool } from './tools/create-betting-pool';
+import config, { DEFAULT_CHAIN_ID } from '../config';
+import type { ResearchItem } from '../types/research-item';
+import { createBettingPool as createBettingPoolEvm } from './tools/create-betting-pool';
+import { createBettingPoolSolana } from './tools/create-betting-pool-solana';
 import { generateBettingPoolIdea } from './tools/generate-betting-pool-idea';
-import { generateImage } from './tools/generate-image';
+import { generateImageFlux } from './tools/generate-image-flux';
 import { newsApiSearchFunctionSingle } from './tools/news-api';
 import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-external-link';
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
+import { sendTgMessage } from './tools/send-tg-message';
 import { tavilySearchFunctionSingle } from './tools/tavily-search';
 import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
-import { sendTgMessage } from './tools/send-tg-message';
-import { traceSourceChain } from '../source-tracing-agent/core/source-tracing';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,
-  chainConfig: Annotation<BettingChainConfig>({
+  chainId: Annotation<string>({
     value: (curr, update) => update,
-    default: () => config.chainConfig[DEFAULT_CHAIN_ID],
+    default: () => DEFAULT_CHAIN_ID,
   }),
-  research: Annotation<SingleResearchItem>({
+  research: Annotation<ResearchItem>({
     reducer: (curr, update) => {
       // If current item is empty, return the update
       if (!curr.truth_social_post?.id) return update;
@@ -120,6 +119,7 @@ export type SingleResearchItemState = typeof SingleResearchItemAnnotation.State;
 
 // Function to check if we should proceed with processing
 function shouldContinueProcessing(state: SingleResearchItemState): 'continue' | 'stop' {
+  console.log('shouldContinueProcessing', state);
   if (!state.research) return 'stop';
 
   // If the item is explicitly marked as should not process, stop
@@ -148,16 +148,35 @@ function shouldTraceSource(state: SingleResearchItemState): 'trace' | 'skip' {
 // Create the graph
 const builder = new StateGraph(SingleResearchItemAnnotation);
 
+function selectChainType(state: SingleResearchItemState): 'evm' | 'solana' | 'default' {
+  if (config.chainConfig[state.chainId]?.chainType === 'evm') {
+    return 'evm';
+  } else if (config.chainConfig[state.chainId]?.chainType === 'solana') {
+    return 'solana';
+  }
+  return 'default';
+}
+
+// Node function that just passes through the state
+async function chooseChainNode(
+  state: SingleResearchItemState
+): Promise<Partial<SingleResearchItemState>> {
+  return state;
+}
+
 // Add nodes to the graph
 builder
   .addNode('extract_search_query', extractSearchQueryFunctionSingle)
   .addNode('check_external_link', extractAndScrapeExternalLink)
   .addNode('news_api_search', newsApiSearchFunctionSingle)
   .addNode('tavily_search', tavilySearchFunctionSingle)
-  .addNode('trace_source_chain', traceSourceChain) // Add the new node
+  // .addNode('trace_source_chain', traceSourceChain) // Add the new node
   .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
-  .addNode('generate_image', generateImage)
-  .addNode('create_betting_pool', createBettingPool)
+  // .addNode('generate_image', generateImageVenice)
+  .addNode('generate_image', generateImageFlux)
+  .addNode('choose_chain', chooseChainNode)
+  .addNode('create_betting_pool_evm', createBettingPoolEvm)
+  .addNode('create_betting_pool_solana', createBettingPoolSolana)
   .addNode('upsert_truth_social_post', upsertTruthSocialPost)
   .addNode('send_tg_message', sendTgMessage)
   .addEdge(START, 'extract_search_query')
@@ -173,21 +192,27 @@ builder
   // After scraping external link, proceed to tavily search
   .addEdge('check_external_link', 'tavily_search')
   // After tavily search, conditionally trace sources
-  .addConditionalEdges('tavily_search', shouldTraceSource, {
-    trace: 'trace_source_chain',
-    skip: 'generate_betting_pool_idea',
-  })
+  // .addConditionalEdges('tavily_search', shouldTraceSource, {
+  //   trace: 'trace_source_chain',
+  //   skip: 'generate_betting_pool_idea',
+  // })
   // After source tracing, generate betting pool idea
-  .addEdge('trace_source_chain', 'generate_betting_pool_idea')
+  .addEdge('tavily_search', 'generate_betting_pool_idea')
   .addConditionalEdges('generate_betting_pool_idea', shouldContinueProcessing, {
     continue: 'generate_image',
     stop: END,
   })
   .addConditionalEdges('generate_image', shouldContinueProcessing, {
-    continue: 'create_betting_pool',
+    continue: 'choose_chain',
     stop: END,
   })
-  .addEdge('create_betting_pool', 'upsert_truth_social_post')
+  .addConditionalEdges('choose_chain', selectChainType, {
+    evm: 'create_betting_pool_evm',
+    solana: 'create_betting_pool_solana',
+    default: 'create_betting_pool_solana',
+  })
+  .addEdge('create_betting_pool_evm', 'upsert_truth_social_post')
+  .addEdge('create_betting_pool_solana', 'upsert_truth_social_post')
   .addEdge('upsert_truth_social_post', 'send_tg_message')
   .addEdge('send_tg_message', END);
 

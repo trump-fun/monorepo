@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.3",
-    "supabase": "^2.20.5"
+    "supabase": "^2.20.5",
+    "@solana/web3.js": "^1.96.1",
+    "@solana/spl-token": "^0.4.13",
+    "@coral-xyz/anchor": "^0.31.1"
   },
   "devDependencies": {
     "typescript": "^5.8.2",

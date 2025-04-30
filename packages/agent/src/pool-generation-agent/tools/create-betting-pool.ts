@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import config from '../../config';
 import bettingContractAbi from '../../types/BettingContract.json';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 /**
@@ -8,7 +9,16 @@ import type { SingleResearchItemState } from '../single-betting-pool-graph';
 export async function createBettingPool(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  console.log('Creating betting pool for research item');
+  console.log('Creating betting pool for research item(EVM)');
+
+  const { chainId } = state;
+  if (!chainId) {
+    throw new Error('Chain ID must be set');
+  }
+  const chainConfig = config.chainConfig[chainId];
+  if (!chainConfig || chainConfig.chainType !== 'evm') {
+    throw new Error("Chain is not EVM, you shouldn't be here");
+  }
 
   // Get the research item from state
   const researchItem = state.research;
@@ -16,15 +26,6 @@ export async function createBettingPool(
   // If there's no research item, return early
   if (!researchItem) {
     console.log('No research item available');
-    return {
-      research: researchItem,
-    };
-  }
-
-  // Get chain configuration from state
-  const chainConfig = state.chainConfig;
-  if (!chainConfig) {
-    console.error('Missing chain configuration in state');
     return {
       research: researchItem,
     };

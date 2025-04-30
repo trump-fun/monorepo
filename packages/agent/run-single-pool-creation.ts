@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import config, { DEFAULT_CHAIN_ID } from './src/config';
-import { singleBettingPoolGraph } from './src/pool-generation-agent/single-betting-pool-graph';
+import {
+  singleBettingPoolGraph,
+  type SingleResearchItemState,
+} from './src/pool-generation-agent/single-betting-pool-graph';
 import type { ResearchItem } from './src/types/research-item';
-import type { TruthSocialPost } from './src/types/truth-social-post';
 
 // Example Truth Social post to process
 const exampleTruthSocialPost = {
@@ -95,7 +97,7 @@ const exampleTruthSocialPost = {
   favourites_count: 544,
   media_attachments: [],
   in_reply_to_account_id: null,
-} as TruthSocialPost;
+};
 
 async function runSinglePostProcess() {
   console.log('Running single betting pool creation agent...');
@@ -104,6 +106,7 @@ async function runSinglePostProcess() {
   console.log('- News API Key:', config.newsApiKey ? 'Configured ✓' : 'Missing ✗');
   console.log('- Venice API Key:', config.veniceApiKey ? 'Configured ✓' : 'Missing ✗');
 
+  console.log(JSON.stringify(exampleTruthSocialPost, null, 2));
   // Create a research item with the example post
   const researchItem: ResearchItem = {
     truth_social_post: exampleTruthSocialPost,
@@ -113,11 +116,11 @@ async function runSinglePostProcess() {
   };
 
   // Setup the initial state for the graph
-  const initialState = {
-    messages: [],
+  const initialState: SingleResearchItemState = {
     targetTruthSocialAccountId: config.trumpTruthSocialId,
+    chainId: DEFAULT_CHAIN_ID,
     research: researchItem,
-    chainConfig: config.chainConfig[DEFAULT_CHAIN_ID], // Use imported DEFAULT_CHAIN_ID
+    messages: [],
   };
 
   try {
@@ -142,8 +145,7 @@ async function runSinglePostProcess() {
 
     // Log the full result object for debugging
     console.log('\n--- COMPLETE RESULT OBJECT ---');
-    console.log(JSON.stringify(result, null, 2));
-
+    console.log(result);
     return result;
   } catch (error) {
     console.error('Error running single betting pool creation:', error);

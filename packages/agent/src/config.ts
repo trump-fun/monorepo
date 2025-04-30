@@ -5,12 +5,20 @@
 import { ChatAnthropic } from '@langchain/anthropic';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { ChatOpenAI } from '@langchain/openai';
+import { PublicKey } from '@solana/web3.js';
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@trump-fun/common';
+import type { ChainConfig, Database } from '@trump-fun/common';
+import { SOLANA_DEVNET_CONFIG } from '@trump-fun/common/src/config';
 import { baseSepolia, type Chain } from 'viem/chains';
-export const DEFAULT_CHAIN_ID = baseSepolia.id;
+import { getSolanaClient, type SolanaClientResult } from './solana';
 
-export type BettingChainConfig = {
+// Define Solana constants
+const BETTING_POOLS_SEED = Buffer.from('betting_pools');
+// export const DEFAULT_CHAIN_ID = process.env.CHAIN_ID || baseSepolia.id.toString();
+export const DEFAULT_CHAIN_ID = process.env.CHAIN_ID || 'solana-devnet';
+
+export type EvmChainConfig = {
+  chainType: 'evm';
   chain: Chain;
   subgraphUrl: string;
   subgraphApiKey: string;
@@ -18,6 +26,21 @@ export type BettingChainConfig = {
   contractAddress: `0x${string}`;
   privateKey: `0x${string}`;
 };
+
+export type SolanaChainConfig = {
+  chainType: 'solana';
+  cluster: 'mainnet-beta' | 'devnet' | 'testnet' | 'localnet';
+  rpcUrl: string;
+  programId: PublicKey;
+  appPda: PublicKey;
+  privateKey: string;
+  freedomMint: PublicKey;
+  usdcMint: PublicKey;
+  client: SolanaClientResult;
+};
+
+// Legacy type for backward compatibility
+export type BettingChainConfig = EvmChainConfig | SolanaChainConfig;
 
 export type AppConfig = {
   tavilyApiKey: string;
@@ -34,9 +57,7 @@ export type AppConfig = {
   firecrawlApiKey: string;
   daturaApiKey: string; // Datura API key for X/Twitter and AI search integration
   maxImagesPerRun: number;
-  chainConfig: {
-    [chainId: number]: BettingChainConfig;
-  };
+  chainConfig: Record<string, ChainConfig>;
 };
 
 /**
@@ -208,6 +229,40 @@ if (
   throw new Error(`Invalid BFL_IMAGE_MODEL: ${BFL_IMAGE_MODEL}`);
 }
 
+// Define the initial chain config
+const initialChainConfig: Record<string, BettingChainConfig> = {
+  [baseSepolia.id]: {
+    chainType: 'evm',
+    chain: baseSepolia,
+    subgraphUrl: requireEnv('BASE_SEPOLIA_SUBGRAPH_URL'),
+    subgraphApiKey: requireEnv('BASE_SEPOLIA_SUBGRAPH_API_KEY'),
+    rpcUrl: requireEnv('BASE_SEPOLIA_RPC_URL'),
+    contractAddress: requireEnv('BASE_SEPOLIA_BETTING_CONTRACT_ADDRESS') as `0x${string}`,
+    privateKey: requireEnv('BASE_SEPOLIA_PRIVATE_KEY') as `0x${string}`,
+  },
+  'solana-devnet': {
+    chainType: 'solana',
+    cluster: 'devnet',
+    rpcUrl: 'https://api.devnet.solana.com',
+    programId: SOLANA_DEVNET_CONFIG.programId,
+    appPda: PublicKey.findProgramAddressSync(
+      [BETTING_POOLS_SEED],
+      SOLANA_DEVNET_CONFIG.programId
+    )[0],
+    privateKey: requireEnv('SOLANA_DEVNET_PRIVATE_KEY'),
+    freedomMint: SOLANA_DEVNET_CONFIG.freedomMint,
+    usdcMint: SOLANA_DEVNET_CONFIG.usdcMint,
+    client: getSolanaClient({
+      privateKeyString: requireEnv('SOLANA_DEVNET_PRIVATE_KEY'),
+      config: {
+        rpcUrl: 'https://api.devnet.solana.com',
+        cluster: 'devnet',
+        programId: SOLANA_DEVNET_CONFIG.programId,
+      },
+    }),
+  },
+};
+
 // Export config object for convenience
 export const config = {
   tavilyApiKey: requireEnv('TAVILY_API_KEY'),
@@ -224,16 +279,7 @@ export const config = {
   veniceApiKey: veniceApiKey || requireEnv('VENICE_API_KEY'),
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY || '',
   maxImagesPerRun: Number(process.env.MAX_IMAGES_PER_RUN || '3'),
-  chainConfig: {
-    [baseSepolia.id]: {
-      chain: baseSepolia,
-      subgraphUrl: requireEnv('BASE_SEPOLIA_SUBGRAPH_URL'),
-      subgraphApiKey: requireEnv('BASE_SEPOLIA_SUBGRAPH_API_KEY'),
-      rpcUrl: requireEnv('BASE_SEPOLIA_RPC_URL'),
-      contractAddress: requireEnv('BASE_SEPOLIA_BETTING_CONTRACT_ADDRESS') as `0x${string}`,
-      privateKey: requireEnv('BASE_SEPOLIA_PRIVATE_KEY') as `0x${string}`,
-    } as BettingChainConfig,
-  },
+  chainConfig: initialChainConfig,
 };
 
 export const supabase = createClient<Database>(

@@ -23,6 +23,14 @@ export interface ResearchItem {
   image_prompt?: string; // Generated prompt for image creation
   image_url?: string | null;
 
+  external_link_content?: string | null;
+  external_link_url?: string | null;
+  external_link_error?: string | null;
+  alternative_search_queries?: string[];
+  search_domains?: string[];
+  successful_news_query?: string;
+  tavily_search_failed?: boolean;
+
   // New fields for reference chain tracing
   reference_chains?: ReferenceChain[];
   source_tracing_complete?: boolean;
@@ -65,36 +73,4 @@ export interface SourceReference {
   };
   verification_status: 'verified' | 'partially_verified' | 'unverified';
   key_claims: string[];
-}
-
-export interface SingleResearchItem {
-  truth_social_post: TruthSocialPost;
-  related_news?: string[];
-  related_news_urls?: string[];
-  related_search_results?: string[];
-  betting_pool_idea?: string;
-  news_search_query?: string;
-  related_news_search_query?: string;
-  tavily_search_query?: string;
-  related_tavily_search_query?: string;
-  related_news_search_results?: string[];
-  related_tavily_search_results?: string[];
-  transaction_hash?: string | null;
-  pool_id?: string | null;
-  should_process?: boolean;
-  skip_reason?: string;
-  image_prompt?: string;
-  image_url?: string | null;
-  external_link_content?: string | null;
-  external_link_url?: string | null;
-  external_link_error?: string | null;
-  alternative_search_queries?: string[];
-  search_domains?: string[];
-  successful_news_query?: string;
-  tavily_search_failed?: boolean;
-  source_tracing_complete?: boolean;
-  reference_chains?: ReferenceChain[];
-  primary_source_found?: boolean;
-  primary_source_url?: string;
-  primary_source_summary?: string;
 }
