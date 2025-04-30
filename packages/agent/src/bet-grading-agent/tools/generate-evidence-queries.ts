@@ -72,7 +72,7 @@ export async function generateEvidenceQueries(state: GraderState): Promise<Parti
 
         // Call the LLM with the formatted prompt
         const result = await structuredLlm.invoke(formattedPrompt);
-        console.log(`Generated queries for pool ${poolId}:`, result);
+        console.log(`Generated queries for pool ${poolId} (${pendingPool.pool.question}):`, result);
 
         // Return updated pool with evidence search queries
         return [

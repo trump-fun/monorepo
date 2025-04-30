@@ -1,15 +1,32 @@
 import { bettingContractAbi } from '@trump-fun/common';
 import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import type { EvmChainConfig } from '../../config';
+import { config } from '../../config';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
-
 /**
  * Updates the smart contract with the grading results for all non-failed pools sequentially
  */
 export async function callGradePoolContract(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Updating contract with grading results sequentially...');
+  console.log('Updating contract with grading results sequentially on EVM chain...');
 
-  const chainConfig = state.chainConfig;
+  const { chainId } = state;
+  if (!chainId) {
+    throw new Error('Chain ID must be set');
+  }
+
+  const chainConfig = config.chainConfig[chainId];
+  if (!chainConfig) {
+    console.error(`Chain config not found for chain ID: ${chainId}`);
+    return { pendingPools: {} };
+  }
+
+  // Check that we're on an EVM chain
+  if (chainConfig.chainType !== 'evm') {
+    throw new Error("Chain is not EVM, you shouldn't be here");
+  }
+
+  const evmChainConfig = chainConfig as EvmChainConfig;
   const pendingPools = state.pendingPools;
   if (Object.keys(pendingPools).length === 0) {
     console.error('No pending pools to update contract for');
@@ -18,17 +35,17 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
 
   try {
     // Set up viem clients
-    const account = privateKeyToAccount(chainConfig.privateKey);
+    const account = privateKeyToAccount(evmChainConfig.privateKey);
 
     const publicClient = createPublicClient({
-      chain: chainConfig.chain,
-      transport: http(chainConfig.rpcUrl),
+      chain: evmChainConfig.chain,
+      transport: http(evmChainConfig.rpcUrl),
     });
 
     const walletClient = createWalletClient({
       account,
-      chain: chainConfig.chain,
-      transport: http(chainConfig.rpcUrl),
+      chain: evmChainConfig.chain,
+      transport: http(evmChainConfig.rpcUrl),
     });
 
     // Process each pool sequentially
@@ -50,7 +67,7 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
         try {
           // Call the contract's gradeBet function
           const hash = await walletClient.writeContract({
-            address: chainConfig.contractAddress,
+            address: evmChainConfig.contractAddress,
             abi: bettingContractAbi,
             functionName: 'gradeBet',
             args: [BigInt(poolId), BigInt(result_code)],

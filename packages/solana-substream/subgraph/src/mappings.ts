@@ -57,9 +57,7 @@ export function handleTriggers(bytes: Uint8Array): void {
     pc.options = event.options;
     pc.betsCloseAt = BigInt.fromI64(event.betsCloseAt);
     // Use imageUrl from event
-    pc.mediaUrl = event.imageUrl;
-    // No mediaType provided, default to Image
-    pc.mediaType = 'Image';
+    pc.imageUrl = event.imageUrl;
     // Default values for unused fields
     pc.category = '';
     pc.creatorName = '';
@@ -77,6 +75,8 @@ export function handleTriggers(bytes: Uint8Array): void {
     pool.decisionTime = BigInt.fromI64(0);
     pool.usdcBetTotalsByOption = [BigInt.fromI64(0), BigInt.fromI64(0)];
     pool.pointsBetTotalsByOption = [BigInt.fromI64(0), BigInt.fromI64(0)];
+    pool.usdcBetTotals = BigInt.fromI64(0);
+    pool.pointsBetTotals = BigInt.fromI64(0);
     pool.winningOption = BigInt.fromI64(0);
     pool.status = 'Pending';
     pool.isDraw = false;
@@ -87,9 +87,8 @@ export function handleTriggers(bytes: Uint8Array): void {
     pool.closureCriteria = '';
     pool.closureInstructions = '';
     // Use imageUrl from event
-    pool.mediaUrl = event.imageUrl;
-    // No mediaType provided, default to Image
-    pool.mediaType = 'Image';
+    pool.imageUrl = event.imageUrl;
+    pool.originalTruthSocialPostId = event.originalTruthSocialPostId;
     pool.twitterPostId = '';
     pool.creationTxHash = event.trxHash;
     pool.save();
@@ -133,10 +132,14 @@ export function handleTriggers(bytes: Uint8Array): void {
         const arr = pool.usdcBetTotalsByOption;
         if (idx < arr.length) arr[idx] = arr[idx].plus(amt);
         pool.usdcBetTotalsByOption = arr;
+        // Update total USDC bets
+        pool.usdcBetTotals = pool.usdcBetTotals.plus(amt);
       } else {
         const arr = pool.pointsBetTotalsByOption;
         if (idx < arr.length) arr[idx] = arr[idx].plus(amt);
         pool.pointsBetTotalsByOption = arr;
+        // Update total point bets
+        pool.pointsBetTotals = pool.pointsBetTotals.plus(amt);
       }
       pool.save();
     }
@@ -147,16 +150,14 @@ export function handleTriggers(bytes: Uint8Array): void {
     const id = event.trxHash.concat('-').concat(event.poolId.toString());
     const pms = new PoolMediaSet(id);
     pms.poolId = BigInt.fromU64(event.poolId);
-    pms.mediaUrl = event.imageUrl;
-    pms.mediaType = mapMediaType(4); // image, default to Image
+    pms.imageUrl = event.imageUrl;
     pms.txHash = event.trxHash;
     pms.pool = event.poolId.toString();
     pms.save();
 
     const pool = Pool.load(event.poolId.toString());
     if (pool) {
-      pool.mediaUrl = event.imageUrl;
-      pool.mediaType = mapMediaType(4); // image, default to Image
+      pool.imageUrl = event.imageUrl;
       pool.save();
     }
   });

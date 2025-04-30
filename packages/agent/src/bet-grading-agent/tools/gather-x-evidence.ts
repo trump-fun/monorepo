@@ -32,20 +32,17 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
 
   const updatedPendingPools: Record<string, PendingPool> = {};
   for (const [poolId, pendingPool] of Object.entries(state.pendingPools)) {
-    // Skip pools that have failed or don't have Twitter search queries
-    if (
-      pendingPool.failed ||
-      !pendingPool.xSearchQueries ||
-      pendingPool.xSearchQueries.length === 0
-    ) {
-      console.log(`Skipping pool ${poolId} - failed or no Twitter search queries`);
-      updatedPendingPools[poolId] = {
-        ...pendingPool,
-        failed:
-          pendingPool.failed ||
-          !pendingPool.xSearchQueries ||
-          pendingPool.xSearchQueries.length === 0,
-      };
+    // Skip pools that have already failed
+    if (pendingPool.failed) {
+      console.log(`Skipping pool ${poolId} - already failed`);
+      updatedPendingPools[poolId] = pendingPool;
+      continue;
+    }
+
+    // Skip pools that don't have Twitter search queries without marking as failed
+    if (!pendingPool.xSearchQueries || pendingPool.xSearchQueries.length === 0) {
+      console.log(`Skipping pool ${poolId} - no Twitter search queries available`);
+      updatedPendingPools[poolId] = pendingPool;
       continue;
     }
 

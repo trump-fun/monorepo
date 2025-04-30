@@ -165,7 +165,6 @@ export function getSolanaClient({
     bettingPoolsPDA,
   };
 }
-
 /**
  * Find the betting pools PDA address
  */

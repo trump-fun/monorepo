@@ -247,13 +247,15 @@ export enum BetPlaced_OrderBy {
   PoolCreatorName = 'pool__creatorName',
   PoolDecisionTime = 'pool__decisionTime',
   PoolId = 'pool__id',
+  PoolImageUrl = 'pool__imageUrl',
   PoolIsDraw = 'pool__isDraw',
-  PoolMediaType = 'pool__mediaType',
-  PoolMediaUrl = 'pool__mediaUrl',
+  PoolOriginalTruthSocialPostId = 'pool__originalTruthSocialPostId',
+  PoolPointsBetTotals = 'pool__pointsBetTotals',
   PoolPoolIntId = 'pool__poolIntId',
   PoolQuestion = 'pool__question',
   PoolStatus = 'pool__status',
   PoolTwitterPostId = 'pool__twitterPostId',
+  PoolUsdcBetTotals = 'pool__usdcBetTotals',
   PoolWinningOption = 'pool__winningOption',
   TokenType = 'tokenType',
   TxHash = 'txHash',
@@ -408,13 +410,15 @@ export enum Bet_OrderBy {
   PoolCreatorName = 'pool__creatorName',
   PoolDecisionTime = 'pool__decisionTime',
   PoolId = 'pool__id',
+  PoolImageUrl = 'pool__imageUrl',
   PoolIsDraw = 'pool__isDraw',
-  PoolMediaType = 'pool__mediaType',
-  PoolMediaUrl = 'pool__mediaUrl',
+  PoolOriginalTruthSocialPostId = 'pool__originalTruthSocialPostId',
+  PoolPointsBetTotals = 'pool__pointsBetTotals',
   PoolPoolIntId = 'pool__poolIntId',
   PoolQuestion = 'pool__question',
   PoolStatus = 'pool__status',
   PoolTwitterPostId = 'pool__twitterPostId',
+  PoolUsdcBetTotals = 'pool__usdcBetTotals',
   PoolWinningOption = 'pool__winningOption',
   TokenType = 'tokenType',
   TxHash = 'txHash',
@@ -563,15 +567,17 @@ export type Pool = {
   creatorName: Scalars['String']['output'];
   decisionTime: Scalars['BigInt']['output'];
   id: Scalars['ID']['output'];
+  imageUrl: Scalars['String']['output'];
   isDraw: Scalars['Boolean']['output'];
-  mediaType: MediaType;
-  mediaUrl: Scalars['String']['output'];
   options: Array<Scalars['String']['output']>;
+  originalTruthSocialPostId: Scalars['String']['output'];
+  pointsBetTotals: Scalars['BigInt']['output'];
   pointsBetTotalsByOption: Array<Scalars['BigInt']['output']>;
   poolIntId: Scalars['BigInt']['output'];
   question: Scalars['String']['output'];
   status: PoolStatus;
   twitterPostId: Scalars['String']['output'];
+  usdcBetTotals: Scalars['BigInt']['output'];
   usdcBetTotalsByOption: Array<Scalars['BigInt']['output']>;
   winningOption: Scalars['BigInt']['output'];
 };
@@ -662,8 +668,7 @@ export type PoolCreated = {
   creatorId: Scalars['String']['output'];
   creatorName: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  mediaType: MediaType;
-  mediaUrl: Scalars['String']['output'];
+  imageUrl: Scalars['String']['output'];
   options: Array<Scalars['String']['output']>;
   poolId: Scalars['BigInt']['output'];
   question: Scalars['String']['output'];
@@ -798,30 +803,26 @@ export type PoolCreated_Filter = {
   id_lte?: InputMaybe<Scalars['ID']['input']>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
-  mediaType?: InputMaybe<MediaType>;
-  mediaType_in?: InputMaybe<Array<MediaType>>;
-  mediaType_not?: InputMaybe<MediaType>;
-  mediaType_not_in?: InputMaybe<Array<MediaType>>;
-  mediaUrl?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_contains?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_gt?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_gte?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  mediaUrl_lt?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_lte?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  mediaUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_lt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_lte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   options?: InputMaybe<Array<Scalars['String']['input']>>;
   options_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   options_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -888,8 +889,7 @@ export enum PoolCreated_OrderBy {
   CreatorId = 'creatorId',
   CreatorName = 'creatorName',
   Id = 'id',
-  MediaType = 'mediaType',
-  MediaUrl = 'mediaUrl',
+  ImageUrl = 'imageUrl',
   Options = 'options',
   PoolId = 'poolId',
   Question = 'question',
@@ -899,8 +899,7 @@ export enum PoolCreated_OrderBy {
 export type PoolMediaSet = {
   __typename?: 'PoolMediaSet';
   id: Scalars['ID']['output'];
-  mediaType: MediaType;
-  mediaUrl: Scalars['String']['output'];
+  imageUrl: Scalars['String']['output'];
   pool: Pool;
   poolId: Scalars['BigInt']['output'];
   txHash: Scalars['String']['output'];
@@ -918,30 +917,26 @@ export type PoolMediaSet_Filter = {
   id_lte?: InputMaybe<Scalars['ID']['input']>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
-  mediaType?: InputMaybe<MediaType>;
-  mediaType_in?: InputMaybe<Array<MediaType>>;
-  mediaType_not?: InputMaybe<MediaType>;
-  mediaType_not_in?: InputMaybe<Array<MediaType>>;
-  mediaUrl?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_contains?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_gt?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_gte?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  mediaUrl_lt?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_lte?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  mediaUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_lt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_lte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   or?: InputMaybe<Array<InputMaybe<PoolMediaSet_Filter>>>;
   pool?: InputMaybe<Scalars['String']['input']>;
   poolId?: InputMaybe<Scalars['BigInt']['input']>;
@@ -996,8 +991,7 @@ export type PoolMediaSet_Filter = {
 
 export enum PoolMediaSet_OrderBy {
   Id = 'id',
-  MediaType = 'mediaType',
-  MediaUrl = 'mediaUrl',
+  ImageUrl = 'imageUrl',
   Pool = 'pool',
   PoolId = 'poolId',
   PoolBetsCloseAt = 'pool__betsCloseAt',
@@ -1010,13 +1004,15 @@ export enum PoolMediaSet_OrderBy {
   PoolCreatorName = 'pool__creatorName',
   PoolDecisionTime = 'pool__decisionTime',
   PoolId = 'pool__id',
+  PoolImageUrl = 'pool__imageUrl',
   PoolIsDraw = 'pool__isDraw',
-  PoolMediaType = 'pool__mediaType',
-  PoolMediaUrl = 'pool__mediaUrl',
+  PoolOriginalTruthSocialPostId = 'pool__originalTruthSocialPostId',
+  PoolPointsBetTotals = 'pool__pointsBetTotals',
   PoolPoolIntId = 'pool__poolIntId',
   PoolQuestion = 'pool__question',
   PoolStatus = 'pool__status',
   PoolTwitterPostId = 'pool__twitterPostId',
+  PoolUsdcBetTotals = 'pool__usdcBetTotals',
   PoolWinningOption = 'pool__winningOption',
   TxHash = 'txHash',
 }
@@ -1184,34 +1180,30 @@ export type Pool_Filter = {
   id_lte?: InputMaybe<Scalars['ID']['input']>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_gte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_lt?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_lte?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  imageUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
+  imageUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   isDraw?: InputMaybe<Scalars['Boolean']['input']>;
   isDraw_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
   isDraw_not?: InputMaybe<Scalars['Boolean']['input']>;
   isDraw_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  mediaType?: InputMaybe<MediaType>;
-  mediaType_in?: InputMaybe<Array<MediaType>>;
-  mediaType_not?: InputMaybe<MediaType>;
-  mediaType_not_in?: InputMaybe<Array<MediaType>>;
-  mediaUrl?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_contains?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_ends_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_gt?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_gte?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  mediaUrl_lt?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_lte?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_contains?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  mediaUrl_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
-  mediaUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   options?: InputMaybe<Array<Scalars['String']['input']>>;
   options_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   options_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -1219,12 +1211,40 @@ export type Pool_Filter = {
   options_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   options_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
   or?: InputMaybe<Array<InputMaybe<Pool_Filter>>>;
+  originalTruthSocialPostId?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_contains?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_gt?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_gte?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  originalTruthSocialPostId_lt?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_lte?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_not?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  originalTruthSocialPostId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  originalTruthSocialPostId_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  pointsBetTotals?: InputMaybe<Scalars['BigInt']['input']>;
   pointsBetTotalsByOption?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   pointsBetTotalsByOption_contains?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   pointsBetTotalsByOption_contains_nocase?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   pointsBetTotalsByOption_not?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   pointsBetTotalsByOption_not_contains?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   pointsBetTotalsByOption_not_contains_nocase?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  pointsBetTotals_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  pointsBetTotals_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  pointsBetTotals_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  pointsBetTotals_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  pointsBetTotals_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  pointsBetTotals_not?: InputMaybe<Scalars['BigInt']['input']>;
+  pointsBetTotals_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   poolIntId?: InputMaybe<Scalars['BigInt']['input']>;
   poolIntId_gt?: InputMaybe<Scalars['BigInt']['input']>;
   poolIntId_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -1277,12 +1297,20 @@ export type Pool_Filter = {
   twitterPostId_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   twitterPostId_starts_with?: InputMaybe<Scalars['String']['input']>;
   twitterPostId_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  usdcBetTotals?: InputMaybe<Scalars['BigInt']['input']>;
   usdcBetTotalsByOption?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   usdcBetTotalsByOption_contains?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   usdcBetTotalsByOption_contains_nocase?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   usdcBetTotalsByOption_not?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   usdcBetTotalsByOption_not_contains?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   usdcBetTotalsByOption_not_contains_nocase?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  usdcBetTotals_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  usdcBetTotals_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  usdcBetTotals_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  usdcBetTotals_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  usdcBetTotals_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  usdcBetTotals_not?: InputMaybe<Scalars['BigInt']['input']>;
+  usdcBetTotals_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   winningOption?: InputMaybe<Scalars['BigInt']['input']>;
   winningOption_gt?: InputMaybe<Scalars['BigInt']['input']>;
   winningOption_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -1304,15 +1332,17 @@ export enum Pool_OrderBy {
   CreatorName = 'creatorName',
   DecisionTime = 'decisionTime',
   Id = 'id',
+  ImageUrl = 'imageUrl',
   IsDraw = 'isDraw',
-  MediaType = 'mediaType',
-  MediaUrl = 'mediaUrl',
   Options = 'options',
+  OriginalTruthSocialPostId = 'originalTruthSocialPostId',
+  PointsBetTotals = 'pointsBetTotals',
   PointsBetTotalsByOption = 'pointsBetTotalsByOption',
   PoolIntId = 'poolIntId',
   Question = 'question',
   Status = 'status',
   TwitterPostId = 'twitterPostId',
+  UsdcBetTotals = 'usdcBetTotals',
   UsdcBetTotalsByOption = 'usdcBetTotalsByOption',
   WinningOption = 'winningOption',
 }

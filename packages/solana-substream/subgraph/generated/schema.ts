@@ -138,6 +138,32 @@ export class Pool extends Entity {
     this.set("pointsBetTotalsByOption", Value.fromBigIntArray(value));
   }
 
+  get usdcBetTotals(): BigInt {
+    const value = this.get("usdcBetTotals");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set usdcBetTotals(value: BigInt) {
+    this.set("usdcBetTotals", Value.fromBigInt(value));
+  }
+
+  get pointsBetTotals(): BigInt {
+    const value = this.get("pointsBetTotals");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set pointsBetTotals(value: BigInt) {
+    this.set("pointsBetTotals", Value.fromBigInt(value));
+  }
+
   get winningOption(): BigInt {
     const value = this.get("winningOption");
     if (!value || value.kind == ValueKind.NULL) {
@@ -255,8 +281,8 @@ export class Pool extends Entity {
     this.set("closureInstructions", Value.fromString(value));
   }
 
-  get mediaUrl(): string {
-    const value = this.get("mediaUrl");
+  get imageUrl(): string {
+    const value = this.get("imageUrl");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -264,12 +290,12 @@ export class Pool extends Entity {
     }
   }
 
-  set mediaUrl(value: string) {
-    this.set("mediaUrl", Value.fromString(value));
+  set imageUrl(value: string) {
+    this.set("imageUrl", Value.fromString(value));
   }
 
-  get mediaType(): string {
-    const value = this.get("mediaType");
+  get originalTruthSocialPostId(): string {
+    const value = this.get("originalTruthSocialPostId");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -277,8 +303,8 @@ export class Pool extends Entity {
     }
   }
 
-  set mediaType(value: string) {
-    this.set("mediaType", Value.fromString(value));
+  set originalTruthSocialPostId(value: string) {
+    this.set("originalTruthSocialPostId", Value.fromString(value));
   }
 
   get twitterPostId(): string {
@@ -597,8 +623,8 @@ export class PoolCreated extends Entity {
     this.set("betsCloseAt", Value.fromBigInt(value));
   }
 
-  get mediaUrl(): string {
-    const value = this.get("mediaUrl");
+  get imageUrl(): string {
+    const value = this.get("imageUrl");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -606,21 +632,8 @@ export class PoolCreated extends Entity {
     }
   }
 
-  set mediaUrl(value: string) {
-    this.set("mediaUrl", Value.fromString(value));
-  }
-
-  get mediaType(): string {
-    const value = this.get("mediaType");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toString();
-    }
-  }
-
-  set mediaType(value: string) {
-    this.set("mediaType", Value.fromString(value));
+  set imageUrl(value: string) {
+    this.set("imageUrl", Value.fromString(value));
   }
 
   get category(): string {
@@ -926,8 +939,8 @@ export class PoolMediaSet extends Entity {
     this.set("poolId", Value.fromBigInt(value));
   }
 
-  get mediaUrl(): string {
-    const value = this.get("mediaUrl");
+  get imageUrl(): string {
+    const value = this.get("imageUrl");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -935,21 +948,8 @@ export class PoolMediaSet extends Entity {
     }
   }
 
-  set mediaUrl(value: string) {
-    this.set("mediaUrl", Value.fromString(value));
-  }
-
-  get mediaType(): string {
-    const value = this.get("mediaType");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toString();
-    }
-  }
-
-  set mediaType(value: string) {
-    this.set("mediaType", Value.fromString(value));
+  set imageUrl(value: string) {
+    this.set("imageUrl", Value.fromString(value));
   }
 
   get txHash(): string {

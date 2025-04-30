@@ -119,7 +119,6 @@ export type SingleResearchItemState = typeof SingleResearchItemAnnotation.State;
 
 // Function to check if we should proceed with processing
 function shouldContinueProcessing(state: SingleResearchItemState): 'continue' | 'stop' {
-  console.log('shouldContinueProcessing', state);
   if (!state.research) return 'stop';
 
   // If the item is explicitly marked as should not process, stop

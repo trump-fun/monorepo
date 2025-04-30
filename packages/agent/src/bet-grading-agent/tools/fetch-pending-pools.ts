@@ -1,12 +1,13 @@
-import { gql, request } from 'graphql-request';
-import type { GraderState, PendingPool } from '../betting-grader-graph';
 import type { Pool } from '@trump-fun/common';
+import { gql, request } from 'graphql-request';
+import config from '../../config';
+import type { GraderState, PendingPool } from '../betting-grader-graph';
 /**
  * Fetches pools with "PENDING" status from the GraphQL endpoint
  */
 const fetchPendingPoolsQuery = gql`
   query fetchPendingPools {
-    pools(where: { status: PENDING }) {
+    pools(where: { status: Pending }) {
       id
       status
       question
@@ -21,7 +22,15 @@ const fetchPendingPoolsQuery = gql`
 export async function fetchPendingPools(state: GraderState): Promise<Partial<GraderState>> {
   console.log('Fetching pending pools...');
 
-  const chainConfig = state.chainConfig;
+  const { chainId } = state;
+  if (!chainId) {
+    throw new Error('Chain ID must be set');
+  }
+
+  const chainConfig = config.chainConfig[chainId];
+  if (!chainConfig) {
+    throw new Error(`Chain config not found for chain ID: ${chainId}`);
+  }
 
   try {
     interface FetchPendingPoolsResponse {

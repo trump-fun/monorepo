@@ -1,4 +1,4 @@
-import { DEFAULT_CHAIN_ID, config } from '../../config';
+import { DEFAULT_CHAIN_ID } from '../../config';
 import type { ResearchItem } from '../../types/research-item';
 import type { AgentState } from '../betting-pool-graph';
 import { singleBettingPoolGraph } from '../single-betting-pool-graph';
@@ -66,7 +66,7 @@ export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partia
         // Run the single betting pool graph for this item
         const result = await singleBettingPoolGraph.invoke({
           research: currentItem,
-          chainConfig: state.chainConfig || config.chainConfig[DEFAULT_CHAIN_ID],
+          chainId: state.chainId || DEFAULT_CHAIN_ID,
           targetTruthSocialAccountId: state.targetTruthSocialAccountId || '',
           messages: [],
         });

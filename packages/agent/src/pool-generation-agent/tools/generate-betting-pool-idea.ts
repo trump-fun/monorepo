@@ -1,6 +1,17 @@
+import { z } from 'zod';
 import config from '../../config';
 import type { ResearchItem } from '../../types/research-item';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
+
+// Define the schema for the betting pool idea output
+const bettingPoolIdeaSchema = z.object({
+  question: z.string().describe("The yes/no question in Trump's style"),
+  explanation: z
+    .string()
+    .describe(
+      'Brief explanation of what the question is about and how it relates to the Truth Social post'
+    ),
+});
 
 /**
  * Generates a Yes/No betting pool question for a single research item
@@ -120,17 +131,16 @@ Create a Yes/No question in Trump's style that users can bet on. The question sh
 5. Be clear what a YES or NO outcome would mean
 6. Focus on something that will be verifiable within the next 7 days
 7. Be something that CAN be objectively verified (avoid subjective judgments)
-
-Format your answer as a single Yes/No question with no additional text.
 `;
 
-    const response = await config.large_llm.invoke(prompt);
+    // Create a structured output model
+    const structuredLlm = config.large_llm.withStructuredOutput(bettingPoolIdeaSchema);
+
+    // Invoke the LLM with structured output
+    const responseObj = await structuredLlm.invoke(prompt);
 
     // Extract the betting pool idea from the response
-    const responseContent =
-      typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
-
-    let bettingPoolIdea = responseContent.trim();
+    let bettingPoolIdea = responseObj.question.trim();
 
     // Ensure it ends with a question mark
     if (!bettingPoolIdea.endsWith('?')) {
@@ -138,11 +148,15 @@ Format your answer as a single Yes/No question with no additional text.
     }
 
     console.log(`Generated betting pool idea: ${bettingPoolIdea}`);
+    if (responseObj.explanation) {
+      console.log(`Explanation: ${responseObj.explanation}`);
+    }
 
     // Return updated research item with the betting pool idea
     const updatedResearchItem = {
       ...researchItem,
       betting_pool_idea: bettingPoolIdea,
+      betting_pool_explanation: responseObj.explanation || '',
     };
 
     return {

@@ -210,7 +210,6 @@ export async function generateXQueries(state: GraderState): Promise<Partial<Grad
             {
               ...pendingPool,
               xQueryCreationFailed: true,
-              failed: true, // Mark the pool as failed if we can't generate queries
               failureReason: `Failed to generate Twitter/X queries: ${error}`,
             },
           ];

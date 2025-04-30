@@ -17,20 +17,24 @@ const BETTING_POOLS_SEED = Buffer.from('betting_pools');
 // export const DEFAULT_CHAIN_ID = process.env.CHAIN_ID || baseSepolia.id.toString();
 export const DEFAULT_CHAIN_ID = process.env.CHAIN_ID || 'solana-devnet';
 
-export type EvmChainConfig = {
-  chainType: 'evm';
+export type CommonChainConfig = {
   chain: Chain;
+  rpcUrl: string;
   subgraphUrl: string;
   subgraphApiKey: string;
-  rpcUrl: string;
+};
+
+export type EvmChainConfig = CommonChainConfig & {
+  chainType: 'evm';
+  subgraphUrl: string;
+  subgraphApiKey: string;
   contractAddress: `0x${string}`;
   privateKey: `0x${string}`;
 };
 
-export type SolanaChainConfig = {
+export type SolanaChainConfig = CommonChainConfig & {
   chainType: 'solana';
   cluster: 'mainnet-beta' | 'devnet' | 'testnet' | 'localnet';
-  rpcUrl: string;
   programId: PublicKey;
   appPda: PublicKey;
   privateKey: string;
@@ -244,6 +248,8 @@ const initialChainConfig: Record<string, BettingChainConfig> = {
     chainType: 'solana',
     cluster: 'devnet',
     rpcUrl: 'https://api.devnet.solana.com',
+    subgraphUrl: requireEnv('SOLANA_DEVNET_SUBGRAPH_URL'),
+    subgraphApiKey: requireEnv('SOLANA_DEVNET_SUBGRAPH_API_KEY'),
     programId: SOLANA_DEVNET_CONFIG.programId,
     appPda: PublicKey.findProgramAddressSync(
       [BETTING_POOLS_SEED],

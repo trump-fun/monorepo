@@ -39,6 +39,8 @@ type Pool @entity {
   decisionTime: BigInt!
   usdcBetTotalsByOption: [BigInt!]!
   pointsBetTotalsByOption: [BigInt!]!
+  usdcBetTotals: BigInt!
+  pointsBetTotals: BigInt!
   winningOption: BigInt!
   status: PoolStatus!
   isDraw: Boolean!
@@ -48,8 +50,8 @@ type Pool @entity {
   creatorId: String!
   closureCriteria: String!
   closureInstructions: String!
-  mediaUrl: String!
-  mediaType: MediaType!
+  imageUrl: String!
+  originalTruthSocialPostId: String!
   twitterPostId: String!
   creationTxHash: String!
 }
@@ -76,8 +78,7 @@ type PoolCreated @entity {
   question: String!
   options: [String!]!
   betsCloseAt: BigInt!
-  mediaUrl: String!
-  mediaType: MediaType!
+  imageUrl: String!
   category: String!
   creatorName: String!
   creatorId: String!
@@ -103,8 +104,7 @@ type BetPlaced @entity {
 type PoolMediaSet @entity {
   id: ID!
   poolId: BigInt!
-  mediaUrl: String!
-  mediaType: MediaType!
+  imageUrl: String!
   txHash: String!
   pool: Pool!
 }

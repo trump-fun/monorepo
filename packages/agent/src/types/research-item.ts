@@ -12,6 +12,7 @@ export interface ResearchItem {
   related_news_search_results?: string[];
   related_tavily_search_results?: string[];
   betting_pool_idea?: string;
+  betting_pool_explanation?: string; // Explanation of the betting pool idea from the LLM
   news_search_query?: string;
   related_news_search_query?: string;
   tavily_search_query?: string;

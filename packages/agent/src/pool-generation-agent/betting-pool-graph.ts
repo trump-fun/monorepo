@@ -1,7 +1,6 @@
 import { BaseMessage } from '@langchain/core/messages';
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
-import type { BettingChainConfig } from '../config';
-import { DEFAULT_CHAIN_ID, config } from '../config';
+import { DEFAULT_CHAIN_ID } from '../config';
 import type { ResearchItem } from '../types/research-item';
 import { filterProcessedTruthSocialPosts } from './tools/filter-processed-truth-social-posts';
 import { getLatestTruthSocialPosts } from './tools/get-latest-truth-social-posts';
@@ -17,9 +16,9 @@ const AgentStateAnnotation = Annotation.Root({
   tavilySearchResults: Annotation<object>, //TODO get a better type here
   newsApiSearchResults: Annotation<object>, //TODO get a better type here
   newsApiSearchFailed: Annotation<boolean>,
-  chainConfig: Annotation<BettingChainConfig>({
+  chainId: Annotation<string>({
     value: (curr, update) => update,
-    default: () => config.chainConfig[DEFAULT_CHAIN_ID],
+    default: () => DEFAULT_CHAIN_ID,
   }),
   research: Annotation<ResearchItem[]>({
     reducer: (curr, update) => {

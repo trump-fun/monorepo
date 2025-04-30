@@ -152,54 +152,7 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
                 });
 
                 // Call the LLM with the formatted prompt
-                const result = await structuredLlm.invoke(formattedPrompt);
-
-                // Handle different response formats (particularly for Google AI)
-                let evidence: Evidence;
-
-                // If result is already structured correctly
-                if (typeof result === 'object' && result.url && result.summary) {
-                  evidence = {
-                    url: result.url,
-                    summary: result.summary,
-                    search_query: query,
-                    credibility_score: result.credibility_score,
-                    relevance_score: result.relevance_score,
-                    source_type: result.source_type,
-                  };
-                } else if (typeof result === 'string') {
-                  // Handle string response (sometimes from Google AI)
-                  try {
-                    const parsedResult = JSON.parse(result);
-                    evidence = {
-                      url: parsedResult.url || doc.url,
-                      summary: parsedResult.summary || 'No summary available',
-                      search_query: query,
-                    };
-                  } catch (e) {
-                    // If parsing fails, use default
-                    evidence = {
-                      url: doc.url,
-                      summary:
-                        typeof result === 'string'
-                          ? // @ts-expect-error kjhg
-                            result.substring(0, 500)
-                          : typeof result === 'object' && result !== null
-                            ? JSON.stringify(result).substring(0, 500)
-                            : 'No summary available', // Use truncated result as summary
-                      search_query: query,
-                    };
-                  }
-                } else {
-                  // Handle any other unexpected format
-                  evidence = {
-                    url: doc.url,
-                    summary: doc.content
-                      ? doc.content.substring(0, 300) + '...'
-                      : 'No content available',
-                    search_query: query,
-                  };
-                }
+                const evidence = await structuredLlm.invoke(formattedPrompt);
 
                 console.log(
                   `Search result from ${evidence.url}: ${evidence.summary.substring(0, 100)}...`

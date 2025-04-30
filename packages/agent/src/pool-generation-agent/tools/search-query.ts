@@ -51,7 +51,7 @@ The input will be from Truth Social, a social media platform. Extract the key in
 export async function extractSearchQueryFunctionSingle(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  console.log('extracting search query, state', state);
+  console.log('extracting search query');
   const researchItem = state.research;
   if (!researchItem) {
     console.log('No research item to extract search query for');
