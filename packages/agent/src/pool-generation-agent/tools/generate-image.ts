@@ -1,8 +1,12 @@
+import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { z } from 'zod';
 import config, { supabase } from '../../config';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
-// Import or define LARGE_LLM_PROVIDER
-const LARGE_LLM_PROVIDER = process.env.LARGE_LLM_PROVIDER || 'anthropic';
+// Define schema for image prompt output
+const imagePromptSchema = z.object({
+  imagePrompt: z.string().describe('Generated prompt for Flux AI image generation'),
+});
 
 /**
  * Extracts a filename from a prompt
@@ -43,15 +47,6 @@ async function uploadImageToSupabase(buffer: Buffer, filepath: string): Promise<
   return publicUrlData.publicUrl;
 }
 
-// Enhanced interface definitions for API responses
-interface VeniceTextResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-  }>;
-}
-
 interface VeniceImageResponse {
   result?: { image_url: string };
   images?: string[];
@@ -62,97 +57,8 @@ interface VeniceImageResponse {
   error?: string;
 }
 
-interface GoogleGenerativeImageResponse {
-  media?: {
-    data?: string[];
-  };
-  candidates?: Array<{
-    content?: {
-      parts?: Array<{
-        data?: string;
-        inlineData?: {
-          data?: string;
-          mimeType?: string;
-        };
-      }>;
-    };
-  }>;
-}
-
 /**
- * Parses and normalizes Venice AI image response
- */
-function parseVeniceImageResponse(response: any): {
-  url?: string;
-  base64Data?: string;
-  error?: string;
-} {
-  console.log('Parsing Venice image response structure:', Object.keys(response));
-
-  // Check for errors
-  if (response.error) {
-    return { error: response.error };
-  }
-
-  // Check various response formats
-  if (response.result && response.result.image_url) {
-    return { url: response.result.image_url };
-  }
-
-  if (response.images && Array.isArray(response.images) && response.images.length > 0) {
-    const imageData = response.images[0];
-    // Check if the data is already a complete data URL
-    if (imageData.startsWith('data:')) {
-      return { base64Data: imageData };
-    }
-    // Otherwise assume it's just the base64 part
-    return { base64Data: imageData };
-  }
-
-  return { error: 'Unable to parse image response' };
-}
-
-/**
- * Parses and normalizes Google Generative AI image response
- */
-function parseGoogleImageResponse(response: any): {
-  url?: string;
-  base64Data?: string;
-  error?: string;
-} {
-  console.log('Parsing Google Generative AI image response structure:', Object.keys(response));
-
-  // Handle candidates format
-  if (response.candidates && Array.isArray(response.candidates) && response.candidates.length > 0) {
-    const candidate = response.candidates[0];
-    if (candidate.content && candidate.content.parts) {
-      for (const part of candidate.content.parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return { base64Data: part.inlineData.data };
-        }
-        if (part.data) {
-          return { base64Data: part.data };
-        }
-      }
-    }
-  }
-
-  // Handle media format
-  if (
-    response.media &&
-    response.media.data &&
-    Array.isArray(response.media.data) &&
-    response.media.data.length > 0
-  ) {
-    return { base64Data: response.media.data[0] };
-  }
-
-  return { error: 'Unable to parse Google Generative AI image response' };
-}
-
-/**
- * Generates an image prompt and image for a single betting pool idea using Venice AI
- * This enhances the betting pool with a visual element
+ * Generates an image prompt and image for a single betting pool idea using Anthropic and Flux.ai
  */
 export async function generateImageVenice(
   state: SingleResearchItemState
@@ -175,7 +81,6 @@ export async function generateImageVenice(
   }
 
   try {
-    // Check if the item already has an image URL
     if (
       researchItem.image_url &&
       typeof researchItem.image_url === 'string' &&
@@ -185,14 +90,13 @@ export async function generateImageVenice(
       return { research: researchItem };
     }
 
-    console.log('Generating image for research item');
-
-    // Extract the betting pool idea and truth social post content
     const bettingPoolIdea = researchItem.betting_pool_idea;
-    const truthSocialPost = researchItem.truth_social_post.content.replace(/<\/?[^>]+(>|$)/g, ''); // Remove HTML tags
+    const truthSocialPost = researchItem.truth_social_post.content.replace(/<\/?[^>]+(>|$)/g, '');
 
-    // Create system instructions for Venice AI
-    const systemInstructions = `You are an expert prompt engineer who will help a user generate a strong prompt to pass to Venice AI to generate an image.
+    const imagePromptTemplate = ChatPromptTemplate.fromMessages([
+      [
+        'system',
+        `You are an expert prompt engineer who will help a user generate a strong prompt to pass to Flux AI to generate an image.
 
 The user has created a bettable idea based on a Truth Social post from Donald Trump and wants to generate an image to go along with it.
 
@@ -206,151 +110,120 @@ Rules:
 - The image must always include Donald Trump
 - VERY IMPORTANT: Your total prompt must be LESS THAN 1500 characters total
 
-Your response should only be the prompt and nothing else.`;
-
-    // Create user prompt for Venice AI
-    const userPrompt = `Here is the Truth Social post from Donald Trump:
-${truthSocialPost}
+Your response should only be the prompt and nothing else.`,
+      ],
+      [
+        'human',
+        `Here is the Truth Social post from Donald Trump:
+{truthSocialPost}
 
 And this is the bettable idea based on it:
-${bettingPoolIdea}
+{bettingPoolIdea}
 
-Please generate an image prompt for Venice AI.`;
+Please generate an image prompt for Flux AI.`,
+      ],
+    ]);
 
-    console.log(`Generating image prompt for: ${bettingPoolIdea.substring(0, 50)}...`);
-
-    // Call Venice AI for text generation
-    const veniceTextResponse = await fetch('https://api.venice.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${config.veniceApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model:
-          LARGE_LLM_PROVIDER === 'venice'
-            ? process.env.VENICE_LARGE_LLM || 'mistral-31-24b'
-            : 'mistral-31-24b',
-        messages: [
-          { role: 'system', content: systemInstructions },
-          { role: 'user', content: userPrompt },
-        ],
-        venice_parameters: {
-          enable_web_search: 'auto',
-          include_venice_system_prompt: true,
-        },
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
+    const structuredLlm = config.large_llm.withStructuredOutput(imagePromptSchema, {
+      name: 'generateImagePrompt',
     });
 
-    if (!veniceTextResponse.ok) {
-      throw new Error(
-        `Venice AI text generation error: ${veniceTextResponse.status} ${veniceTextResponse.statusText}`
-      );
-    }
+    const formattedPrompt = await imagePromptTemplate.formatMessages({
+      truthSocialPost,
+      bettingPoolIdea,
+    });
 
-    const veniceTextData = (await veniceTextResponse.json()) as VeniceTextResponse;
+    const result = await structuredLlm.invoke(formattedPrompt);
+    const imagePrompt = result.imagePrompt;
 
-    if (!veniceTextData.choices?.[0]?.message?.content) {
-      throw new Error('Venice AI did not return expected response format');
-    }
+    console.log(`Generated image prompt: ${imagePrompt.substring(0, 100)}...`);
 
-    const imagePrompt = veniceTextData.choices[0].message.content;
-
-    // Ensure the prompt isn't too long for Venice AI image generation
-    const maxPromptLength = 1450; // Leaving some buffer
-    const truncatedPrompt =
-      imagePrompt.length > maxPromptLength
-        ? imagePrompt.substring(0, maxPromptLength) + '...'
-        : imagePrompt;
-
-    if (imagePrompt.length > maxPromptLength) {
-      console.log(
-        `Truncated image prompt from ${imagePrompt.length} to ${maxPromptLength} characters`
-      );
-    }
-
-    console.log(`Generated image prompt: ${truncatedPrompt.substring(0, 100)}...`);
-
-    // Call Venice API to generate the image
-    const veniceResponse = await fetch('https://api.venice.ai/api/v1/image/generate', {
+    // Call Flux API
+    const fluxResponse = await fetch('https://api.us1.bfl.ai/v1/' + config.imageModel, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${config.veniceApiKey}`,
+        accept: 'application/json',
+        'x-key': config.bflApiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: config.imageModel,
-        prompt: truncatedPrompt,
-        height: 1024,
+        prompt: imagePrompt,
         width: 1024,
-        steps: 20,
-        cfg_scale: 7.5,
-        seed: Math.floor(Math.random() * 999999999),
-        safe_mode: false,
-        return_binary: false,
-        hide_watermark: false,
-        format: 'webp',
+        height: 1024,
       }),
     });
 
-    if (!veniceResponse.ok) {
-      throw new Error(`Venice API error: ${veniceResponse.status} ${veniceResponse.statusText}`);
+    if (!fluxResponse.ok) {
+      throw new Error(`Flux API error: ${fluxResponse.status} ${fluxResponse.statusText}`);
     }
 
-    const veniceData = (await veniceResponse.json()) as VeniceImageResponse;
+    const fluxData = (await fluxResponse.json()) as { id: string };
+    const requestId = fluxData.id;
 
-    // Generate a filename for the image
-    const filename = generateFilenameFromPrompt(truncatedPrompt);
-    const filepath = `trump-images/${filename}`;
-    let supabaseImageUrl: string;
+    // Poll for result
+    let fluxImageUrl = null;
+    let attempts = 0;
+    const maxAttempts = 30;
 
-    if (veniceData.result?.image_url) {
-      // Handle direct URL response
-      const veniceImageUrl = veniceData.result.image_url;
-      console.log(`Image generated successfully: ${veniceImageUrl}`);
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const resultUrl = new URL('https://api.us1.bfl.ai/v1/get_result');
+      resultUrl.searchParams.append('id', requestId);
 
-      // Download the image from Venice
-      const imageResponse = await fetch(veniceImageUrl);
-      if (!imageResponse.ok) {
-        throw new Error(
-          `Failed to download image: ${imageResponse.status} ${imageResponse.statusText}`
-        );
+      const resultResponse = await fetch(resultUrl.toString(), {
+        headers: {
+          accept: 'application/json',
+          'x-key': config.bflApiKey,
+        },
+      });
+
+      if (!resultResponse.ok) {
+        attempts++;
+        continue;
       }
 
-      // Convert to buffer for upload
-      const imageBlob = await imageResponse.blob();
-      const arrayBuffer = await imageBlob.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      const result = (await resultResponse.json()) as {
+        status: string;
+        result?: { sample: string };
+        error?: string;
+      };
 
-      // Upload to Supabase
-      supabaseImageUrl = await uploadImageToSupabase(buffer, filepath);
-    } else if (veniceData.images?.[0]) {
-      // Handle base64 image response
-      console.log('Processing base64 image data from Venice');
-      const buffer = Buffer.from(veniceData.images[0], 'base64');
-
-      // Upload to Supabase
-      supabaseImageUrl = await uploadImageToSupabase(buffer, filepath);
-    } else {
-      throw new Error('No image data returned from Venice API');
+      if (result.status === 'Ready' && result.result) {
+        fluxImageUrl = result.result.sample;
+        break;
+      } else if (result.status === 'Error') {
+        throw new Error(`Error generating image: ${result.error || 'Unknown error'}`);
+      }
+      attempts++;
     }
 
-    console.log(`Image uploaded to Supabase: ${supabaseImageUrl}`);
-    const updatedResearch = {
-      ...researchItem,
-      image_prompt: truncatedPrompt,
-      image_url: supabaseImageUrl,
-    };
+    if (!fluxImageUrl) {
+      throw new Error('Timed out waiting for image generation');
+    }
 
-    // Update the research item with the image prompt and URL
+    // Download and process image
+    const imageResponse = await fetch(fluxImageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to download image: ${imageResponse.status}`);
+    }
+
+    const imageBlob = await imageResponse.blob();
+    const arrayBuffer = await imageBlob.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const filename = generateFilenameFromPrompt(imagePrompt);
+    const filepath = `trump-images/${filename}`;
+    const supabaseImageUrl = await uploadImageToSupabase(buffer, filepath);
+
     return {
-      research: updatedResearch,
+      research: {
+        ...researchItem,
+        image_prompt: imagePrompt,
+        image_url: supabaseImageUrl,
+      },
     };
   } catch (error) {
     console.error('Error generating image:', error);
-    // Preserve all fields but mark as should not process with reason for failure
     return {
       research: {
         ...researchItem,

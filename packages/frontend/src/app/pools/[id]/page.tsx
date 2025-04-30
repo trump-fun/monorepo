@@ -12,21 +12,88 @@ type Props = {
 
 export const revalidate = 60;
 
-async function getPoolData(poolId: string) {
+async function getPoolData(poolId: string, page = 1, pageSize = 10) {
   try {
-    const commentsResponse = await supabaseAnonClient
+    // First fetch parent comments with pagination and get total count
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const [commentsResponse, countResponse] = await Promise.all([
+      supabaseAnonClient
+        .from('comments')
+        .select('id, pool_id, user_address, body, created_at, upvotes')
+        .eq('pool_id', poolId)
+        .is('commentID', null)
+        .order('created_at', { ascending: false })
+        .range(from, to),
+
+      supabaseAnonClient
+        .from('comments')
+        .select('id', { count: 'exact', head: true })
+        .eq('pool_id', poolId)
+        .is('commentID', null),
+    ]);
+
+    const parentComments = commentsResponse.data || [];
+    const parentIds = parentComments.map((comment) => comment.id);
+
+    // Then fetch all replies for these comments in a single query
+    const repliesResponse = await supabaseAnonClient
       .from('comments')
-      .select('*')
-      .eq('pool_id', poolId)
-      .is('commentID', null)
-      .order('created_at', { ascending: false });
+      .select('id, pool_id, user_address, body, created_at, upvotes, commentID')
+      .in('commentID', parentIds)
+      .order('created_at', { ascending: true });
+
+    // Organize replies by parent comment using a type-safe approach
+    const repliesByParent = (repliesResponse.data || []).reduce<
+      Record<string, typeof repliesResponse.data>
+    >((acc, reply) => {
+      const commentID = reply.commentID;
+      if (commentID) {
+        if (!acc[commentID]) {
+          acc[commentID] = [];
+        }
+        acc[commentID].push(reply);
+      }
+      return acc;
+    }, {});
+
+    // Attach replies to parent comments with proper typing, converting IDs to strings
+    const commentsWithReplies = parentComments.map((comment) => ({
+      ...comment,
+      id: String(comment.id),
+      upvotes: comment.upvotes ?? 0,
+      replies: (repliesByParent[comment.id] || []).map((reply) => ({
+        ...reply,
+        id: String(reply.id),
+        upvotes: reply.upvotes ?? 0,
+        commentID: reply.commentID ? String(reply.commentID) : null,
+      })),
+    }));
+
+    const total = countResponse.count || 0;
+    const hasMore = total > page * pageSize;
 
     return {
-      comments: commentsResponse.data || [],
+      comments: commentsWithReplies,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        hasMore,
+      },
     };
   } catch (error) {
     console.error('Error fetching comments data:', error);
-    return { comments: [] };
+    return {
+      comments: [],
+      pagination: {
+        page: 1,
+        pageSize,
+        total: 0,
+        hasMore: false,
+      },
+    };
   }
 }
 
@@ -94,7 +161,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PoolDetailPage({ params }: Props) {
   const id = (await params).id;
-  const { comments } = await getPoolData(id);
+  const { comments, pagination } = await getPoolData(id);
 
-  return <PoolDetailClient id={id} initialComments={comments} />;
+  return <PoolDetailClient id={id} initialComments={{ comments, pagination }} />;
 }

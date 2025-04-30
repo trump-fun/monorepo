@@ -1,9 +1,9 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BetPlaced, Pool, TokenType } from '@trump-fun/common';
+import { BetPlaced, Pool, TokenType, formatTokenAmount, getTokenName } from '@trump-fun/common';
 import { RefetchOptions } from '@tanstack/react-query';
-import { Tables, formatTokenAmount, getTokenName } from '@trump-fun/common';
+import { CommentWithReplies } from '@/types/comments';
 import { formatDistanceToNow } from 'date-fns';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
@@ -14,7 +14,15 @@ interface TabSwitcherProps {
   setSelectedTab: (tab: string) => void;
   pool: Pool;
   bets: BetPlaced[];
-  comments: Tables<'comments'>[];
+  comments: CommentWithReplies[];
+  commentsPagination:
+    | {
+        page: number;
+        pageSize: number;
+        total: number;
+        hasMore: boolean;
+      }
+    | undefined;
   isCommentsLoading: boolean;
   commentsError: Error | null;
   onCommentsUpdated: (options?: RefetchOptions | undefined) => Promise<unknown>;
@@ -26,6 +34,7 @@ export const TabSwitcher = ({
   pool,
   bets,
   comments,
+  commentsPagination,
   isCommentsLoading,
   commentsError,
   onCommentsUpdated,
@@ -63,6 +72,7 @@ export const TabSwitcher = ({
           error={commentsError}
           poolId={pool.id}
           initialComments={comments}
+          initialPagination={commentsPagination}
           isLoading={isCommentsLoading}
           key={pool.id}
           onCommentsUpdated={onCommentsUpdated}
@@ -114,11 +124,8 @@ export const TabSwitcher = ({
                   </div>
                 </div>
                 <div className='font-medium'>
-                  {formatTokenAmount(
-                    bet.amount,
-                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom
-                  )}{' '}
-                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom)}
+                  {formatTokenAmount(bet.amount, bet.tokenType as unknown as TokenType)}{' '}
+                  {getTokenName(bet.tokenType as unknown as TokenType)}
                 </div>
               </div>
             ))}

@@ -8,7 +8,8 @@ export async function addComment(
   poolId: string,
   content: string,
   signature: string,
-  messageStr?: string
+  messageStr?: string,
+  commentID?: number
 ) {
   try {
     const supabase = await createSupabaseAdminClient();
@@ -34,6 +35,7 @@ export async function addComment(
       signature,
       user_address: walletAddress.toLowerCase(),
       created_at: new Date().toISOString(),
+      commentID,
     };
 
     const { data, error } = await supabase.from('comments').insert(comment);
