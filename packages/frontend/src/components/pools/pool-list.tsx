@@ -1,27 +1,19 @@
 'use client';
 
-import { useTokenContext } from '@/hooks/useTokenContext';
-import { GET_POOLS, Pool } from '@trump-fun/common';
-import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
 import { NetworkStatus, useQuery } from '@apollo/client';
+import { GET_POOLS, OrderDirection, Pool, Pool_OrderBy } from '@trump-fun/common';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PoolCard } from './pool-card';
 
-export function PoolList() {
-  const { tokenType } = useTokenContext();
-  const [pools, setPools] = useState<Pool[]>([]);
+export function PoolList({ className = '' }: { className?: string }) {
   const isFirstRenderRef = useRef(true);
-
-  const volumeOrderBy =
-    tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcVolume : Pool_OrderBy.PointsVolume;
+  const orderBy = Pool_OrderBy.CreatedAt;
+  const orderDirection = OrderDirection.Desc;
 
   const variables = {
-    filter: {
-      status: PoolStatus.Pending,
-      betsCloseAt_gt: Math.floor(Date.now() / 1000),
-    },
-    orderBy: volumeOrderBy,
-    orderDirection: OrderDirection.Desc,
+    filter: {},
+    orderBy: orderBy,
+    orderDirection: orderDirection,
     first: 9,
   };
 
@@ -33,6 +25,8 @@ export function PoolList() {
     pollInterval: 15000,
   });
 
+  const [pools, setPools] = useState<Pool[]>([]);
+
   useEffect(() => {
     if (data?.pools && data.pools.length > 0) {
       setPools(data.pools);
@@ -41,35 +35,33 @@ export function PoolList() {
 
   const isInitialLoading = useMemo(() => {
     if (!isFirstRenderRef.current) return false;
-    if (pools !== null) {
+    if (pools.length > 0) {
       isFirstRenderRef.current = false;
       return false;
     }
     return loading && networkStatus === NetworkStatus.loading;
   }, [loading, networkStatus, pools]);
 
-  const poolCards = useMemo(() => {
-    if (!pools) return null;
-    return pools.map((pool) => <PoolCard key={pool.id} pool={pool} />);
-  }, [pools]);
+  if (pools.length === 0 && !loading) {
+    return <div className='py-10 text-center text-gray-400'>No predictions found</div>;
+  }
 
-  if (isInitialLoading) {
+  if (error && pools.length === 0) {
     return (
-      <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className='bg-muted h-[300px] animate-pulse rounded-lg p-4' />
-        ))}
-      </div>
+      <div className='py-10 text-center text-red-400'>Error fetching pools: {error?.message}</div>
     );
   }
 
-  if (error && !pools) {
-    return <div>Error fetching pools: {error?.message}</div>;
-  }
-
   return (
-    <div>
-      <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>{poolCards}</div>
+    <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ${className}`}>
+      {isInitialLoading
+        ? Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={`skeleton-${index}`}
+              className='h-64 animate-pulse rounded-lg border border-gray-800 bg-gray-900'
+            />
+          ))
+        : pools.map((pool) => <PoolCard pool={pool} key={pool.id} />)}
     </div>
   );
 }

@@ -111,32 +111,6 @@ export function formatDate(timestamp: string | number): string {
  * @param tokenType Type of token (USDC or FREEDOM)
  * @returns Formatted string with abbreviation (K, M, B)
  */
-/**
- * Get the token name based on token type
- * @param tokenType Type of token
- * @returns Token name as a string
- */
-export function getTokenName(tokenType: TokenType): string {
-  return TOKEN_NAMES[tokenType] || 'FREEDOM';
-}
-
-/**
- * Format a token amount with the token name
- * @param amount Raw token amount (with decimals)
- * @param tokenType Type of token (USDC or FREEDOM)
- * @param options Locale string options
- * @returns Formatted string with token name
- */
-export function formatWithTokenName(
-  amount: string | number,
-  tokenType: TokenType,
-  options?: Intl.NumberFormatOptions
-): string {
-  const value =
-    tokenType === TokenType.Usdc ? formatUSDC(amount, options) : formatFreedom(amount, options);
-  return `${value} ${getTokenName(tokenType)}`;
-}
-
 export function formatAbbreviatedAmount(amount: string | number, tokenType: TokenType): string {
   const value = toDecimal(amount, tokenType);
 
@@ -176,4 +150,30 @@ export function getTimeRemaining(timestamp: number | string): string {
   } else {
     return `${minutes}m`;
   }
+}
+
+/**
+ * Get the token name based on token type
+ * @param tokenType Type of token
+ * @returns Token name as a string
+ */
+export function getTokenName(tokenType: TokenType): string {
+  return TOKEN_NAMES[tokenType] || 'FREEDOM';
+}
+
+/**
+ * Format a token amount with the token name
+ * @param amount Raw token amount (with decimals)
+ * @param tokenType Type of token (USDC or FREEDOM)
+ * @param options Locale string options
+ * @returns Formatted string with token name
+ */
+export function formatWithTokenName(
+  amount: string | number,
+  tokenType: TokenType,
+  options?: Intl.NumberFormatOptions
+): string {
+  const value =
+    tokenType === TokenType.Usdc ? formatUSDC(amount, options) : formatFreedom(amount, options);
+  return `${value} ${getTokenName(tokenType)}`;
 }

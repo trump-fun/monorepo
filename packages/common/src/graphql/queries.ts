@@ -2,51 +2,33 @@ import { gql } from '@apollo/client';
 
 // Complete pool fields including everything we might need in any context
 const POOL_FIELDS = `
-  id
-  poolId
-  question
-  options
-  status
-  chainId
-  chainName
-  createdAt
-  imageUrl
-  createdBlockNumber
-  createdBlockTimestamp
-  createdTransactionHash
-  lastUpdatedBlockNumber
-  lastUpdatedBlockTimestamp
-  lastUpdatedTransactionHash
-  gradedBlockNumber
-  gradedBlockTimestamp
-  gradedTransactionHash
   betsCloseAt
-  usdcBetTotals
-  pointsBetTotals
-  usdcVolume
-  pointsVolume
-  originalTruthSocialPostId
-  winningOption
-  isDraw
+    createdAt
+    id
+    imageUrl
+    isDraw
+    options
+    originalTruthSocialPostId
+    question
+    status
+    usdcBetTotals
+    winningOption
+    pointsBetTotals
 `;
 
 // Complete bet fields including everything we might need
 const BET_FIELDS = `
-  id
-  betId
-  user
-  option
-  amount
-  poolId
-  tokenType
-  blockNumber
-  blockTimestamp
-  transactionHash
-  createdAt
-  isWithdrawn
-  chainName
-  chainId
-  updatedAt
+    amount
+    betIntId
+    createdAt
+    id
+    isPayedOut
+    optionIndex
+    outcome
+    poolIntId
+    tokenType
+    txHash
+    userAddress
 `;
 
 // Fields specific to BetWithdrawal type that match the schema
@@ -66,9 +48,6 @@ const BET_WITHDRAWAL_FIELDS = `
 // Pool fields with nested bets
 const POOL_WITH_BETS = `
   ${POOL_FIELDS}
-  bets {
-    ${BET_FIELDS}
-  }
 `;
 
 /**

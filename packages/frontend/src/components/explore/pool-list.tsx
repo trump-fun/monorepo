@@ -1,6 +1,5 @@
 import { BettingPost } from '@/components/betting-post';
 import { Pool, TokenType } from '@trump-fun/common';
-import { getBetTotals, getVolumeForTokenType } from '@/utils/betsInfo';
 import Image from 'next/image';
 
 interface PoolListProps {
@@ -20,7 +19,7 @@ export function PoolList({
   onLoadMore,
   isLoadingMore = false,
 }: PoolListProps) {
-  if (isLoading && pools.length === 0) {
+  if (isLoading && pools && pools.length === 0) {
     return (
       <div className='container mx-auto flex h-screen max-w-4xl flex-col items-center justify-center px-4 py-8'>
         <Image
@@ -45,25 +44,7 @@ export function PoolList({
       )}
 
       {pools.length > 0 &&
-        pools.map((pool) => (
-          <BettingPost
-            key={pool.id}
-            id={pool.id}
-            imageUrl={pool.imageUrl}
-            username='realDonaldTrump'
-            time={pool.createdAt}
-            question={pool.question}
-            options={pool.options}
-            commentCount={0}
-            truthSocialId={pool.originalTruthSocialPostId}
-            volume={getVolumeForTokenType(pool, tokenType)}
-            optionBets={pool.options.map((_, index) => getBetTotals(pool, tokenType, index))}
-            closesAt={pool.betsCloseAt}
-            gradedBlockTimestamp={pool.gradedBlockTimestamp}
-            status={pool.status}
-            bets={pool.bets.map((bet) => ({ ...bet, createdAt: bet.updatedAt }))}
-          />
-        ))}
+        pools.map((pool) => <BettingPost key={pool.id} pool={pool} tokenType={tokenType} />)}
 
       {hasMore && (
         <div className='flex justify-center py-4'>

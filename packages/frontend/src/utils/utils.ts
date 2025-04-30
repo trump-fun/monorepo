@@ -1,5 +1,5 @@
-import { Pool, PoolStatus, TokenType } from '@/types';
-import { DEFAULT_CHAIN_ID, USDC_DECIMALS, toDecimal } from '@trump-fun/common';
+import { Pool, PoolStatus } from '@/types';
+import { DEFAULT_CHAIN_ID, USDC_DECIMALS, toDecimal, TokenType } from '@trump-fun/common';
 
 // Re-export constants from common package
 export { USDC_DECIMALS };
@@ -23,25 +23,12 @@ export const addressToBackgroundColor = (address: string) => {
 };
 
 export function generateRandomColor(isLight: boolean) {
-  const hue = Math.random() * 360;
-  const saturation = 50 + Math.random() * 50; // 50-100%
-  const lightness = isLight ? 60 + Math.random() * 30 : 10 + Math.random() * 30; // 60-90% for light, 10-40% for dark
-
-  // Convert HSL to Hex
-  const hslToHex = (h: number, s: number, l: number): string => {
-    l /= 100;
-    const a = (s * Math.min(l, 1 - l)) / 100;
-    const f = (n: number) => {
-      const k = (n + h / 30) % 12;
-      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-      return Math.round(255 * color)
-        .toString(16)
-        .padStart(2, '0');
-    };
-    return `#${f(0)}${f(8)}${f(4)}`;
-  };
-
-  return hslToHex(hue, saturation, lightness);
+  const hue = Math.floor(Math.random() * 360);
+  const saturation = Math.floor(Math.random() * 50) + 50; // 50-100
+  const lightness = isLight
+    ? Math.floor(Math.random() * 30) + 60
+    : Math.floor(Math.random() * 30) + 15; // Light: 60-90, Dark: 15-45
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 /**
@@ -81,26 +68,7 @@ export const shame = (t: string) => {
 export const parseChainId = (chainId: number | string): string => {
   let parsedChainId = chainId;
   if (typeof chainId === 'string') {
-    parsedChainId = chainId.replace('eip155:', '');
+    parsedChainId = parseInt(chainId);
   }
-
-  // TODO bleh
-  parsedChainId = DEFAULT_CHAIN_ID;
-
-  return String(parsedChainId);
-};
-
-export const getFrontendPoolStatus = (poolStatus: Pool['status'], betsCloseAt: number) => {
-  const now = new Date().getTime();
-  if (poolStatus === PoolStatus.Pending && betsCloseAt * 1000 > now) {
-    return FrontendPoolStatus.Pending;
-  }
-
-  if (poolStatus === PoolStatus.Pending && betsCloseAt * 1000 < now) {
-    return FrontendPoolStatus.Grading;
-  }
-
-  if (poolStatus === PoolStatus.Graded) {
-    return FrontendPoolStatus.Graded;
-  }
+  return parsedChainId === DEFAULT_CHAIN_ID ? 'Base Sepolia' : 'Unknown';
 };

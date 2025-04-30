@@ -32,9 +32,9 @@ export type Scalars = {
   Timestamp: { input: any; output: any };
 };
 
-export enum Aggregation_Interval {
-  Day = 'day',
-  Hour = 'hour',
+export enum Aggregation_interval {
+  day = 'day',
+  hour = 'hour',
 }
 
 export type Bet = {
@@ -76,7 +76,7 @@ export type BetPlaced = {
   user: Scalars['String']['output'];
 };
 
-export type BetPlaced_Filter = {
+export type BetPlaced_filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   amount?: InputMaybe<Scalars['BigInt']['input']>;
@@ -87,7 +87,7 @@ export type BetPlaced_Filter = {
   amount_lte?: InputMaybe<Scalars['BigInt']['input']>;
   amount_not?: InputMaybe<Scalars['BigInt']['input']>;
   amount_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  and?: InputMaybe<Array<InputMaybe<BetPlaced_Filter>>>;
+  and?: InputMaybe<Array<InputMaybe<BetPlaced_filter>>>;
   bet?: InputMaybe<Scalars['String']['input']>;
   betId?: InputMaybe<Scalars['BigInt']['input']>;
   betId_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -97,7 +97,7 @@ export type BetPlaced_Filter = {
   betId_lte?: InputMaybe<Scalars['BigInt']['input']>;
   betId_not?: InputMaybe<Scalars['BigInt']['input']>;
   betId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  bet_?: InputMaybe<Bet_Filter>;
+  bet_?: InputMaybe<Bet_filter>;
   bet_contains?: InputMaybe<Scalars['String']['input']>;
   bet_contains_nocase?: InputMaybe<Scalars['String']['input']>;
   bet_ends_with?: InputMaybe<Scalars['String']['input']>;
@@ -141,7 +141,7 @@ export type BetPlaced_Filter = {
   optionIndex_lte?: InputMaybe<Scalars['BigInt']['input']>;
   optionIndex_not?: InputMaybe<Scalars['BigInt']['input']>;
   optionIndex_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  or?: InputMaybe<Array<InputMaybe<BetPlaced_Filter>>>;
+  or?: InputMaybe<Array<InputMaybe<BetPlaced_filter>>>;
   pool?: InputMaybe<Scalars['String']['input']>;
   poolId?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -151,7 +151,7 @@ export type BetPlaced_Filter = {
   poolId_lte?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_not?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  pool_?: InputMaybe<Pool_Filter>;
+  pool_?: InputMaybe<Pool_filter>;
   pool_contains?: InputMaybe<Scalars['String']['input']>;
   pool_contains_nocase?: InputMaybe<Scalars['String']['input']>;
   pool_ends_with?: InputMaybe<Scalars['String']['input']>;
@@ -217,52 +217,52 @@ export type BetPlaced_Filter = {
   user_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum BetPlaced_OrderBy {
-  Amount = 'amount',
-  Bet = 'bet',
-  BetId = 'betId',
-  BetAmount = 'bet__amount',
-  BetBetIntId = 'bet__betIntId',
-  BetCreatedAt = 'bet__createdAt',
-  BetId = 'bet__id',
-  BetIsPayedOut = 'bet__isPayedOut',
-  BetOptionIndex = 'bet__optionIndex',
-  BetOutcome = 'bet__outcome',
-  BetPoolIntId = 'bet__poolIntId',
-  BetTokenType = 'bet__tokenType',
-  BetTxHash = 'bet__txHash',
-  BetUserAddress = 'bet__userAddress',
-  CreatedAt = 'createdAt',
-  Id = 'id',
-  OptionIndex = 'optionIndex',
-  Pool = 'pool',
-  PoolId = 'poolId',
-  PoolBetsCloseAt = 'pool__betsCloseAt',
-  PoolCategory = 'pool__category',
-  PoolClosureCriteria = 'pool__closureCriteria',
-  PoolClosureInstructions = 'pool__closureInstructions',
-  PoolCreatedAt = 'pool__createdAt',
-  PoolCreationTxHash = 'pool__creationTxHash',
-  PoolCreatorId = 'pool__creatorId',
-  PoolCreatorName = 'pool__creatorName',
-  PoolDecisionTime = 'pool__decisionTime',
-  PoolId = 'pool__id',
-  PoolImageUrl = 'pool__imageUrl',
-  PoolIsDraw = 'pool__isDraw',
-  PoolOriginalTruthSocialPostId = 'pool__originalTruthSocialPostId',
-  PoolPointsBetTotals = 'pool__pointsBetTotals',
-  PoolPoolIntId = 'pool__poolIntId',
-  PoolQuestion = 'pool__question',
-  PoolStatus = 'pool__status',
-  PoolTwitterPostId = 'pool__twitterPostId',
-  PoolUsdcBetTotals = 'pool__usdcBetTotals',
-  PoolWinningOption = 'pool__winningOption',
-  TokenType = 'tokenType',
-  TxHash = 'txHash',
-  User = 'user',
+export enum BetPlaced_orderBy {
+  amount = 'amount',
+  bet = 'bet',
+  betId = 'betId',
+  bet__amount = 'bet__amount',
+  bet__betIntId = 'bet__betIntId',
+  bet__createdAt = 'bet__createdAt',
+  bet__id = 'bet__id',
+  bet__isPayedOut = 'bet__isPayedOut',
+  bet__optionIndex = 'bet__optionIndex',
+  bet__outcome = 'bet__outcome',
+  bet__poolIntId = 'bet__poolIntId',
+  bet__tokenType = 'bet__tokenType',
+  bet__txHash = 'bet__txHash',
+  bet__userAddress = 'bet__userAddress',
+  createdAt = 'createdAt',
+  id = 'id',
+  optionIndex = 'optionIndex',
+  pool = 'pool',
+  poolId = 'poolId',
+  pool__betsCloseAt = 'pool__betsCloseAt',
+  pool__category = 'pool__category',
+  pool__closureCriteria = 'pool__closureCriteria',
+  pool__closureInstructions = 'pool__closureInstructions',
+  pool__createdAt = 'pool__createdAt',
+  pool__creationTxHash = 'pool__creationTxHash',
+  pool__creatorId = 'pool__creatorId',
+  pool__creatorName = 'pool__creatorName',
+  pool__decisionTime = 'pool__decisionTime',
+  pool__id = 'pool__id',
+  pool__imageUrl = 'pool__imageUrl',
+  pool__isDraw = 'pool__isDraw',
+  pool__originalTruthSocialPostId = 'pool__originalTruthSocialPostId',
+  pool__pointsBetTotals = 'pool__pointsBetTotals',
+  pool__poolIntId = 'pool__poolIntId',
+  pool__question = 'pool__question',
+  pool__status = 'pool__status',
+  pool__twitterPostId = 'pool__twitterPostId',
+  pool__usdcBetTotals = 'pool__usdcBetTotals',
+  pool__winningOption = 'pool__winningOption',
+  tokenType = 'tokenType',
+  txHash = 'txHash',
+  user = 'user',
 }
 
-export type Bet_Filter = {
+export type Bet_filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   amount?: InputMaybe<Scalars['BigInt']['input']>;
@@ -273,7 +273,7 @@ export type Bet_Filter = {
   amount_lte?: InputMaybe<Scalars['BigInt']['input']>;
   amount_not?: InputMaybe<Scalars['BigInt']['input']>;
   amount_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  and?: InputMaybe<Array<InputMaybe<Bet_Filter>>>;
+  and?: InputMaybe<Array<InputMaybe<Bet_filter>>>;
   betIntId?: InputMaybe<Scalars['BigInt']['input']>;
   betIntId_gt?: InputMaybe<Scalars['BigInt']['input']>;
   betIntId_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -310,7 +310,7 @@ export type Bet_Filter = {
   optionIndex_lte?: InputMaybe<Scalars['BigInt']['input']>;
   optionIndex_not?: InputMaybe<Scalars['BigInt']['input']>;
   optionIndex_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  or?: InputMaybe<Array<InputMaybe<Bet_Filter>>>;
+  or?: InputMaybe<Array<InputMaybe<Bet_filter>>>;
   outcome?: InputMaybe<BetOutcome>;
   outcome_in?: InputMaybe<Array<BetOutcome>>;
   outcome_not?: InputMaybe<BetOutcome>;
@@ -324,7 +324,7 @@ export type Bet_Filter = {
   poolIntId_lte?: InputMaybe<Scalars['BigInt']['input']>;
   poolIntId_not?: InputMaybe<Scalars['BigInt']['input']>;
   poolIntId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  pool_?: InputMaybe<Pool_Filter>;
+  pool_?: InputMaybe<Pool_filter>;
   pool_contains?: InputMaybe<Scalars['String']['input']>;
   pool_contains_nocase?: InputMaybe<Scalars['String']['input']>;
   pool_ends_with?: InputMaybe<Scalars['String']['input']>;
@@ -390,46 +390,46 @@ export type Bet_Filter = {
   userAddress_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum Bet_OrderBy {
-  Amount = 'amount',
-  BetIntId = 'betIntId',
-  CreatedAt = 'createdAt',
-  Id = 'id',
-  IsPayedOut = 'isPayedOut',
-  OptionIndex = 'optionIndex',
-  Outcome = 'outcome',
-  Pool = 'pool',
-  PoolIntId = 'poolIntId',
-  PoolBetsCloseAt = 'pool__betsCloseAt',
-  PoolCategory = 'pool__category',
-  PoolClosureCriteria = 'pool__closureCriteria',
-  PoolClosureInstructions = 'pool__closureInstructions',
-  PoolCreatedAt = 'pool__createdAt',
-  PoolCreationTxHash = 'pool__creationTxHash',
-  PoolCreatorId = 'pool__creatorId',
-  PoolCreatorName = 'pool__creatorName',
-  PoolDecisionTime = 'pool__decisionTime',
-  PoolId = 'pool__id',
-  PoolImageUrl = 'pool__imageUrl',
-  PoolIsDraw = 'pool__isDraw',
-  PoolOriginalTruthSocialPostId = 'pool__originalTruthSocialPostId',
-  PoolPointsBetTotals = 'pool__pointsBetTotals',
-  PoolPoolIntId = 'pool__poolIntId',
-  PoolQuestion = 'pool__question',
-  PoolStatus = 'pool__status',
-  PoolTwitterPostId = 'pool__twitterPostId',
-  PoolUsdcBetTotals = 'pool__usdcBetTotals',
-  PoolWinningOption = 'pool__winningOption',
-  TokenType = 'tokenType',
-  TxHash = 'txHash',
-  UserAddress = 'userAddress',
+export enum Bet_orderBy {
+  amount = 'amount',
+  betIntId = 'betIntId',
+  createdAt = 'createdAt',
+  id = 'id',
+  isPayedOut = 'isPayedOut',
+  optionIndex = 'optionIndex',
+  outcome = 'outcome',
+  pool = 'pool',
+  poolIntId = 'poolIntId',
+  pool__betsCloseAt = 'pool__betsCloseAt',
+  pool__category = 'pool__category',
+  pool__closureCriteria = 'pool__closureCriteria',
+  pool__closureInstructions = 'pool__closureInstructions',
+  pool__createdAt = 'pool__createdAt',
+  pool__creationTxHash = 'pool__creationTxHash',
+  pool__creatorId = 'pool__creatorId',
+  pool__creatorName = 'pool__creatorName',
+  pool__decisionTime = 'pool__decisionTime',
+  pool__id = 'pool__id',
+  pool__imageUrl = 'pool__imageUrl',
+  pool__isDraw = 'pool__isDraw',
+  pool__originalTruthSocialPostId = 'pool__originalTruthSocialPostId',
+  pool__pointsBetTotals = 'pool__pointsBetTotals',
+  pool__poolIntId = 'pool__poolIntId',
+  pool__question = 'pool__question',
+  pool__status = 'pool__status',
+  pool__twitterPostId = 'pool__twitterPostId',
+  pool__usdcBetTotals = 'pool__usdcBetTotals',
+  pool__winningOption = 'pool__winningOption',
+  tokenType = 'tokenType',
+  txHash = 'txHash',
+  userAddress = 'userAddress',
 }
 
 export type BlockChangedFilter = {
   number_gte: Scalars['Int']['input'];
 };
 
-export type Block_Height = {
+export type Block_height = {
   hash?: InputMaybe<Scalars['Bytes']['input']>;
   number?: InputMaybe<Scalars['Int']['input']>;
   number_gte?: InputMaybe<Scalars['Int']['input']>;
@@ -447,8 +447,8 @@ export enum MediaType {
 
 /** Defines the order direction, either ascending or descending */
 export enum OrderDirection {
-  Asc = 'asc',
-  Desc = 'desc',
+  asc = 'asc',
+  desc = 'desc',
 }
 
 export type PayoutClaimed = {
@@ -462,7 +462,7 @@ export type PayoutClaimed = {
   user: Scalars['String']['output'];
 };
 
-export type PayoutClaimed_Filter = {
+export type PayoutClaimed_filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   amount?: InputMaybe<Scalars['BigInt']['input']>;
@@ -473,7 +473,7 @@ export type PayoutClaimed_Filter = {
   amount_lte?: InputMaybe<Scalars['BigInt']['input']>;
   amount_not?: InputMaybe<Scalars['BigInt']['input']>;
   amount_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  and?: InputMaybe<Array<InputMaybe<PayoutClaimed_Filter>>>;
+  and?: InputMaybe<Array<InputMaybe<PayoutClaimed_filter>>>;
   betId?: InputMaybe<Scalars['BigInt']['input']>;
   betId_gt?: InputMaybe<Scalars['BigInt']['input']>;
   betId_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -490,7 +490,7 @@ export type PayoutClaimed_Filter = {
   id_lte?: InputMaybe<Scalars['ID']['input']>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
-  or?: InputMaybe<Array<InputMaybe<PayoutClaimed_Filter>>>;
+  or?: InputMaybe<Array<InputMaybe<PayoutClaimed_filter>>>;
   poolId?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gt?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -545,14 +545,14 @@ export type PayoutClaimed_Filter = {
   user_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum PayoutClaimed_OrderBy {
-  Amount = 'amount',
-  BetId = 'betId',
-  Id = 'id',
-  PoolId = 'poolId',
-  TokenType = 'tokenType',
-  TxHash = 'txHash',
-  User = 'user',
+export enum PayoutClaimed_orderBy {
+  amount = 'amount',
+  betId = 'betId',
+  id = 'id',
+  poolId = 'poolId',
+  tokenType = 'tokenType',
+  txHash = 'txHash',
+  user = 'user',
 }
 
 export type Pool = {
@@ -591,10 +591,10 @@ export type PoolClosed = {
   txHash: Scalars['String']['output'];
 };
 
-export type PoolClosed_Filter = {
+export type PoolClosed_filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<PoolClosed_Filter>>>;
+  and?: InputMaybe<Array<InputMaybe<PoolClosed_filter>>>;
   decisionTime?: InputMaybe<Scalars['BigInt']['input']>;
   decisionTime_gt?: InputMaybe<Scalars['BigInt']['input']>;
   decisionTime_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -611,7 +611,7 @@ export type PoolClosed_Filter = {
   id_lte?: InputMaybe<Scalars['ID']['input']>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
-  or?: InputMaybe<Array<InputMaybe<PoolClosed_Filter>>>;
+  or?: InputMaybe<Array<InputMaybe<PoolClosed_filter>>>;
   poolId?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gt?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -650,12 +650,12 @@ export type PoolClosed_Filter = {
   txHash_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum PoolClosed_OrderBy {
-  DecisionTime = 'decisionTime',
-  Id = 'id',
-  PoolId = 'poolId',
-  SelectedOption = 'selectedOption',
-  TxHash = 'txHash',
+export enum PoolClosed_orderBy {
+  decisionTime = 'decisionTime',
+  id = 'id',
+  poolId = 'poolId',
+  selectedOption = 'selectedOption',
+  txHash = 'txHash',
 }
 
 export type PoolCreated = {
@@ -675,10 +675,10 @@ export type PoolCreated = {
   txHash: Scalars['String']['output'];
 };
 
-export type PoolCreated_Filter = {
+export type PoolCreated_filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<PoolCreated_Filter>>>;
+  and?: InputMaybe<Array<InputMaybe<PoolCreated_filter>>>;
   betsCloseAt?: InputMaybe<Scalars['BigInt']['input']>;
   betsCloseAt_gt?: InputMaybe<Scalars['BigInt']['input']>;
   betsCloseAt_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -829,7 +829,7 @@ export type PoolCreated_Filter = {
   options_not?: InputMaybe<Array<Scalars['String']['input']>>;
   options_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   options_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
-  or?: InputMaybe<Array<InputMaybe<PoolCreated_Filter>>>;
+  or?: InputMaybe<Array<InputMaybe<PoolCreated_filter>>>;
   poolId?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gt?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -880,20 +880,20 @@ export type PoolCreated_Filter = {
   txHash_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum PoolCreated_OrderBy {
-  BetsCloseAt = 'betsCloseAt',
-  Category = 'category',
-  ClosureCriteria = 'closureCriteria',
-  ClosureInstructions = 'closureInstructions',
-  CreatedAt = 'createdAt',
-  CreatorId = 'creatorId',
-  CreatorName = 'creatorName',
-  Id = 'id',
-  ImageUrl = 'imageUrl',
-  Options = 'options',
-  PoolId = 'poolId',
-  Question = 'question',
-  TxHash = 'txHash',
+export enum PoolCreated_orderBy {
+  betsCloseAt = 'betsCloseAt',
+  category = 'category',
+  closureCriteria = 'closureCriteria',
+  closureInstructions = 'closureInstructions',
+  createdAt = 'createdAt',
+  creatorId = 'creatorId',
+  creatorName = 'creatorName',
+  id = 'id',
+  imageUrl = 'imageUrl',
+  options = 'options',
+  poolId = 'poolId',
+  question = 'question',
+  txHash = 'txHash',
 }
 
 export type PoolMediaSet = {
@@ -905,10 +905,10 @@ export type PoolMediaSet = {
   txHash: Scalars['String']['output'];
 };
 
-export type PoolMediaSet_Filter = {
+export type PoolMediaSet_filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<PoolMediaSet_Filter>>>;
+  and?: InputMaybe<Array<InputMaybe<PoolMediaSet_filter>>>;
   id?: InputMaybe<Scalars['ID']['input']>;
   id_gt?: InputMaybe<Scalars['ID']['input']>;
   id_gte?: InputMaybe<Scalars['ID']['input']>;
@@ -937,7 +937,7 @@ export type PoolMediaSet_Filter = {
   imageUrl_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
   imageUrl_starts_with?: InputMaybe<Scalars['String']['input']>;
   imageUrl_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  or?: InputMaybe<Array<InputMaybe<PoolMediaSet_Filter>>>;
+  or?: InputMaybe<Array<InputMaybe<PoolMediaSet_filter>>>;
   pool?: InputMaybe<Scalars['String']['input']>;
   poolId?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -947,7 +947,7 @@ export type PoolMediaSet_Filter = {
   poolId_lte?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_not?: InputMaybe<Scalars['BigInt']['input']>;
   poolId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  pool_?: InputMaybe<Pool_Filter>;
+  pool_?: InputMaybe<Pool_filter>;
   pool_contains?: InputMaybe<Scalars['String']['input']>;
   pool_contains_nocase?: InputMaybe<Scalars['String']['input']>;
   pool_ends_with?: InputMaybe<Scalars['String']['input']>;
@@ -989,32 +989,32 @@ export type PoolMediaSet_Filter = {
   txHash_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum PoolMediaSet_OrderBy {
-  Id = 'id',
-  ImageUrl = 'imageUrl',
-  Pool = 'pool',
-  PoolId = 'poolId',
-  PoolBetsCloseAt = 'pool__betsCloseAt',
-  PoolCategory = 'pool__category',
-  PoolClosureCriteria = 'pool__closureCriteria',
-  PoolClosureInstructions = 'pool__closureInstructions',
-  PoolCreatedAt = 'pool__createdAt',
-  PoolCreationTxHash = 'pool__creationTxHash',
-  PoolCreatorId = 'pool__creatorId',
-  PoolCreatorName = 'pool__creatorName',
-  PoolDecisionTime = 'pool__decisionTime',
-  PoolId = 'pool__id',
-  PoolImageUrl = 'pool__imageUrl',
-  PoolIsDraw = 'pool__isDraw',
-  PoolOriginalTruthSocialPostId = 'pool__originalTruthSocialPostId',
-  PoolPointsBetTotals = 'pool__pointsBetTotals',
-  PoolPoolIntId = 'pool__poolIntId',
-  PoolQuestion = 'pool__question',
-  PoolStatus = 'pool__status',
-  PoolTwitterPostId = 'pool__twitterPostId',
-  PoolUsdcBetTotals = 'pool__usdcBetTotals',
-  PoolWinningOption = 'pool__winningOption',
-  TxHash = 'txHash',
+export enum PoolMediaSet_orderBy {
+  id = 'id',
+  imageUrl = 'imageUrl',
+  pool = 'pool',
+  poolId = 'poolId',
+  pool__betsCloseAt = 'pool__betsCloseAt',
+  pool__category = 'pool__category',
+  pool__closureCriteria = 'pool__closureCriteria',
+  pool__closureInstructions = 'pool__closureInstructions',
+  pool__createdAt = 'pool__createdAt',
+  pool__creationTxHash = 'pool__creationTxHash',
+  pool__creatorId = 'pool__creatorId',
+  pool__creatorName = 'pool__creatorName',
+  pool__decisionTime = 'pool__decisionTime',
+  pool__id = 'pool__id',
+  pool__imageUrl = 'pool__imageUrl',
+  pool__isDraw = 'pool__isDraw',
+  pool__originalTruthSocialPostId = 'pool__originalTruthSocialPostId',
+  pool__pointsBetTotals = 'pool__pointsBetTotals',
+  pool__poolIntId = 'pool__poolIntId',
+  pool__question = 'pool__question',
+  pool__status = 'pool__status',
+  pool__twitterPostId = 'pool__twitterPostId',
+  pool__usdcBetTotals = 'pool__usdcBetTotals',
+  pool__winningOption = 'pool__winningOption',
+  txHash = 'txHash',
 }
 
 export enum PoolStatus {
@@ -1024,10 +1024,10 @@ export enum PoolStatus {
   Regraded = 'Regraded',
 }
 
-export type Pool_Filter = {
+export type Pool_filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<Pool_Filter>>>;
+  and?: InputMaybe<Array<InputMaybe<Pool_filter>>>;
   betsCloseAt?: InputMaybe<Scalars['BigInt']['input']>;
   betsCloseAt_gt?: InputMaybe<Scalars['BigInt']['input']>;
   betsCloseAt_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -1210,7 +1210,7 @@ export type Pool_Filter = {
   options_not?: InputMaybe<Array<Scalars['String']['input']>>;
   options_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   options_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
-  or?: InputMaybe<Array<InputMaybe<Pool_Filter>>>;
+  or?: InputMaybe<Array<InputMaybe<Pool_filter>>>;
   originalTruthSocialPostId?: InputMaybe<Scalars['String']['input']>;
   originalTruthSocialPostId_contains?: InputMaybe<Scalars['String']['input']>;
   originalTruthSocialPostId_contains_nocase?: InputMaybe<Scalars['String']['input']>;
@@ -1321,30 +1321,30 @@ export type Pool_Filter = {
   winningOption_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
 };
 
-export enum Pool_OrderBy {
-  BetsCloseAt = 'betsCloseAt',
-  Category = 'category',
-  ClosureCriteria = 'closureCriteria',
-  ClosureInstructions = 'closureInstructions',
-  CreatedAt = 'createdAt',
-  CreationTxHash = 'creationTxHash',
-  CreatorId = 'creatorId',
-  CreatorName = 'creatorName',
-  DecisionTime = 'decisionTime',
-  Id = 'id',
-  ImageUrl = 'imageUrl',
-  IsDraw = 'isDraw',
-  Options = 'options',
-  OriginalTruthSocialPostId = 'originalTruthSocialPostId',
-  PointsBetTotals = 'pointsBetTotals',
-  PointsBetTotalsByOption = 'pointsBetTotalsByOption',
-  PoolIntId = 'poolIntId',
-  Question = 'question',
-  Status = 'status',
-  TwitterPostId = 'twitterPostId',
-  UsdcBetTotals = 'usdcBetTotals',
-  UsdcBetTotalsByOption = 'usdcBetTotalsByOption',
-  WinningOption = 'winningOption',
+export enum Pool_orderBy {
+  betsCloseAt = 'betsCloseAt',
+  category = 'category',
+  closureCriteria = 'closureCriteria',
+  closureInstructions = 'closureInstructions',
+  createdAt = 'createdAt',
+  creationTxHash = 'creationTxHash',
+  creatorId = 'creatorId',
+  creatorName = 'creatorName',
+  decisionTime = 'decisionTime',
+  id = 'id',
+  imageUrl = 'imageUrl',
+  isDraw = 'isDraw',
+  options = 'options',
+  originalTruthSocialPostId = 'originalTruthSocialPostId',
+  pointsBetTotals = 'pointsBetTotals',
+  pointsBetTotalsByOption = 'pointsBetTotalsByOption',
+  poolIntId = 'poolIntId',
+  question = 'question',
+  status = 'status',
+  twitterPostId = 'twitterPostId',
+  usdcBetTotals = 'usdcBetTotals',
+  usdcBetTotalsByOption = 'usdcBetTotalsByOption',
+  winningOption = 'winningOption',
 }
 
 export type Query = {
@@ -1367,120 +1367,120 @@ export type Query = {
   pools: Array<Pool>;
 };
 
-export type Query_MetaArgs = {
-  block?: InputMaybe<Block_Height>;
+export type Query_metaArgs = {
+  block?: InputMaybe<Block_height>;
 };
 
-export type QueryBetArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerybetArgs = {
+  block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-export type QueryBetPlacedArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerybetPlacedArgs = {
+  block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-export type QueryBetPlacedsArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerybetPlacedsArgs = {
+  block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BetPlaced_OrderBy>;
+  orderBy?: InputMaybe<BetPlaced_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BetPlaced_Filter>;
+  where?: InputMaybe<BetPlaced_filter>;
 };
 
-export type QueryBetsArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerybetsArgs = {
+  block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Bet_OrderBy>;
+  orderBy?: InputMaybe<Bet_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Bet_Filter>;
+  where?: InputMaybe<Bet_filter>;
 };
 
-export type QueryPayoutClaimedArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypayoutClaimedArgs = {
+  block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-export type QueryPayoutClaimedsArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypayoutClaimedsArgs = {
+  block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PayoutClaimed_OrderBy>;
+  orderBy?: InputMaybe<PayoutClaimed_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PayoutClaimed_Filter>;
+  where?: InputMaybe<PayoutClaimed_filter>;
 };
 
-export type QueryPoolArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolArgs = {
+  block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-export type QueryPoolClosedArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolClosedArgs = {
+  block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-export type QueryPoolClosedsArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolClosedsArgs = {
+  block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PoolClosed_OrderBy>;
+  orderBy?: InputMaybe<PoolClosed_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolClosed_Filter>;
+  where?: InputMaybe<PoolClosed_filter>;
 };
 
-export type QueryPoolCreatedArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolCreatedArgs = {
+  block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-export type QueryPoolCreatedsArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolCreatedsArgs = {
+  block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PoolCreated_OrderBy>;
+  orderBy?: InputMaybe<PoolCreated_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolCreated_Filter>;
+  where?: InputMaybe<PoolCreated_filter>;
 };
 
-export type QueryPoolMediaSetArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolMediaSetArgs = {
+  block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-export type QueryPoolMediaSetsArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolMediaSetsArgs = {
+  block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PoolMediaSet_OrderBy>;
+  orderBy?: InputMaybe<PoolMediaSet_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolMediaSet_Filter>;
+  where?: InputMaybe<PoolMediaSet_filter>;
 };
 
-export type QueryPoolsArgs = {
-  block?: InputMaybe<Block_Height>;
+export type QuerypoolsArgs = {
+  block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Pool_OrderBy>;
+  orderBy?: InputMaybe<Pool_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Pool_Filter>;
+  where?: InputMaybe<Pool_filter>;
 };
 
 export enum TokenType {
@@ -1519,7 +1519,7 @@ export type _Meta_ = {
 
 export enum _SubgraphErrorPolicy_ {
   /** Data will be returned even if the subgraph has indexing errors */
-  Allow = 'allow',
+  allow = 'allow',
   /** If the subgraph has indexing errors, data will be omitted. The default. */
-  Deny = 'deny',
+  deny = 'deny',
 }

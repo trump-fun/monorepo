@@ -20,8 +20,6 @@ interface BettingFormProps {
   authenticated: boolean;
   isPending: boolean;
   symbol: string;
-  tokenLogo: ReactNode;
-  balance: TokenBalance | null | undefined;
   formattedBalance: string;
   setUserEnteredValue: (value: string) => void;
   userEnteredValue: string;
@@ -40,8 +38,6 @@ export const BettingForm = ({
   authenticated,
   isPending,
   symbol,
-  tokenLogo,
-  balance,
   formattedBalance,
   setUserEnteredValue,
   userEnteredValue,

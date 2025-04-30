@@ -3,57 +3,14 @@
 import { AuthButton } from '@/components/auth-button';
 import { PoolList } from '@/components/pools/pool-list';
 import { Button } from '@/components/ui/button';
-import { useNetwork } from '@/hooks/useNetwork';
-import { useTokenBalance } from '@/hooks/useTokenBalance';
-import { topUpBalance } from '@/utils/topUp';
-import { usePrivy } from '@privy-io/react-auth';
 import { Compass } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   // Added state for hero image
   const [heroImage, setHeroImage] = useState('/hero.png');
-
-  // TODO We want to remove this when we can, have it here because the login button callback isn't getting called, probably because of a demount issue
-  const { ready, authenticated, user } = usePrivy();
-  const { refetch: fetchBalance } = useTokenBalance();
-  const { chainId } = useNetwork();
-
-  // Use useCallback to prevent the function from being recreated on every render
-  const handleTopUp = useCallback(async () => {
-    if (!ready || !authenticated || !user || !user.wallet?.address) {
-      return;
-    }
-
-    try {
-      const result = await topUpBalance({
-        walletAddress: user.wallet.address,
-        chainId,
-      });
-
-      if (!result.success) {
-        if (result.error && result.rateLimitReset) {
-        } else if (result.error) {
-          console.error(`Top-up failed: ${result.error}`);
-        }
-      } else {
-      }
-
-      // Sleep for 2 seconds to ensure the balance is updated
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      fetchBalance();
-    } catch (error) {
-      console.error('Error in handleTopUp:', error);
-    }
-  }, [ready, authenticated, user, fetchBalance, chainId]);
-
-  useEffect(() => {
-    if (ready && authenticated && user) {
-      handleTopUp();
-    }
-  }, [ready, authenticated, user, handleTopUp]);
 
   return (
     <div className='bg-background flex min-h-screen'>

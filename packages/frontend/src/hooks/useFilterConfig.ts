@@ -5,7 +5,7 @@ export function useFilterConfig(address?: string, activeFilter: string = 'active
     const filterConfigs: Record<string, any> = {
       active: {
         orderBy: Bet_OrderBy.UpdatedAt,
-        orderDirection: OrderDirection.Desc,
+        orderDirection: OrderDirection.desc,
         filter: {
           user: address,
           pool_: {
@@ -15,7 +15,7 @@ export function useFilterConfig(address?: string, activeFilter: string = 'active
       },
       won: {
         orderBy: PayoutClaimed_OrderBy.BlockTimestamp,
-        orderDirection: OrderDirection.Desc,
+        orderDirection: OrderDirection.desc,
         where: {
           user: address?.toLowerCase(),
           bet_: {
@@ -25,7 +25,7 @@ export function useFilterConfig(address?: string, activeFilter: string = 'active
       },
       lost: {
         orderBy: Bet_OrderBy.UpdatedAt,
-        orderDirection: OrderDirection.Desc,
+        orderDirection: OrderDirection.desc,
         filter: {
           user: address,
           pool_: {
@@ -36,7 +36,7 @@ export function useFilterConfig(address?: string, activeFilter: string = 'active
       },
       all: {
         orderBy: Bet_OrderBy.UpdatedAt,
-        orderDirection: OrderDirection.Desc,
+        orderDirection: OrderDirection.desc,
         filter: {
           user: address,
         },

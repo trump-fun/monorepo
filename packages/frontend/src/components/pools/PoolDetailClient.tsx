@@ -2,12 +2,12 @@
 
 import { useApolloClient, useQuery as useApolloQuery } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,16 +17,18 @@ import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
 import { gql as apolloGql } from '@apollo/client';
-import { POLLING_INTERVALS, Tables } from '@trump-fun/common';
+import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
 import {
   GET_BET_PLACED_STRING,
   GET_BETS_STRING,
   GET_POOL,
 } from '@trump-fun/common/src/graphql/queries';
 
+import { useAnchorProvider } from '@/components/AnchorProvider';
+import { useChainConfig } from '@/components/ChainConfigProvider';
 import { useBettingForm } from '@/hooks/useBettingForm';
-import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { usePoolFacts } from '@/hooks/usePoolFacts';
+import { usePlaceBet } from '@/hooks/usePlaceBet';
 
 import { BettingForm } from '@/components/pools/BettingForm';
 import { BettingProgress } from '@/components/pools/BettingProgress';
@@ -50,22 +52,25 @@ type PoolDetailClientProps = {
 };
 
 export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
-  const { tokenType, tokenAddress } = useTokenContext();
+  const { tokenType, tokenMint } = useTokenContext();
   const { isConnected, authenticated } = useWalletAddress();
   const { login, ready } = usePrivy();
-  const account = useAccount();
-  const publicClient = usePublicClient();
   const apolloClient = useApolloClient();
+
+  // Solana specific hooks
+  const { connection } = useConnection();
+  const wallet = useWallet();
+  const { publicKey, connected, sendTransaction } = wallet;
+  const { program } = useAnchorProvider();
+  const { chainConfig } = useChainConfig();
 
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
   const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
-  const [_isDataLoading, _setIsDataLoading] = useState(false);
-  const [_error, _setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const { data: hash, isPending, writeContract } = useWriteContract();
-  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
-  const { balance, formattedBalance, symbol, tokenLogo } = useTokenBalance();
+  const { formattedBalance, symbol, isValid } = useTokenBalance();
 
   // Use Apollo's useQuery hook to fetch pool data
   const {
@@ -91,7 +96,12 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     setUserEnteredValue,
     handlePercentageClick,
     reset: resetBettingForm,
-  } = useBettingForm(balance);
+  } = useBettingForm({
+    value: formattedBalance,
+    decimals: USDC_DECIMALS,
+    formatted: formattedBalance,
+    symbol,
+  });
 
   const {
     poolFacts,
@@ -101,14 +111,14 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   } = usePoolFacts(id, authenticated);
 
   const fetchUserBets = useCallback(async () => {
-    if (!account.address) return;
+    if (!publicKey) return;
 
     try {
       const { data } = await apolloClient.query({
         query: apolloGql(GET_BETS_STRING),
         variables: {
           filter: {
-            user: account.address.toLowerCase(),
+            user: publicKey.toBase58().toLowerCase(),
             tokenType,
             poolId: id,
           },
@@ -123,7 +133,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     } catch (error) {
       console.error('Error fetching user bets:', error);
     }
-  }, [account.address, apolloClient, tokenType, id]);
+  }, [publicKey, apolloClient, tokenType, id]);
 
   const fetchBetPlaced = useCallback(async () => {
     try {
@@ -134,7 +144,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
             poolId: id,
           },
           orderDirection: OrderDirection.Desc,
-          orderBy: BetPlaced_OrderBy.BlockTimestamp,
+          orderBy: BetPlaced_OrderBy.CreatedAt,
         },
       });
       if (data) {
@@ -165,11 +175,11 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   }, [fetchUserBets, fetchBetPlaced]);
 
   useEffect(() => {
-    if (isConfirmed) {
+    if (isSubmitting) {
       showSuccessToast('Transaction confirmed!');
       refreshData();
     }
-  }, [isConfirmed, refreshData]);
+  }, [isSubmitting, refreshData]);
 
   const {
     data: commentsData,
@@ -204,8 +214,8 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
         const amount = Number(amountParam);
         setBetAmount(amount.toString());
 
-        if (balance) {
-          const maxAmount = Number(balance.value) / Math.pow(10, balance.decimals);
+        if (formattedBalance) {
+          const maxAmount = Number(formattedBalance) / Math.pow(10, USDC_DECIMALS);
           const percentage = Math.min(100, (amount / maxAmount) * 100);
           setSliderValue([percentage]);
         }
@@ -219,20 +229,20 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
-  }, [balance, setBetAmount, setSelectedOption, setSliderValue]);
+  }, [formattedBalance, setBetAmount, setSelectedOption, setSliderValue]);
 
   const handleFacts = useCallback(() => {
-    handleFactsAction(isConnected, login);
-  }, [handleFactsAction, isConnected, login]);
+    handleFactsAction(connected, login);
+  }, [handleFactsAction, connected, login]);
 
   const placeBet = usePlaceBet({
-    writeContract,
-    ready,
-    publicClient,
-    accountAddress: account.address,
+    program,
+    connection,
+    publicKey,
+    sendTransaction,
     tokenAddress,
     tokenType,
-    isConfirmed,
+    chainConfig,
     resetBettingForm,
     symbol,
   });
@@ -332,7 +342,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
                 setSelectedOption={setSelectedOption}
                 handleBet={handleBet}
                 authenticated={authenticated}
-                isPending={isPending}
+                isPending={isSubmitting}
                 symbol={symbol}
                 tokenLogo={tokenLogo}
                 balance={balance}

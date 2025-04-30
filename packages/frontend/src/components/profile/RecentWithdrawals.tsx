@@ -1,30 +1,40 @@
-import { Separator } from '@/components/ui/separator';
-import { TokenType } from '@/types';
-import { WithdrawalData } from '@/types/interfaces';
-import { toDecimal } from '@trump-fun/common';
+import { TokenType, toDecimal } from '@trump-fun/common';
+import { formatDistance } from 'date-fns';
 
-export function RecentWithdrawals({ withdrawals }: { withdrawals?: WithdrawalData[] }) {
-  if (!withdrawals || withdrawals.length === 0) return null;
+type WithdrawalData = {
+  bet?: {
+    amount: string;
+    tokenType: any;
+  };
+  createdAt?: string | number;
+  txHash?: string;
+};
+
+export function RecentWithdrawals({ withdrawals }: { withdrawals: WithdrawalData[] }) {
+  if (!withdrawals || withdrawals.length === 0) {
+    return (
+      <div className='mb-6'>
+        <h3 className='mb-4 text-lg font-semibold'>Recent Withdrawals</h3>
+        <p className='text-sm text-gray-500'>No withdrawals yet</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Separator className='my-4' />
-      <div className='space-y-3'>
-        <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>
-          Recent Withdrawals
-        </div>
-        <div className='max-h-60 space-y-2 overflow-y-auto'>
-          {withdrawals.slice(0, 5).map((withdrawal) => (
-            <WithdrawalItem key={withdrawal.id} withdrawal={withdrawal} />
-          ))}
-        </div>
+    <div className='mb-6'>
+      <h3 className='mb-4 text-lg font-semibold'>Recent Withdrawals</h3>
+      <div className='space-y-2'>
+        {withdrawals.map((withdrawal, idx) => (
+          <WithdrawalItem key={idx} withdrawal={withdrawal} />
+        ))}
       </div>
-    </>
+    </div>
   );
 }
 
 function WithdrawalItem({ withdrawal }: { withdrawal: WithdrawalData }) {
-  const resolvedTokenType = withdrawal.bet?.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom;
+  const resolvedTokenType =
+    withdrawal.bet?.tokenType === TokenType.Usdc ? TokenType.Usdc : TokenType.Freedom;
   const symbol = resolvedTokenType === TokenType.Usdc ? '💲' : '🦅';
   // Use centralized utility to format the amount with fallback to prevent errors
   const formattedAmount = withdrawal.bet?.amount
@@ -33,10 +43,10 @@ function WithdrawalItem({ withdrawal }: { withdrawal: WithdrawalData }) {
 
   // Safely convert timestamp to Date
   const date = new Date(
-    typeof withdrawal.blockTimestamp === 'string'
-      ? parseInt(withdrawal.blockTimestamp) * 1000
-      : typeof withdrawal.blockTimestamp === 'number'
-        ? withdrawal.blockTimestamp * 1000
+    typeof withdrawal.createdAt === 'string'
+      ? parseInt(withdrawal.createdAt) * 1000
+      : typeof withdrawal.createdAt === 'number'
+        ? withdrawal.createdAt * 1000
         : Date.now()
   );
 
@@ -47,13 +57,19 @@ function WithdrawalItem({ withdrawal }: { withdrawal: WithdrawalData }) {
           {symbol} {formattedAmount}
         </span>
         <span className='text-gray-500'>
-          {date.toLocaleDateString()}{' '}
-          {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {formatDistance(date, new Date(), { addSuffix: true })}
         </span>
       </div>
-      <div className='mt-1 truncate text-gray-500'>
-        {withdrawal.bet?.pool?.question?.substring(0, 40)}...
-      </div>
+      {withdrawal.txHash && (
+        <a
+          href={`https://explorer.solana.com/tx/${withdrawal.txHash}?cluster=devnet`}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='mt-1 block truncate text-gray-500 hover:text-blue-500'
+        >
+          {withdrawal.txHash.slice(0, 16)}...
+        </a>
+      )}
     </div>
   );
 }

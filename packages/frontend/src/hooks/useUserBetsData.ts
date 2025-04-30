@@ -3,7 +3,6 @@ import { useQuery } from '@apollo/client';
 import {
   Bet_Filter,
   Bet_OrderBy,
-  BetWithdrawal_OrderBy,
   GET_BET_WITHDRAWALS,
   GET_BETS,
   GET_PAYOUT_CLAIMED,
@@ -15,7 +14,7 @@ import { useFilterConfig } from './useFilterConfig';
 
 export function useUserBetsData(activeFilter: string) {
   const { address } = useWalletAddress();
-  const config = useFilterConfig(address, activeFilter);
+  const config = useFilterConfig(address!, activeFilter);
 
   // Query for user bets
   const {
@@ -59,7 +58,7 @@ export function useUserBetsData(activeFilter: string) {
     variables: {
       where: { user: address?.toLowerCase() },
       orderBy: BetWithdrawal_OrderBy.BlockTimestamp,
-      orderDirection: OrderDirection.Desc,
+      orderDirection: OrderDirection.desc,
       first: 100,
     },
     context: { name: 'betWithdrawals' },

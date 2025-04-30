@@ -41,8 +41,8 @@ const POOL_QUERY = `
       }
       usdcBetTotals
       pointsBetTotals
-      usdcVolume
-      pointsVolume
+      usdcBetTotals
+      pointsBetTotals
       originalTruthSocialPostId
     }
   }

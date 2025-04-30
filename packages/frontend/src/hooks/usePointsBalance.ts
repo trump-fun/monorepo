@@ -1,22 +1,22 @@
-import { useWallets } from '@privy-io/react-auth';
-import { FREEDOM_DECIMALS, erc20Abi } from '@trump-fun/common';
-import { TokenType } from '@/types';
+import { useSolanaWallets } from '@privy-io/react-auth';
+import { FREEDOM_DECIMALS, erc20Abi, TokenType } from '@trump-fun/common';
 import { ethers } from 'ethers';
 import { useCallback, useEffect, useState } from 'react';
 import { useEmbeddedWallet } from '../components/EmbeddedWalletProvider';
 import { useNetwork } from './useNetwork';
 import { useTokenContext } from './useTokenContext';
+import { PublicKey } from '@solana/web3.js';
 
 export const useBalance = () => {
-  const { usdcAddress, freedomAddress } = useNetwork();
+  const { usdcMint, freedomMint } = useNetwork();
   const { tokenType } = useTokenContext();
   const [balance, setBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { embeddedWallet, currentChainId, isLoading: isWalletLoading } = useEmbeddedWallet();
-  const { ready: walletsReady } = useWallets();
+  const { embeddedWallet, isLoading: isWalletLoading } = useEmbeddedWallet();
+  const { ready: walletsReady } = useSolanaWallets();
 
-  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : freedomAddress;
+  const tokenAddress = tokenType === TokenType.Usdc ? usdcMint : freedomMint;
 
   const fetchUsdcBalance = useCallback(async () => {
     // Reset state at the beginning of each fetch attempt
@@ -32,67 +32,55 @@ export const useBalance = () => {
       return;
     }
 
-    if (!currentChainId) {
-      setError('No chain ID available');
-      setBalance('0');
-      return;
-    }
-
     try {
       setIsLoadingBalance(true);
 
-      // Get provider from wallet
-      const provider = await embeddedWallet.getEthereumProvider();
-      const ethersProvider = new ethers.BrowserProvider(provider);
+      // Get the solana wallet connection
+      const connection = await embeddedWallet.getSolanaConnection();
 
-      // Create contract instance
-      const contract = new ethers.Contract(tokenAddress, erc20Abi, ethersProvider);
+      if (!embeddedWallet.address) {
+        setError('No wallet address available');
+        setBalance('0');
+        return;
+      }
 
-      try {
-        // Get balance
-        const balance = await contract.balanceOf(embeddedWallet.address);
+      // Fetch token accounts for the user
+      const publicKey = new PublicKey(embeddedWallet.address);
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+        mint: new PublicKey(tokenAddress.toString()),
+      });
 
-        // Format balance (assuming 6 decimals for USDC)
-        const formattedBalance = ethers.formatUnits(balance, FREEDOM_DECIMALS);
+      // Get balance from token account
+      if (tokenAccounts.value.length > 0) {
+        // Get the token account with the largest balance
+        const tokenAccount = tokenAccounts.value.reduce((prev, current) => {
+          const prevAmount = prev.account.data.parsed.info.tokenAmount.uiAmount || 0;
+          const currentAmount = current.account.data.parsed.info.tokenAmount.uiAmount || 0;
+          return prevAmount > currentAmount ? prev : current;
+        });
+
+        const formattedBalance = tokenAccount.account.data.parsed.info.tokenAmount.uiAmountString;
+
         // Remove all decimal places by parsing to float and then to integer
         setBalance(Math.floor(parseFloat(formattedBalance)).toString());
-      } catch (contractError) {
-        if (
-          contractError instanceof Error &&
-          (contractError.message.includes('could not decode result data') ||
-            contractError.message.includes('BAD_DATA'))
-        ) {
-          setBalance('0');
-        } else {
-          // Only log unexpected contract errors
-          console.error('Unexpected contract interaction error:', contractError);
-          // Rethrow for the outer catch block to handle other contract errors
-          throw contractError;
-        }
+      } else {
+        // No token account found, set balance to 0
+        setBalance('0');
       }
     } catch (error) {
       // Handle specific error types
       if (error instanceof Error) {
         if (error.message.includes('contract not deployed')) {
-          setError(`USDC contract not deployed at address: ${freedomAddress}`);
+          setError(`Token contract not deployed at address: ${tokenAddress}`);
         } else if (error.message.includes('network changed')) {
           setError('Network changed during balance fetch. Please try again.');
         } else if (error.message.includes('user rejected')) {
           setError('Request was rejected by the user');
-        } else if (error.message.includes('insufficient funds')) {
-          setError('Insufficient funds for transaction');
-        } else if (
-          error.message.includes('could not decode result data') ||
-          error.message.includes('BAD_DATA')
-        ) {
-          // This is now handled in the inner try/catch, but keep as fallback
-          setBalance('0');
-          // Don't set an error for this case as it's expected when there's no balance
         } else {
-          setError(`Failed to fetch USDC balance: ${error.message}`);
+          setError(`Error: ${error.message}`);
         }
       } else {
-        setError('Unknown error occurred while fetching USDC balance');
+        setError('An unknown error occurred');
       }
 
       // Always ensure we have a balance value in case of errors
@@ -100,7 +88,7 @@ export const useBalance = () => {
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [walletsReady, isWalletLoading, embeddedWallet, currentChainId, tokenAddress, freedomAddress]);
+  }, [walletsReady, isWalletLoading, embeddedWallet, tokenAddress, freedomMint]);
 
   // Trigger a balance fetch when dependencies change
   useEffect(() => {
@@ -108,7 +96,7 @@ export const useBalance = () => {
     if (walletsReady && !isWalletLoading) {
       fetchUsdcBalance();
     }
-  }, [fetchUsdcBalance, walletsReady, isWalletLoading, currentChainId]);
+  }, [fetchUsdcBalance, walletsReady, isWalletLoading]);
 
   // Set up polling interval for balance updates
   useEffect(() => {

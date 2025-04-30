@@ -1,5 +1,5 @@
 import { graphqlClient } from '@/lib/graphql-client';
-import { OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
+import { OrderDirection, Pool_orderBy, PoolStatus } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 import { GET_POOLS_STRING } from '@trump-fun/common/src/graphql/queries';
 import OpenAI from 'openai';
@@ -18,8 +18,8 @@ interface Pool {
   imageUrl?: string;
   // Additional optional properties that might be present in the Pool object
   bets?: unknown[];
-  usdcVolume?: string;
-  pointsVolume?: string;
+  usdcBetTotals?: string;
+  pointsBetTotals?: string;
   betsCloseAt?: number;
 }
 
@@ -39,8 +39,8 @@ export const GET = async (request: NextRequest) => {
       filter: {
         status: PoolStatus.Pending,
       },
-      orderBy: Pool_OrderBy.CreatedAt,
-      orderDirection: OrderDirection.Desc,
+      orderBy: Pool_orderBy.createdAt,
+      orderDirection: OrderDirection.desc,
       first: 20,
     });
 
@@ -70,8 +70,8 @@ export const GET = async (request: NextRequest) => {
       filter: {
         id_in: relatedPoolIds,
       },
-      orderBy: Pool_OrderBy.CreatedAt,
-      orderDirection: OrderDirection.Desc,
+      orderBy: Pool_orderBy.createdAt,
+      orderDirection: OrderDirection.desc,
       first: 5,
     });
 

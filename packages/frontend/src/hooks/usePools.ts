@@ -1,134 +1,143 @@
-import { GET_POOLS, Pool } from '@trump-fun/common';
-import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
 import { useQuery } from '@apollo/client';
-import { useMemo, useState } from 'react';
+import { GET_POOLS, OrderDirection, Pool, Pool_OrderBy, TokenType } from '@trump-fun/common';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+import { useTokenContext } from './useTokenContext';
 
-export type FilterType = 'newest' | 'highest' | 'ending_soon' | 'ended' | 'recently_closed';
+interface UsePoolsOptions {
+  category?: string;
+  orderBy?: Pool_OrderBy;
+  orderDirection?: OrderDirection;
+  skip?: number;
+  first?: number;
+  pollInterval?: number;
+  filter?: any;
+  context?: any;
+}
 
-export function usePools(tokenType: TokenType) {
-  const [activeFilter, setActiveFilter] = useState<FilterType>('newest');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(0);
-  const PAGE_SIZE = 10;
+export function usePools({
+  category,
+  orderBy,
+  orderDirection = OrderDirection.Desc,
+  skip = 0,
+  first = 20,
+  pollInterval = 0,
+  filter = {},
+  context = { name: 'pools' },
+}: UsePoolsOptions = {}) {
+  const { tokenType } = useTokenContext();
   const [hasMore, setHasMore] = useState(true);
+  const { ref, inView } = useInView();
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<string>('all');
 
-  const filterConfigs = useMemo(() => {
-    const currentTimestamp = Math.floor(Date.now() / 1000).toString();
-    const oneDayFromNow = (parseInt(currentTimestamp) + 86400).toString();
+  // Default order by token type
+  const defaultOrderBy =
+    tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals;
 
-    const pendingBaseFilter = { status: PoolStatus.Pending };
-    const openPoolsFilter = { ...pendingBaseFilter, betsCloseAt_gt: currentTimestamp };
+  // Default filter includes pending status and future bets close time
+  // Important: Use the enum value directly without wrapping in a string
+  const defaultFilter = {
+    // status: PoolStatus.Pending, // Use enum value directly, not wrapped in a string
+    // betsCloseAt_gt: currentTimestamp, // Send as a number, not a string
+    ...filter,
+  };
 
-    return {
-      newest: {
-        orderBy: Pool_OrderBy.CreatedAt,
-        orderDirection: OrderDirection.Desc,
-        filter: openPoolsFilter,
-      },
-      highest: {
-        orderBy: tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcVolume : Pool_OrderBy.PointsVolume,
-        orderDirection: OrderDirection.Desc,
-        filter: openPoolsFilter,
-      },
-      ending_soon: {
-        orderBy: Pool_OrderBy.BetsCloseAt,
-        orderDirection: OrderDirection.Asc,
-        filter: { ...openPoolsFilter, betsCloseAt_lt: oneDayFromNow },
-      },
-      ended: {
-        orderBy: Pool_OrderBy.BetsCloseAt,
-        orderDirection: OrderDirection.Desc,
-        filter: { ...pendingBaseFilter, betsCloseAt_lt: currentTimestamp },
-      },
-      recently_closed: {
-        orderBy: Pool_OrderBy.GradedBlockTimestamp,
-        orderDirection: OrderDirection.Desc,
-        filter: {
-          status_in: [PoolStatus.Graded, PoolStatus.Regraded],
-          betsCloseAt_lt: currentTimestamp,
-        },
-      },
-    };
-  }, [tokenType]);
+  // Combine override variables with defaults
+  const variables = {
+    filter: defaultFilter,
+    orderBy: Pool_OrderBy.BetsCloseAt,
+    orderDirection: OrderDirection.Desc,
+    skip,
+    first,
+  };
 
-  const activeConfig = useMemo(() => filterConfigs[activeFilter], [activeFilter, filterConfigs]);
-
-  const {
-    data,
-    loading: isLoading,
-    fetchMore,
-    refetch: refetchPools,
-  } = useQuery(GET_POOLS, {
-    variables: {
-      filter: activeConfig.filter,
-      orderBy: activeConfig.orderBy,
-      orderDirection: activeConfig.orderDirection,
-      first: PAGE_SIZE,
-      skip: 0,
-    },
-    context: { name: 'mainSearch' },
+  // Fetch pools based on variables
+  const { data, loading, fetchMore, error, networkStatus, refetch } = useQuery(GET_POOLS, {
+    variables,
     notifyOnNetworkStatusChange: true,
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
+    pollInterval,
+    context,
   });
 
+  // Filter pools based on search query
   const filteredPools = useMemo(() => {
-    const pools = data?.pools || [];
-    if (!searchQuery.trim()) return pools;
+    if (!data?.pools) return [];
 
-    const query = searchQuery.toLowerCase().trim();
-    return pools.filter((pool: Pool) => pool.question.toLowerCase().includes(query));
-  }, [data, searchQuery]);
+    if (!searchQuery) return data.pools;
 
-  const handleFilterChange = (newFilter: FilterType) => {
-    setActiveFilter(newFilter);
-    setPage(0);
-    setHasMore(true);
-    refetchPools({
-      filter: filterConfigs[newFilter].filter,
-      orderBy: filterConfigs[newFilter].orderBy,
-      orderDirection: filterConfigs[newFilter].orderDirection,
-      first: PAGE_SIZE,
-      skip: 0,
-    });
-  };
+    const query = searchQuery.toLowerCase();
+    return data.pools.filter(
+      (pool: Pool) =>
+        pool.question.toLowerCase().includes(query) ||
+        pool.options.some((option) => option.toLowerCase().includes(query))
+    );
+  }, [data?.pools, searchQuery]);
 
-  const loadMore = async () => {
-    if (!hasMore || isLoading) return;
+  // Handle filter change
+  const handleFilterChange = useCallback((filter: string) => {
+    setActiveFilter(filter);
+  }, []);
 
-    const nextPage = page + 1;
-    const skip = nextPage * PAGE_SIZE;
+  // Handle loading more pools when bottom of list is in view
+  const loadMore = useCallback(() => {
+    if (!loading && hasMore && data?.pools?.length) {
+      fetchMore({
+        variables: {
+          skip: data.pools.length,
+          first,
+        },
+        updateQuery: (prev, { fetchMoreResult }) => {
+          if (!fetchMoreResult?.pools?.length) {
+            setHasMore(false);
+            return prev;
+          }
 
-    const result = await fetchMore({
-      variables: {
-        skip,
-        first: PAGE_SIZE,
-      },
-      updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) return prev;
-        return {
-          ...prev,
-          pools: [...prev.pools, ...fetchMoreResult.pools],
-        };
-      },
-    });
-
-    const newPools = result.data.pools;
-    if (newPools.length < PAGE_SIZE) {
-      setHasMore(false);
+          return {
+            ...prev,
+            pools: [...prev.pools, ...fetchMoreResult.pools],
+          };
+        },
+      });
     }
+  }, [data?.pools?.length, fetchMore, first, hasMore, loading]);
 
-    setPage(nextPage);
+  // Trigger load more when bottom is in view
+  useEffect(() => {
+    if (inView) {
+      loadMore();
+    }
+  }, [inView, loadMore]);
+
+  // Reset hasMore when filter changes
+  useEffect(() => {
+    setHasMore(true);
+  }, [JSON.stringify(variables.filter), variables.orderBy, variables.orderDirection]);
+
+  // Expose variables for potential UI controls
+  const sortOptions = {
+    orderBy: variables.orderBy,
+    orderDirection: variables.orderDirection,
   };
 
+  // Return formatted result
   return {
+    pools: data?.pools || [],
     filteredPools,
-    isLoading,
-    activeFilter,
+    loading,
+    error,
+    loadMore,
+    loadMoreRef: ref,
+    hasMore,
+    networkStatus,
+    refetch,
+    sortOptions,
     searchQuery,
     setSearchQuery,
+    activeFilter,
     handleFilterChange,
-    refetchPools,
-    loadMore,
-    hasMore,
+    isLoading: loading,
   };
 }

@@ -7,22 +7,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { showErrorToast, showSuccessToast } from '@/utils/toast';
+import { showErrorToast } from '@/utils/toast';
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 
-import { useNetwork } from '@/hooks/useNetwork';
-import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
-import { useTokenContext } from '@/hooks/useTokenContext';
 import { USDC_DECIMALS } from '@/utils/utils';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { freedomAbi } from '@trump-fun/common';
+import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { HandCoins, Loader2 } from 'lucide-react';
-import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 interface BetModalProps {
   isOpen: boolean;
@@ -32,8 +28,6 @@ interface BetModalProps {
 }
 
 export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options }) => {
-  const { appAddress } = useNetwork();
-  const { tokenType, tokenAddress } = useTokenContext();
   const [betAmount, setBetAmount] = useState<string>('');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [sliderValue, setSliderValue] = useState([0]);
@@ -44,47 +38,31 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
 
   // Contract and wallet states
   const { authenticated, login } = usePrivy();
-  const { wallets } = useWallets();
-  const { balance, formattedBalance, symbol } = useTokenBalance();
-
-  // Contract interaction hooks
-  const publicClient = usePublicClient();
-  const account = useAccount();
-  const { data: hash, isPending, writeContract } = useWriteContract();
-  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
-
-  // Use the placeBet hook
-  const placeBetWithHook = usePlaceBet({
-    writeContract,
-    ready: !!wallets?.length,
-    // Using type assertion to avoid version conflicts
-    publicClient: publicClient as any,
-    accountAddress: account.address,
-    tokenAddress,
-    tokenType,
-    isConfirmed,
-    resetBettingForm: () => {
-      setBetAmount('');
-      setSelectedOption(null);
-      setSliderValue([0]);
-    },
+  const {
+    formattedBalance,
     symbol,
-  });
+    tokenLogo,
+    tokenMint,
+    tokenDecimals,
+    tokenAddress,
+    rawBalance,
+  } = useTokenBalance();
+
+  const { wallets } = useSolanaWallets();
+
+  const publicKey = wallets[0]?.address;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
 
   // Fetch approved amount when component mounts or account changes
   useEffect(() => {
     const fetchApprovedAmount = async () => {
-      if (!account.address || !publicClient) return;
+      if (!publicKey || !connection) return;
 
       try {
-        const allowance = await publicClient.readContract({
-          abi: freedomAbi,
-          address: tokenAddress,
-          functionName: 'allowance',
-          args: [account.address, appAddress],
-        });
+        const allowance = await connection.getTokenAccountBalance(new PublicKey(tokenAddress));
 
-        const formattedAllowance = Number(allowance) / 10 ** USDC_DECIMALS;
+        const formattedAllowance = Number(allowance.value.amount) / 10 ** USDC_DECIMALS;
         setApprovedAmount(formattedAllowance.toString());
       } catch (error) {
         setApprovedAmount('0');
@@ -93,14 +71,14 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
     };
 
     fetchApprovedAmount();
-  }, [account.address, publicClient, hash, appAddress, tokenAddress]);
+  }, [publicKey, connection, tokenAddress]);
 
   // Update bet amount when slider changes
   useEffect(() => {
-    if (isUserTyping || !balance) return;
+    if (isUserTyping) return;
     if (userEnteredValue) return;
 
-    const rawBalanceValue = Number(balance.value) / Math.pow(10, balance.decimals);
+    const rawBalanceValue = Number(formattedBalance) / Math.pow(10, tokenDecimals);
 
     if (sliderValue[0] > 0) {
       const percentage = sliderValue[0] / 100;
@@ -123,15 +101,12 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
     } else if (sliderValue[0] === 0 && betAmount !== '') {
       setBetAmount('');
     }
-  }, [sliderValue, balance, betAmount, isUserTyping, userEnteredValue]);
+  }, [sliderValue, betAmount, isUserTyping, userEnteredValue, formattedBalance, tokenDecimals]);
 
-  // Show success toast on transaction confirmation
-  useEffect(() => {
-    if (isConfirmed) {
-      showSuccessToast('Transaction confirmed!');
-      setIsOpen(false);
-    }
-  }, [isConfirmed, setIsOpen]);
+  const balance = {
+    value: rawBalance,
+    decimals: tokenDecimals,
+  };
 
   const handlePercentageClick = (percentage: number) => {
     if (!balance) return;
@@ -158,18 +133,13 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
       return;
     }
 
-    if (!writeContract || !publicClient || !wallets?.length) {
-      showErrorToast('Wallet or contract not ready');
+    if (!connection || !publicKey) {
+      showErrorToast('Wallet or connection not ready');
       return;
     }
 
     if (!betAmount || betAmount === '0' || selectedOption === null) {
       showErrorToast('Please enter a bet amount and select an option');
-      return;
-    }
-
-    if (!account.address) {
-      showErrorToast('Account address is not available');
       return;
     }
 
@@ -203,12 +173,7 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
   };
 
   const isButtonDisabled =
-    !betAmount ||
-    betAmount === '0' ||
-    selectedOption === null ||
-    !authenticated ||
-    isPending ||
-    isSubmitting;
+    !betAmount || betAmount === '0' || selectedOption === null || !authenticated || isSubmitting;
 
   const needsApproval = approvedAmount && parseFloat(approvedAmount) < parseFloat(betAmount || '0');
 
@@ -375,7 +340,7 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
                     : ''
             }
           >
-            {isPending || isSubmitting ? (
+            {isSubmitting ? (
               <span className='flex items-center'>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 Processing...

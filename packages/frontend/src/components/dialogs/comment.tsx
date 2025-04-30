@@ -15,7 +15,7 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
 import { addComment } from '@/app/actions/comment-actions';
-import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
 
 type MessageToSign = {
   action: string;
@@ -44,7 +44,7 @@ export const CommentModal: FC<CommentPostModalProps> = ({
 }) => {
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { wallets } = useWallets();
+  const { wallets } = useSolanaWallets();
   const { login, authenticated } = usePrivy();
   const { signMessage } = useSignMessage();
 

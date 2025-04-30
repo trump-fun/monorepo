@@ -2,7 +2,7 @@
 
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { GET_POOLS } from '@trump-fun/common';
-import { OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
+import { OrderDirection, Pool_orderBy, PoolStatus } from '@/types';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
 import { Clock } from 'lucide-react';
@@ -22,8 +22,8 @@ export function EndingSoon() {
       betsCloseAt_lt: oneDayFromNow.toString(),
       status_in: [PoolStatus.Pending, PoolStatus.None],
     },
-    orderBy: Pool_OrderBy.BetsCloseAt,
-    orderDirection: OrderDirection.Asc,
+    orderBy: Pool_orderBy.betsCloseAt,
+    orderDirection: OrderDirection.asc,
     first: 3,
   };
 

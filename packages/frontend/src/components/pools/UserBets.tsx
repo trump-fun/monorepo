@@ -25,19 +25,22 @@ export const UserBets = ({ placedBets, pool, tokenLogo }: UserBetsProps) => {
           <div key={bet.id} className='flex items-center justify-between rounded-md border p-3'>
             <div className='flex flex-col'>
               <div className='flex items-center'>
-                <span className={bet.option === '0' ? 'text-green-500' : 'text-red-500'}>
-                  {pool.options[parseInt(bet.option)]}
+                <span className={Number(bet.optionIndex) === 0 ? 'text-green-500' : 'text-red-500'}>
+                  {pool.options[Number(bet.optionIndex)]}
                 </span>
               </div>
               <span className='text-muted-foreground text-sm'>
-                {bet.updatedAt
-                  ? format(new Date(Number(bet.updatedAt) * 1000), 'MMM d, yyyy h:mm a')
+                {bet.createdAt
+                  ? format(new Date(Number(bet.createdAt) * 1000), 'MMM d, yyyy h:mm a')
                   : 'Date unavailable'}
               </span>
             </div>
             <div className='flex items-center gap-1'>
               <span className='font-medium'>
-                {formatTokenAmount(bet.amount, bet.tokenType || TokenType.Usdc)}
+                {formatTokenAmount(
+                  bet.amount,
+                  bet.tokenType === TokenType.Usdc ? TokenType.Usdc : TokenType.Freedom
+                )}
               </span>
               {tokenLogo}
             </div>

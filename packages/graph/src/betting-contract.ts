@@ -95,7 +95,7 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
       event.params.optionIndex.toI32()
     ].plus(event.params.amount);
     pool.usdcBetTotals = usdcBetTotals;
-    pool.usdcVolume = pool.usdcVolume.plus(event.params.amount);
+    pool.usdcBetTotals = pool.usdcBetTotals.plus(event.params.amount);
   } else {
     // FREEDOM
     const pointsBetTotals = pool.pointsBetTotals;
@@ -103,7 +103,7 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
       event.params.optionIndex.toI32()
     ].plus(event.params.amount);
     pool.pointsBetTotals = pointsBetTotals;
-    pool.pointsVolume = pool.pointsVolume.plus(event.params.amount);
+    pool.pointsBetTotals = pool.pointsBetTotals.plus(event.params.amount);
   }
 
   // Update lastUpdated timestamps
@@ -266,8 +266,8 @@ export function handlePoolCreated(event: PoolCreatedEvent): void {
   pool.options = event.params.params.options;
   pool.usdcBetTotals = [BigInt.fromI32(0), BigInt.fromI32(0)];
   pool.pointsBetTotals = [BigInt.fromI32(0), BigInt.fromI32(0)];
-  pool.usdcVolume = BigInt.fromI32(0);
-  pool.pointsVolume = BigInt.fromI32(0);
+  pool.usdcBetTotals = BigInt.fromI32(0);
+  pool.pointsBetTotals = BigInt.fromI32(0);
   pool.betsCloseAt = event.params.params.betsCloseAt;
   pool.winningOption = BigInt.fromI32(0);
   pool.status = 'PENDING';

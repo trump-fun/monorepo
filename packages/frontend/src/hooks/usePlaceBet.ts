@@ -1,111 +1,175 @@
+'use client';
+
+import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED } from '@/consts';
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
-import { bettingContractAbi, freedomAbi, USDC_DECIMALS } from '@trump-fun/common';
-import { useWriteContract } from 'wagmi';
-import { useApprovalAmount } from './useApprovalAmount';
-import { useNetwork } from './useNetwork';
+import { BN } from '@coral-xyz/anchor';
+import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { useCallback } from 'react';
 
 interface UsePlaceBetProps {
-  writeContract: ReturnType<typeof useWriteContract>['writeContract'];
-  ready: boolean;
-  publicClient: any; // Using any to avoid version-specific type conflicts
-  accountAddress: string | undefined;
-  tokenAddress: `0x${string}`;
+  program: any; // Anchor Program
+  connection: Connection;
+  publicKey: PublicKey | null;
+  sendTransaction: ((transaction: Transaction) => Promise<string>) | undefined;
+  tokenAddress: string;
   tokenType: TokenType;
-  isConfirmed: boolean;
+  chainConfig: any;
   resetBettingForm?: () => void;
   symbol: string;
 }
 
 interface PlaceBetParams {
-  poolId: string | undefined;
+  poolId: string;
   betAmount: string;
   selectedOption: number | null;
   options?: string[];
 }
 
 export function usePlaceBet({
-  writeContract,
-  ready,
-  publicClient,
-  accountAddress,
+  program,
+  connection,
+  publicKey,
+  sendTransaction,
   tokenAddress,
   tokenType,
+  chainConfig,
   resetBettingForm,
   symbol,
 }: UsePlaceBetProps) {
-  const { appAddress } = useNetwork();
-  const tokenTypeC = tokenType === TokenType.Usdc ? 0 : 1;
-  const approvedAmount = useApprovalAmount(tokenAddress);
+  const placeBet = useCallback(
+    async ({ poolId, betAmount, selectedOption, options }: PlaceBetParams) => {
+      // Early checks for wallet connection and support
+      if (!publicKey || !sendTransaction) {
+        showErrorToast('Wallet not connected', 'Please connect your wallet first');
+        return;
+      }
 
-  const placeBet = async ({ poolId, betAmount, selectedOption, options }: PlaceBetParams) => {
-    if (!writeContract || !ready || !publicClient || !accountAddress) {
-      return console.error('Wallet or contract not ready');
-    }
+      if (!program) {
+        showErrorToast('Program error', 'Program not initialized');
+        return;
+      }
 
-    if (!betAmount || betAmount === '0' || selectedOption === null) {
-      return console.error('Invalid bet parameters');
-    }
+      if (!betAmount || betAmount === '0' || selectedOption === null) {
+        showErrorToast('Please enter a bet amount and select an option');
+        return;
+      }
 
-    if (!poolId) {
-      return console.error('Pool ID is not available');
-    }
+      if (!chainConfig || chainConfig.chainType !== 'solana') {
+        showErrorToast('Unsupported chain', 'This chain does not support Solana betting');
+        return;
+      }
 
-    try {
-      const tokenAmount = BigInt(betAmount) * BigInt(10 ** USDC_DECIMALS);
-      const needsApproval = !approvedAmount || approvedAmount < tokenAmount;
-      if (needsApproval) {
-        const { request: approveRequest } = await publicClient.simulateContract({
-          abi: freedomAbi,
-          address: tokenAddress,
-          functionName: 'approve',
-          account: accountAddress as `0x${string}`,
-          args: [appAddress, tokenAmount],
-          gas: BigInt(100000),
-          maxFeePerGas: BigInt(60000000000),
-          maxPriorityFeePerGas: BigInt(50000000000),
-          nonce: await publicClient.getTransactionCount({
-            address: accountAddress as `0x${string}`,
-          }),
+      try {
+        const amount = new BN(parseInt(betAmount));
+        const optionIndex = new BN(selectedOption);
+
+        // Get current betting pools state
+        const [bettingPoolsPDA] = PublicKey.findProgramAddressSync(
+          [BETTING_POOLS_SEED],
+          program.programId
+        );
+
+        const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
+
+        // Find the pool PDA
+        const poolIdBN = new BN(poolId);
+        const [poolPDA] = PublicKey.findProgramAddressSync(
+          [POOL_SEED, poolIdBN.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        );
+
+        // Find the next bet PDA
+        const nextBetId = bettingPoolsState.nextBetId;
+        const [betPDA] = PublicKey.findProgramAddressSync(
+          [BET_SEED, poolIdBN.toArrayLike(Buffer, 'le', 8), nextBetId.toArrayLike(Buffer, 'le', 8)],
+          program.programId
+        );
+
+        // Determine token type for Solana (maps to the TokenType enum in the contract)
+        const solanaTokenType = tokenType === TokenType.Usdc ? { usdc: {} } : { points: {} };
+
+        // Get the user's token account
+        const userTokenAccount = await connection.getTokenAccountsByOwner(publicKey, {
+          mint: new PublicKey(tokenAddress),
         });
 
-        writeContract(approveRequest);
+        // Get the program's token account
+        // This would typically be a PDA derived in a similar way to the betting pools PDA
+        const programTokenAccount = new PublicKey(chainConfig.programTokenAccount);
 
-        return showSuccessToast(`Approving ${betAmount} ${symbol}...`);
+        // Create a transaction to invoke the placeBet function
+        const transaction = await program.methods
+          .placeBet(optionIndex, amount, solanaTokenType)
+          .accounts({
+            bettingPools: bettingPoolsPDA,
+            pool: poolPDA,
+            bet: betPDA,
+            bettor: publicKey,
+            bettorTokenAccount: userTokenAccount.value[0]?.pubkey,
+            programTokenAccount: programTokenAccount,
+            tokenProgram: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'), // Solana Token Program
+            associatedTokenProgram: new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'), // Solana Associated Token Program
+            systemProgram: PublicKey.default, // Solana System Program
+            rent: new PublicKey('SysvarRent111111111111111111111111111111111'), // Solana Rent Sysvar
+          })
+          .transaction();
+
+        // Get a recent blockchash
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = publicKey;
+
+        // Send the transaction
+        const txSignature = await sendTransaction(transaction);
+
+        // Wait for transaction confirmation
+        const latestBlockhash = await connection.getLatestBlockhash();
+        const confirmation = await connection.confirmTransaction({
+          blockhash: latestBlockhash.blockhash,
+          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          signature: txSignature,
+        });
+
+        if (confirmation.value.err) {
+          throw new Error(`Transaction failed: ${confirmation.value.err.toString()}`);
+        }
+
+        let successMessage = `Betting ${betAmount} ${symbol}`;
+        if (options && options[selectedOption]) {
+          successMessage += ` on "${options[selectedOption]}"`;
+        }
+
+        showSuccessToast(
+          'Bet placed successfully',
+          `Transaction ID: ${txSignature.substring(0, 8)}...${txSignature.substring(txSignature.length - 8)}`
+        );
+
+        console.log(
+          `View placeBet TX on explorer: https://solana.fm/tx/${txSignature}?cluster=${chainConfig.cluster}`
+        );
+
+        if (resetBettingForm) {
+          resetBettingForm();
+        }
+      } catch (error) {
+        console.error('Error placing bet:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error placing bet';
+        showErrorToast('Error placing bet', errorMessage);
       }
-
-      const { request } = await publicClient.simulateContract({
-        abi: bettingContractAbi,
-        address: appAddress,
-        functionName: 'placeBet',
-        account: accountAddress as `0x${string}`,
-        args: [
-          BigInt(poolId),
-          BigInt(selectedOption),
-          tokenAmount,
-          accountAddress as `0x${string}`,
-          tokenTypeC,
-        ],
-      });
-
-      writeContract(request);
-
-      let successMessage = `Betting ${betAmount} ${symbol}`;
-      if (options && options[selectedOption]) {
-        successMessage += ` on "${options[selectedOption]}"`;
-      }
-      successMessage += '...';
-
-      showSuccessToast(successMessage);
-
-      if (resetBettingForm) {
-        resetBettingForm();
-      }
-    } catch (error) {
-      console.error('Error placing bet:', error);
-      showErrorToast('Failed to place bet. Please try again.');
-    }
-  };
+    },
+    [
+      program,
+      connection,
+      publicKey,
+      sendTransaction,
+      tokenAddress,
+      tokenType,
+      chainConfig,
+      resetBettingForm,
+      symbol,
+    ]
+  );
 
   return placeBet;
 }

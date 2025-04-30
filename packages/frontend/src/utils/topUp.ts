@@ -2,9 +2,21 @@
 Locally stores if we've topped up already to avoid spamming the api/mint endpoint.
 api/mint itself won't mint more than one per day per user, but this route will spam unless there's a rate limit in it.
 */
-import { TopUpBalanceParams, TopUpBalanceResponse } from '@/app/api/mint/route';
-import { USDC_DECIMALS } from '@trump-fun/common';
 import { showSuccessToast } from './toast';
+
+// For Solana, we need to specify the cluster in the top-up params
+interface SolanaTopUpBalanceParams {
+  walletAddress: string;
+  cluster?: string; // 'devnet', 'testnet', or 'mainnet-beta'
+}
+
+interface SolanaTopUpBalanceResponse {
+  success: boolean;
+  signature?: string;
+  amountMinted: string; // Amount as string to handle large numbers
+  error?: string;
+  message?: string;
+}
 
 // localStorage key for tracking when user last topped up
 const LAST_TOPUP_KEY = 'trump_fun_last_topup';
@@ -42,7 +54,9 @@ const recordTopUp = (): void => {
   }
 };
 
-export const topUpBalance = async (params: TopUpBalanceParams): Promise<TopUpBalanceResponse> => {
+export const topUpBalance = async (
+  params: SolanaTopUpBalanceParams
+): Promise<SolanaTopUpBalanceResponse> => {
   // Check if user is eligible for daily top-up
   if (!canTopUp()) {
     return {
@@ -53,34 +67,36 @@ export const topUpBalance = async (params: TopUpBalanceParams): Promise<TopUpBal
   }
 
   try {
-    const response = await fetch('/api/mint', {
+    // Use the Solana-specific mint endpoint
+    const response = await fetch('/api/solana/mint', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
+      body: JSON.stringify({
+        ...params,
+        cluster: params.cluster || 'devnet', // Default to devnet if not specified
+      }),
     });
 
-    const data = (await response.json()) as TopUpBalanceResponse;
+    const data = (await response.json()) as SolanaTopUpBalanceResponse;
 
     if (data.success && parseFloat(data.amountMinted) > 0) {
       // Record successful top-up
       recordTopUp();
 
-      const formattedAmount = (
-        parseFloat(data.amountMinted) /
-        10 ** USDC_DECIMALS
-      ).toLocaleString();
+      const formattedAmount = parseFloat(data.amountMinted).toLocaleString();
+
       showSuccessToast(
-        `Thanks for dropping by! We've topped up your wallet with ${formattedAmount} FREEDOM, game on!`
+        `Thanks for dropping by! We've topped up your wallet with ${formattedAmount} FREEDOM, game on!`,
+        data.signature ? `Transaction: ${data.signature.slice(0, 8)}...` : undefined
       );
     } else if (data.success && parseFloat(data.amountMinted) === 0) {
       // Still count as a successful top-up attempt for today
       recordTopUp();
     } else if (!data.success) {
       if (response.status === 429) {
-        // Rate limit hit from server side, but no need to record locally
-        // as server already tracks this
+        // Rate limit hit from server side
       } else {
-        console.error('failed to top up USDC with non-429 error', response.status, data);
+        console.error('failed to top up FREEDOM token with error', response.status, data);
       }
     }
 

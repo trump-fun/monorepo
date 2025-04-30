@@ -1,4 +1,3 @@
-import { TOKEN_SYMBOLS } from '@/hooks/useTokenContext';
 import { Pool, TokenType } from '@/types';
 import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import React from 'react';
@@ -20,7 +19,7 @@ export const getVolumeForTokenType = (
 ) => {
   if (!pool) return tokenType === TokenType.Usdc ? '0' : '0';
 
-  const rawValue = tokenType === TokenType.Usdc ? pool.usdcVolume : pool.pointsVolume;
+  const rawValue = tokenType === TokenType.Usdc ? pool.usdcBetTotals : pool.pointsBetTotals;
 
   if (raw) {
     return rawValue;
@@ -42,13 +41,13 @@ export const calculateVolume = (pool: Pool[][number], tokenType: TokenType): Rea
 
   try {
     const isUsdc = tokenType === TokenType.Usdc;
-    const rawAmount = isUsdc ? pool.usdcVolume : pool.pointsVolume;
+    const rawAmount = isUsdc ? pool.usdcBetTotals : pool.pointsBetTotals;
     const decimals = isUsdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
     const value = formatTokenAmount(rawAmount, decimals, !isUsdc);
 
     return (
       <>
-        {TOKEN_SYMBOLS[tokenType].logo}
+        {isUsdc ? '💲' : '🦅'}
         <span className='ml-1'>{value.toLocaleString()}</span>
       </>
     );
@@ -90,21 +89,26 @@ export const calculateOptionPercentages = (
   if (!pool) return [];
 
   const totalPoints = pool.pointsBetTotals.reduce(
-    (sum, points) => sum + BigInt(points || '0'),
+    (sum: bigint, points: string) => sum + BigInt(points || '0'),
     BigInt(0)
   );
-  const totalUsdc = pool.usdcBetTotals.reduce((sum, usdc) => sum + BigInt(usdc || '0'), BigInt(0));
+  const totalUsdc = pool.usdcBetTotals.reduce(
+    (sum: bigint, usdc: string) => sum + BigInt(usdc || '0'),
+    BigInt(0)
+  );
 
   const pointsPercentages =
     totalPoints > BigInt(0)
-      ? pool.pointsBetTotals.map((points) =>
+      ? pool.pointsBetTotals.map((points: string) =>
           Number((BigInt(points || '0') * BigInt(100)) / totalPoints)
         )
       : pool.options.map(() => 0);
 
   const usdcPercentages =
     totalUsdc > BigInt(0)
-      ? pool.usdcBetTotals.map((usdc) => Number((BigInt(usdc || '0') * BigInt(100)) / totalUsdc))
+      ? pool.usdcBetTotals.map((usdc: string) =>
+          Number((BigInt(usdc || '0') * BigInt(100)) / totalUsdc)
+        )
       : pool.options.map(() => 0);
 
   return pool.options.map((_, index) => {
@@ -130,33 +134,20 @@ export const calculateOptionPercentages = (
 export const calculateRelativeVolumePercentages = (
   pools: Pool[],
   tokenType: TokenType
-): {
-  pool: Pool | Pool[][number];
-  percentage: number;
-  displayVolume: number | string;
-}[] => {
-  if (!pools || pools.length === 0) {
-    return [];
-  }
+): number[] => {
+  if (!pools || !pools.length) return [];
 
-  // Calculate raw volume values for each pool
-  const volumeValues = pools.map((pool) => {
-    if (!pool) return { pool, rawVolume: 0 };
+  // Get the total volume of all pools
+  const totalVolume = pools.reduce((acc, pool) => {
+    const volume = Number(getVolumeForTokenType(pool, tokenType, true));
+    return acc + volume;
+  }, 0);
 
-    const rawVolume =
-      tokenType === TokenType.Usdc
-        ? Number(pool.usdcVolume || '0')
-        : Number(pool.pointsVolume || '0');
-    return { pool, rawVolume };
+  if (totalVolume <= 0) return pools.map(() => 0);
+
+  // Calculate percentage of total for each pool
+  return pools.map((pool) => {
+    const volume = Number(getVolumeForTokenType(pool, tokenType, true));
+    return Math.round((volume / totalVolume) * 100);
   });
-
-  // Find max volume to calculate relative percentages
-  const maxVolume = Math.max(...volumeValues.map((v) => v.rawVolume), 1);
-
-  // Prepare display data
-  return volumeValues.map(({ pool, rawVolume }) => ({
-    pool,
-    percentage: Math.round((rawVolume / maxVolume) * 100),
-    displayVolume: pool ? getVolumeForTokenType(pool, tokenType) : 0,
-  }));
 };

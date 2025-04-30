@@ -2,11 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { useNetwork } from '@/hooks/useNetwork';
-import { topUpBalance } from '@/utils/topUp';
-import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth';
+import { useLogin, usePrivy } from '@privy-io/react-auth';
+import { useSolanaWallets } from '@privy-io/react-auth/solana';
 import { LogIn } from 'lucide-react';
 import { useEffect } from 'react';
-import { useTokenBalance } from '../hooks/useTokenBalance';
+import { useSolanaTokens } from '../hooks/useSolanaTokens';
 
 export const PrivyLogoutButton = () => {
   const { logout } = usePrivy();
@@ -23,33 +23,19 @@ export function PrivyLoginButton({
   variant = 'contained',
 }: PrivyLoginButtonProps) {
   const { ready, authenticated } = usePrivy();
-  const { wallets } = useWallets();
+  const { wallets } = useSolanaWallets();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
-  const { refetch: fetchBalance } = useTokenBalance();
-  const { chainId } = useNetwork();
+  const { fetchBalances } = useSolanaTokens();
+  const { cluster } = useNetwork();
 
   useEffect(() => {
     if (!ready || !authenticated || !embeddedWallet) {
       return;
     }
 
-    const makeCall = async () => {
-      try {
-        const result = await topUpBalance({
-          walletAddress: embeddedWallet.address,
-          chainId,
-        });
-
-        if (result.success) {
-          fetchBalance();
-        }
-      } catch (error) {
-        console.error('Error in makeCall:', error);
-      }
-    };
-
-    makeCall();
-  }, [ready, authenticated, embeddedWallet, fetchBalance, chainId]);
+    // When wallet is connected, fetch token balances
+    fetchBalances();
+  }, [ready, authenticated, embeddedWallet, fetchBalances]);
 
   const { login } = useLogin({
     onError: (error) => {
@@ -57,14 +43,9 @@ export function PrivyLoginButton({
     },
 
     onComplete: async ({ user }) => {
-      await topUpBalance({
-        walletAddress: user.wallet?.address || '',
-        chainId,
-      });
-
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      fetchBalance();
+      // Fetch token balances after successful login
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      fetchBalances();
     },
   });
 

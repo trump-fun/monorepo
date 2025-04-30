@@ -1,88 +1,72 @@
 'use client';
 
 import { usePrivy, useSolanaWallets, WalletWithMetadata } from '@privy-io/react-auth';
-import { DEFAULT_CHAIN_ID } from '@trump-fun/common';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { Cluster, PublicKey } from '@solana/web3.js';
 
-// Define EIP1193Provider type
-interface EIP1193Provider {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-}
-
-// Define the type for the embedded wallet
-type EmbeddedWallet = WalletWithMetadata & {
-  switchChain: (chainId: number) => Promise<void>;
+// Define the type for the embedded Solana wallet
+type EmbeddedSolanaWallet = WalletWithMetadata & {
   walletClientType: string;
-  chainId: string | number;
+  chainId?: string;
   address: string;
-  getEthereumProvider: () => Promise<EIP1193Provider>;
+  publicKey?: PublicKey;
+  cluster?: Cluster;
 };
 
 interface EmbeddedWalletContextType {
-  embeddedWallet: EmbeddedWallet | null;
-  currentChainId: string;
+  embeddedWallet: EmbeddedSolanaWallet | null;
+  cluster: Cluster;
   isLoading: boolean;
-  switchChain: (chainId: number) => Promise<void>;
 }
 
 const EmbeddedWalletContext = createContext<EmbeddedWalletContextType>({
   embeddedWallet: null,
-  currentChainId: '',
+  cluster: 'devnet',
   isLoading: true,
-  switchChain: async () => {},
 });
 
 export const useEmbeddedWallet = () => useContext(EmbeddedWalletContext);
 
 export const EmbeddedWalletProvider = ({ children }: { children: ReactNode }) => {
   const { ready: privyReady } = usePrivy();
-  // const { ready: readyWallets, wallets } = useWallets();
   const { ready: readySolanaWallets, wallets: solanaWallets } = useSolanaWallets();
 
-  const [embeddedWallet, setEmbeddedWallet] = useState<EmbeddedWallet | null>(null);
-  const [currentChainId, setCurrentChainId] = useState<number>(DEFAULT_CHAIN_ID);
+  const [embeddedWallet, setEmbeddedWallet] = useState<EmbeddedSolanaWallet | null>(null);
+  const [cluster, setCluster] = useState<Cluster>('devnet');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Find the embedded wallet when wallets are ready
+  // Find the embedded wallet when Solana wallets are ready
   useEffect(() => {
     if (readySolanaWallets) {
-      const wallet = solanaWallets.find((wallet) => wallet.walletClientType === 'privy') as
-        | EmbeddedWallet
-        | undefined;
+      const wallet = solanaWallets.find((wallet) => wallet.walletClientType === 'privy');
 
-      setEmbeddedWallet(wallet || null);
+      if (wallet) {
+        // Convert string address to PublicKey if needed
+        const enhancedWallet: EmbeddedSolanaWallet = {
+          ...wallet,
+          publicKey: wallet.address ? new PublicKey(wallet.address) : undefined,
+          cluster: 'devnet', // Default to devnet
+        };
+
+        setEmbeddedWallet(enhancedWallet);
+      } else {
+        setEmbeddedWallet(null);
+      }
     }
   }, [readySolanaWallets, solanaWallets]);
 
-  // Update chain ID and config when embedded wallet changes or its chain ID changes
+  // Update config when embedded wallet changes
   useEffect(() => {
     if (privyReady) {
-      setCurrentChainId(DEFAULT_CHAIN_ID);
-
+      setCluster('devnet');
       setIsLoading(false);
     }
   }, [embeddedWallet, privyReady]);
 
-  // Function to switch chains
-  const switchChain = async (chainId: number) => {
-    if (embeddedWallet) {
-      try {
-        setIsLoading(true);
-        await embeddedWallet.switchChain(chainId);
-        setCurrentChainId(DEFAULT_CHAIN_ID);
-      } catch (error) {
-        console.error('Error switching chain:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
   const value = {
     embeddedWallet,
-    currentChainId: currentChainId.toString(),
+    cluster,
     isLoading,
-    switchChain,
   };
 
   return <EmbeddedWalletContext.Provider value={value}>{children}</EmbeddedWalletContext.Provider>;

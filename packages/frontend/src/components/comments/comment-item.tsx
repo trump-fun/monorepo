@@ -4,7 +4,7 @@ import { toggleLike } from '@/app/actions/like-actions';
 import { isCommentLiked, saveCommentLike } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/formatDate';
-import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
 import { Tables } from '@trump-fun/common';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
@@ -34,7 +34,7 @@ const CommentItem = ({ comment }: CommentItemProps) => {
   const [showReplies, setShowReplies] = useState(false);
   const [hasTrumpReplies, setHasTrumpReplies] = useState(false);
   const { login, authenticated } = usePrivy();
-  const { wallets } = useWallets();
+  const { wallets } = useSolanaWallets();
   const { signMessage } = useSignMessage();
 
   const isWalletConnected = authenticated && wallets && wallets.length > 0 && wallets[0]?.address;

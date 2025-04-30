@@ -1,37 +1,45 @@
-import { freedomAbi } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
-import { Address } from 'viem';
-import { useAccount, usePublicClient } from 'wagmi';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
 import { useNetwork } from './useNetwork';
 
-export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
+export function useApprovalAmount(tokenAddress: string, txSignature?: string) {
   const { appAddress } = useNetwork();
   const [approvedAmount, setApprovedAmount] = useState<bigint>(BigInt(0));
-  const account = useAccount();
-  const publicClient = usePublicClient();
+  const { publicKey } = useWallet();
+  const { connection } = useConnection();
 
   useEffect(() => {
     const fetchApprovedAmount = async () => {
-      if (!account.address || !publicClient) return;
+      if (!publicKey || !connection) return;
 
       try {
         if (!tokenAddress) return;
 
-        const allowance = await publicClient.readContract({
-          abi: freedomAbi,
-          address: tokenAddress,
-          functionName: 'allowance',
-          args: [account.address as `0x${string}`, appAddress],
+        // In Solana, approvals work differently than in Ethereum.
+        // We typically use token accounts to track ownership and delegate authorities.
+        // Here, we'll check the token balance as a proxy for "approval"
+        const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
+          mint: new PublicKey(tokenAddress),
         });
 
-        setApprovedAmount(allowance);
+        if (tokenAccounts.value.length > 0) {
+          const tokenAccountInfo = await connection.getTokenAccountBalance(
+            tokenAccounts.value[0].pubkey
+          );
+
+          setApprovedAmount(BigInt(tokenAccountInfo.value.amount));
+        } else {
+          setApprovedAmount(BigInt(0));
+        }
       } catch (error) {
-        console.error('Error fetching approved amount:', error);
+        console.error('Error fetching token amount:', error);
+        setApprovedAmount(BigInt(0));
       }
     };
 
     fetchApprovedAmount();
-  }, [account.address, publicClient, tokenAddress, hash, appAddress]);
+  }, [publicKey, connection, tokenAddress, txSignature, appAddress]);
 
   return approvedAmount;
 }

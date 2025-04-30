@@ -9,9 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
 import { LogOut, Plus, Wallet } from 'lucide-react';
-import { useAccount } from 'wagmi';
 import { PrivyLoginButton } from './login-button';
 
 interface AuthButtonProps {
@@ -20,8 +19,8 @@ interface AuthButtonProps {
 
 export function AuthButton({ className }: AuthButtonProps) {
   const { authenticated, ready: authReady, createWallet, logout } = usePrivy();
-  const { wallets, ready: walletsReady } = useWallets();
-  const { address } = useAccount();
+  const { wallets, ready: walletsReady } = useSolanaWallets();
+  const address = wallets[0]?.address;
 
   // Only check authReady initially
   if (!authReady) {

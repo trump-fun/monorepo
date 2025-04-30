@@ -1,5 +1,5 @@
 import { togglePoolFacts } from '@/app/actions/pool-facts';
-import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 
 export function usePoolFacts(poolId: string, authenticated: boolean) {
@@ -8,7 +8,7 @@ export function usePoolFacts(poolId: string, authenticated: boolean) {
   const [isFactsProcessing, setIsFactsProcessing] = useState<boolean>(false);
 
   const { ready } = usePrivy();
-  const { wallets } = useWallets();
+  const { wallets } = useSolanaWallets();
   const { signMessage } = useSignMessage();
 
   // Fetch initial FACTS count and status

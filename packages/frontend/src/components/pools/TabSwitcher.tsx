@@ -88,25 +88,17 @@ export const TabSwitcher = ({
                       <span> bet on </span>
                       <span
                         className={
-                          ('option' in bet && typeof bet.option === 'number'
-                            ? bet.option
-                            : Number(bet.optionIndex)) === 0
+                          Number(bet.optionIndex) === 0
                             ? 'font-medium text-green-500'
                             : 'font-medium text-red-500'
                         }
                       >
-                        {
-                          pool.options[
-                            ('option' in bet && typeof bet.option === 'number'
-                              ? bet.option
-                              : Number(bet.optionIndex)) as number
-                          ]
-                        }
+                        {pool.options[Number(bet.optionIndex)]}
                       </span>
                     </div>
                     <span className='text-muted-foreground text-xs'>
-                      {bet.blockTimestamp && !isNaN(Number(bet.blockTimestamp))
-                        ? formatDistanceToNow(new Date(Number(bet.blockTimestamp) * 1000), {
+                      {bet.createdAt && !isNaN(Number(bet.createdAt))
+                        ? formatDistanceToNow(new Date(Number(bet.createdAt) * 1000), {
                             addSuffix: true,
                           })
                         : 'Unknown time'}
@@ -116,9 +108,11 @@ export const TabSwitcher = ({
                 <div className='font-medium'>
                   {formatTokenAmount(
                     bet.amount,
-                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom
+                    bet.tokenType === TokenType.Usdc ? TokenType.Usdc : TokenType.Freedom
                   )}{' '}
-                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom)}
+                  {getTokenName(
+                    bet.tokenType === TokenType.Usdc ? TokenType.Usdc : TokenType.Freedom
+                  )}
                 </div>
               </div>
             ))}

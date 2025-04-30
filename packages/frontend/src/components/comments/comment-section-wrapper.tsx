@@ -9,7 +9,7 @@ interface CommentSectionWrapperProps {
 }
 
 import { addComment } from '@/app/actions/comment-actions';
-import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
 import { Tables } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import CommentInput from './comment-input';
@@ -32,7 +32,7 @@ export default function CommentSectionWrapper({
 }: CommentSectionWrapperProps) {
   const [comments, setComments] = useState<Tables<'comments'>[]>(initialComments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { wallets } = useWallets();
+  const { wallets } = useSolanaWallets();
   const { login, authenticated } = usePrivy();
   const { signMessage } = useSignMessage();
 

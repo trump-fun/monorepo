@@ -7,7 +7,7 @@ import { RightSidebar } from '@/components/explore/right-sidebar';
 import { SearchBar } from '@/components/explore/search-bar';
 import { usePools } from '@/hooks/usePools';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { useCallback, useEffect, useRef } from 'react';
+import { OrderDirection, Pool_OrderBy, TokenType } from '@trump-fun/common';
 
 export function ExploreClient() {
   const { tokenType } = useTokenContext();
@@ -20,31 +20,21 @@ export function ExploreClient() {
     handleFilterChange,
     loadMore,
     hasMore,
-  } = usePools(tokenType);
+  } = usePools({
+    filter: {
+      // status: 'Pending',
+      // betsCloseAt_gt: Math.floor(Date.now() / 1000).toString(),
+    },
+    // orderBy:
+      // tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals,
+    // orderDirection: OrderDirection.Desc,
+    pollInterval: 10000,
+    context: { name: 'explore' },
+  });
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current || !hasMore || isLoading) return;
-
-    const { scrollTop, clientHeight, scrollHeight } = scrollContainerRef.current;
-
-    if (scrollHeight - scrollTop - clientHeight < 200) {
-      loadMore();
-    }
-  }, [hasMore, isLoading, loadMore]);
-
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll);
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
-    }
-  }, [handleScroll]);
 
   return (
     <div className='flex h-[calc(100vh-4rem)] flex-col'>
@@ -52,10 +42,7 @@ export function ExploreClient() {
         <FilterSidebar activeFilter={activeFilter} onFilterChange={handleFilterChange} />
 
         <main className='flex flex-1 flex-col overflow-y-hidden md:flex-row'>
-          <div
-            ref={scrollContainerRef}
-            className='scrollbar-hide scroll-hide flex flex-1 justify-center overflow-y-auto p-4'
-          >
+          <div className='scrollbar-hide scroll-hide flex flex-1 justify-center overflow-y-auto p-4'>
             <div className='w-full max-w-2xl'>
               <div className='mb-4 md:hidden'>
                 <SearchBar value={searchQuery} onChange={handleSearch} />
@@ -68,6 +55,7 @@ export function ExploreClient() {
                 isLoading={isLoading}
                 tokenType={tokenType}
                 hasMore={hasMore}
+                onLoadMore={loadMore}
               />
             </div>
           </div>

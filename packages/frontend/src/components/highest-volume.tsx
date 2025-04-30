@@ -2,10 +2,16 @@
 
 import { BettingProgress } from '@/components/pools/BettingProgress';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { GET_POOLS } from '@trump-fun/common';
-import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType } from '@trump-fun/common';
-import { calculateOptionPercentages, calculateRelativeVolumePercentages } from '@/utils/betsInfo';
+import { calculateOptionPercentages } from '@/utils/betsInfo';
 import { useQuery } from '@apollo/client';
+import {
+  GET_POOLS,
+  OrderDirection,
+  Pool,
+  Pool_OrderBy,
+  PoolStatus,
+  TokenType,
+} from '@trump-fun/common';
 import { TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -25,7 +31,8 @@ export function HighestVolume() {
         status: PoolStatus.Pending,
         betsCloseAt_gt: currentTimestamp.toString(),
       },
-      orderBy: tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcVolume : Pool_OrderBy.PointsVolume,
+      orderBy:
+        tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals,
       orderDirection: OrderDirection.Desc,
       first: 3,
     },
@@ -50,7 +57,12 @@ export function HighestVolume() {
     }
 
     const pools = poolsToDisplay.pools.slice(0, 3);
-    return calculateRelativeVolumePercentages(pools, tokenType);
+    return pools.map((pool: Pool) => ({
+      pool,
+      displayVolume:
+        Number(tokenType === TokenType.Usdc ? pool.usdcBetTotals : pool.pointsBetTotals) /
+        Math.pow(10, tokenType === TokenType.Usdc ? 6 : 6),
+    }));
   }, [poolsToDisplay, tokenType]);
 
   return (
@@ -81,38 +93,49 @@ export function HighestVolume() {
             ))}
           </div>
         ) : volumeData.length > 0 ? (
-          volumeData.map(({ pool, displayVolume }, index) => {
-            if (!pool) return null;
+          volumeData.map(
+            (
+              {
+                pool,
+                displayVolume,
+              }: {
+                pool: Pool;
+                displayVolume: number;
+              },
+              index: number
+            ) => {
+              if (!pool) return null;
 
-            return (
-              <Link
-                key={pool.id || index}
-                href={pool.id ? `/pools/${pool.id}` : '#'}
-                className='-m-2 block rounded-md p-2 transition-colors hover:bg-gray-900'
-              >
-                <div className='flex gap-3'>
-                  <PoolImage imageUrl={pool.imageUrl} width={32} height={32} />
-                  <div className='flex-1'>
-                    <p className='mb-1 line-clamp-2 text-sm'>{pool.question}</p>
-                    <div className='mb-2 flex items-center gap-2'>
-                      <div className='flex-1'>
-                        <BettingProgress
-                          percentages={calculateOptionPercentages(pool, tokenType)}
-                          pool={pool}
-                          totalVolume={displayVolume.toString()}
-                          compact
-                        />
-                      </div>
-                      <div className='flex items-center gap-1 text-xs text-gray-400'>
-                        <TrendingUp size={12} />
-                        <span>{displayVolume.toLocaleString()}</span>
+              return (
+                <Link
+                  key={pool.id || index}
+                  href={pool.id ? `/pools/${pool.id}` : '#'}
+                  className='-m-2 block rounded-md p-2 transition-colors hover:bg-gray-900'
+                >
+                  <div className='flex gap-3'>
+                    <PoolImage imageUrl={pool.imageUrl} width={32} height={32} />
+                    <div className='flex-1'>
+                      <p className='mb-1 line-clamp-2 text-sm'>{pool.question}</p>
+                      <div className='mb-2 flex items-center gap-2'>
+                        <div className='flex-1'>
+                          <BettingProgress
+                            percentages={calculateOptionPercentages(pool, tokenType)}
+                            pool={pool}
+                            totalVolume={displayVolume.toString()}
+                            compact
+                          />
+                        </div>
+                        <div className='flex items-center gap-1 text-xs text-gray-400'>
+                          <TrendingUp size={12} />
+                          <span>{displayVolume.toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })
+                </Link>
+              );
+            }
+          )
         ) : (
           // Empty state when no pools are available
           <div className='py-4 text-center text-gray-400'>
