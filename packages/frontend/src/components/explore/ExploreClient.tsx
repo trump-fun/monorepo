@@ -7,7 +7,6 @@ import { RightSidebar } from '@/components/explore/right-sidebar';
 import { SearchBar } from '@/components/explore/search-bar';
 import { usePools } from '@/hooks/usePools';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { OrderDirection, Pool_OrderBy, TokenType } from '@trump-fun/common';
 
 export function ExploreClient() {
   const { tokenType } = useTokenContext();
@@ -26,7 +25,7 @@ export function ExploreClient() {
       // betsCloseAt_gt: Math.floor(Date.now() / 1000).toString(),
     },
     // orderBy:
-      // tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals,
+    // tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals,
     // orderDirection: OrderDirection.Desc,
     pollInterval: 10000,
     context: { name: 'explore' },

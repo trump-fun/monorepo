@@ -2,9 +2,9 @@
 
 import { gql as apolloGql } from '@apollo/client';
 import { GET_BETS_STRING } from '@trump-fun/common/src/graphql/queries';
-import { Bet, Bet_OrderBy, Pool } from '@/types';
+import { Bet, Pool } from '@/types';
 import { useQuery } from '@apollo/client';
-import { formatTokenAmount, getTokenName } from '@trump-fun/common';
+import { Bet_OrderBy, formatTokenAmount, getTokenName } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowUpRight, Clock, Loader2 } from 'lucide-react';
 import { type FC, useEffect, useState } from 'react';
@@ -145,7 +145,9 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
 
                   <div>
                     <div className='flex items-center gap-2'>
-                      <p className='font-semibold tracking-tight'>{truncateAddress(bet.user)}</p>
+                      <p className='font-semibold tracking-tight'>
+                        {truncateAddress(bet.userAddress)}
+                      </p>
                     </div>
                     <div className='mt-1.5 flex items-center gap-2 text-gray-500 dark:text-gray-400'>
                       <Clock className='h-3.5 w-3.5' />
@@ -168,29 +170,29 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
 
                   <div
                     className={`rounded-full px-4 py-1.5 text-sm font-medium shadow-sm ${
-                      bet.isWithdrawn
+                      bet.isPayedOut
                         ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
                         : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
                     }`}
                   >
-                    {bet.isWithdrawn ? 'Withdrawn' : 'Active'}
+                    {bet.isPayedOut ? 'Withdrawn' : 'Active'}
                   </div>
                 </div>
               </div>
 
-              {bet.transactionHash && (
+              {bet.txHash && (
                 <div className='mt-4 border-t pt-4 dark:border-gray-800'>
                   <a
-                    href={`https://sepolia.basescan.org/tx/${bet.transactionHash}`}
+                    href={`https://sepolia.basescan.org/tx/${bet.txHash}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='hover:text-primary dark:hover:text-primary flex items-center gap-2 text-xs text-gray-500 transition-colors dark:text-gray-400'
                   >
                     <span className='rounded bg-gray-100 px-2 py-1 font-medium uppercase dark:bg-gray-800'>
-                      {bet.chainName}
+                      Solana Denet
                     </span>
                     <ArrowUpRight className='h-3.5 w-3.5' />
-                    <span className='max-w-[220px] truncate'>{bet.transactionHash}</span>
+                    <span className='max-w-[220px] truncate'>{bet.txHash}</span>
                   </a>
                 </div>
               )}

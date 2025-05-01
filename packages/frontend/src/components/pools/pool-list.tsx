@@ -10,15 +10,13 @@ export function PoolList({ className = '' }: { className?: string }) {
   const orderBy = Pool_OrderBy.CreatedAt;
   const orderDirection = OrderDirection.Desc;
 
-  const variables = {
-    filter: {},
-    orderBy: orderBy,
-    orderDirection: orderDirection,
-    first: 9,
-  };
-
   const { data, loading, error, networkStatus } = useQuery(GET_POOLS, {
-    variables,
+    variables: {
+      filter: {},
+      orderBy,
+      orderDirection,
+      first: 9,
+    },
     context: { name: 'mainSearch' },
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'network-only',

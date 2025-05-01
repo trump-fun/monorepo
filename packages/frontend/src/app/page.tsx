@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 export default function Home() {
-  // Added state for hero image
   const [heroImage, setHeroImage] = useState('/hero.png');
 
   return (

@@ -25,14 +25,14 @@ export function HighestVolume() {
     data: volumePools,
     loading,
     previousData,
+    error,
   } = useQuery(GET_POOLS, {
     variables: {
       filter: {
-        status: PoolStatus.Pending,
+        // status: PoolStatus.Pending,
         betsCloseAt_gt: currentTimestamp.toString(),
       },
-      orderBy:
-        tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals,
+      orderBy: tokenType === TokenType.Usdc ? 'usdcBetTotals' : 'pointsBetTotals',
       orderDirection: OrderDirection.Desc,
       first: 3,
     },
@@ -40,13 +40,12 @@ export function HighestVolume() {
     notifyOnNetworkStatusChange: true,
   });
 
-  // Use memoized data to prevent disappearing on refresh
+  console.error(error);
+
   const poolsToDisplay = useMemo(() => {
-    // On initial load, show loading state
     if (loading && !previousData) {
       return { pools: [] };
     }
-    // For subsequent loads, use previous data until new data is ready
     return volumePools || previousData || { pools: [] };
   }, [volumePools, loading, previousData]);
 
@@ -137,7 +136,6 @@ export function HighestVolume() {
             }
           )
         ) : (
-          // Empty state when no pools are available
           <div className='py-4 text-center text-gray-400'>
             <p>No high volume predictions available</p>
           </div>

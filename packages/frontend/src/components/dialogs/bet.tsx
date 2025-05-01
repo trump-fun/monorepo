@@ -70,7 +70,7 @@ export const BetModal: FC<BetModalProps> = ({ isOpen, setIsOpen, poolId, options
       }
     };
 
-    fetchApprovedAmount();
+    // fetchApprovedAmount();
   }, [publicKey, connection, tokenAddress]);
 
   // Update bet amount when slider changes

@@ -5,9 +5,9 @@ import { useSolanaTransaction } from './useSolanaTransaction';
 import { TokenType } from '@/types';
 import { BN } from '@coral-xyz/anchor';
 import { useMemo, useState } from 'react';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useAnchorProvider } from '@/components/AnchorProvider';
 import { PublicKey } from '@solana/web3.js';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
 export function useWithdraw() {
   const { programId } = useNetwork();
