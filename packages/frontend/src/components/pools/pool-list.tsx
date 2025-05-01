@@ -1,18 +1,25 @@
 'use client';
 
-import { NetworkStatus, useQuery } from '@apollo/client';
-import { GET_POOLS, OrderDirection, Pool, Pool_OrderBy } from '@trump-fun/common';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { NetworkStatus } from '@apollo/client';
+import { useMemo, useRef } from 'react';
 import { PoolCard } from './pool-card';
+import {
+  OrderDirection,
+  Pool_OrderBy,
+  PoolStatus,
+  useGetPoolsQuery,
+} from '@/types/__generated__/graphql';
 
 export function PoolList({ className = '' }: { className?: string }) {
   const isFirstRenderRef = useRef(true);
   const orderBy = Pool_OrderBy.CreatedAt;
   const orderDirection = OrderDirection.Desc;
 
-  const { data, loading, error, networkStatus } = useQuery(GET_POOLS, {
+  const { data, loading, error, networkStatus } = useGetPoolsQuery({
     variables: {
-      filter: {},
+      filter: {
+        status: PoolStatus.Pending,
+      },
       orderBy,
       orderDirection,
       first: 9,
@@ -23,13 +30,7 @@ export function PoolList({ className = '' }: { className?: string }) {
     pollInterval: 15000,
   });
 
-  const [pools, setPools] = useState<Pool[]>([]);
-
-  useEffect(() => {
-    if (data?.pools && data.pools.length > 0) {
-      setPools(data.pools);
-    }
-  }, [data]);
+  const pools = useMemo(() => data?.pools || [], [data?.pools]);
 
   const isInitialLoading = useMemo(() => {
     if (!isFirstRenderRef.current) return false;

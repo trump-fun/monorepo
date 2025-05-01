@@ -16,11 +16,6 @@ export interface TokenBalance {
   symbol?: string;
 }
 
-export enum TokenType {
-  Usdc = 'Usdc',
-  Freedom = 'Freedom',
-}
-
 export interface PoolData {
   id: string;
   question: string;

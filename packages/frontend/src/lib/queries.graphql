@@ -1,17 +1,28 @@
 # Fragments for reusable fields
 fragment PoolFields on Pool {
   betsCloseAt
+  category
+  closureCriteria
+  closureInstructions
   createdAt
+  creationTxHash
+  creatorId
+  creatorName
+  decisionTime
   id
   imageUrl
   isDraw
   options
   originalTruthSocialPostId
+  pointsBetTotals
+  pointsBetTotalsByOption
+  poolIntId
   question
   status
+  twitterPostId
   usdcBetTotals
+  usdcBetTotalsByOption
   winningOption
-  pointsBetTotals
 }
 
 fragment BetFields on Bet {
@@ -26,19 +37,6 @@ fragment BetFields on Bet {
   tokenType
   txHash
   userAddress
-}
-
-fragment BetWithdrawalFields on BetWithdrawal {
-  id
-  betId
-  user
-  amount
-  tokenType
-  blockNumber
-  blockTimestamp
-  transactionHash
-  chainName
-  chainId
 }
 
 # Queries
@@ -105,31 +103,16 @@ query GetBetPlaced(
     betId
     poolId
     user
-    option
     optionIndex
     amount
     tokenType
-    blockNumber
-    blockTimestamp
-    transactionHash
-    chainName
-    chainId
-    bet {
-      ...BetFields
-      pool {
-        ...PoolFields
-      }
-    }
-    pool {
-      ...PoolFields
-    }
   }
 }
 
 query GetPayoutClaimed(
   $first: Int = 100
   $skip: Int = 0
-  $orderBy: PayoutClaimed_orderBy = blockTimestamp
+  $orderBy: PayoutClaimed_orderBy = id
   $orderDirection: OrderDirection = desc
   $where: PayoutClaimed_filter
 ) {
@@ -146,38 +129,5 @@ query GetPayoutClaimed(
     user
     amount
     tokenType
-    blockNumber
-    blockTimestamp
-    transactionHash
-    chainName
-    chainId
-    bet {
-      ...BetFields
-      pool {
-        ...PoolFields
-      }
-    }
-    pool {
-      ...PoolFields
-    }
   }
 }
-
-# TODO Query is obsolete, needs to be updated, commented so it doesn't block codegen
-# query GetBetWithdrawals(
-#   $first: Int = 100
-#   $skip: Int = 0
-#   $orderBy: BetWithdrawal_orderBy = blockTimestamp
-#   $orderDirection: OrderDirection = desc
-#   $where: BetWithdrawal_filter
-# ) {
-#   betWithdrawals(
-#     first: $first
-#     skip: $skip
-#     orderBy: $orderBy
-#     orderDirection: $orderDirection
-#     where: $where
-#   ) {
-#     ...BetWithdrawalFields
-#   }
-# }

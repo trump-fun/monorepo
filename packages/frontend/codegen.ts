@@ -5,35 +5,18 @@ const config: CodegenConfig = {
   schema: 'https://api.studio.thegraph.com/query/105510/trump-fun-solana/version/latest',
   documents: ['src/**/*.tsx', 'src/**/*.ts', 'src/**/*.graphql'],
   generates: {
-    'src/types/__generated__/': {
-      preset: 'client',
-      plugins: [],
-      presetConfig: {
-        gqlTagName: 'gql',
-        fragmentMasking: false,
-      },
+    'src/types/__generated__/graphql.ts': {
+      plugins: ['typescript', 'typescript-operations', 'typescript-react-apollo'],
       config: {
-        useTypeImports: true,
+        withHooks: true,
         skipTypename: false,
-        withHooks: true,
-        withHOC: false,
-        withComponent: false,
-        namingConvention: 'keep',
       },
     },
-    'src/types/__generated__/hooks.tsx': {
-      plugins: ['typescript-react-apollo'],
+    'src/types/__generated__/graphql-request.ts': {
+      plugins: ['typescript', 'typescript-operations', 'typescript-graphql-request'],
       config: {
-        withHooks: true,
-        withHOC: false,
-        importOperationTypesFrom: 'Types',
-        typesNamespace: 'Types',
-        importDocumentNodeExternallyFrom: './',
+        rawRequest: false,
       },
-      preset: undefined,
-    },
-    'src/types/__generated__/schema.graphql': {
-      plugins: ['schema-ast'],
     },
   },
   ignoreNoDocuments: true,

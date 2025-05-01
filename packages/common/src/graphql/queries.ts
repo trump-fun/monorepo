@@ -3,46 +3,43 @@ import { gql } from '@apollo/client';
 // Complete pool fields including everything we might need in any context
 const POOL_FIELDS = `
   betsCloseAt
-    createdAt
-    id
-    imageUrl
-    isDraw
-    options
-    originalTruthSocialPostId
-    question
-    status
-    usdcBetTotals
-    winningOption
-    pointsBetTotals
+  category
+  closureCriteria
+  closureInstructions
+  createdAt
+  creationTxHash
+  creatorId
+  creatorName
+  decisionTime
+  id
+  imageUrl
+  isDraw
+  options
+  originalTruthSocialPostId
+  pointsBetTotals
+  pointsBetTotalsByOption
+  poolIntId
+  question
+  status
+  twitterPostId
+  usdcBetTotals
+  usdcBetTotalsByOption
+  winningOption
 `;
 
 // Complete bet fields including everything we might need
 const BET_FIELDS = `
-    amount
-    betIntId
-    createdAt
-    id
-    isPayedOut
-    optionIndex
-    outcome
-    poolIntId
-    tokenType
-    txHash
-    userAddress
-`;
-
-// Fields specific to BetWithdrawal type that match the schema
-const BET_WITHDRAWAL_FIELDS = `
-  id
-  betId
-  user
   amount
+  betIntId
+  createdAt
+  id
+  isPayedOut
+  optionIndex
+  outcome
+  poolIntId
   tokenType
-  blockNumber
-  blockTimestamp
-  transactionHash
-  chainName
-  chainId
+  txHash
+  userAddress
 `;
 
 // Pool fields with nested bets
@@ -86,9 +83,6 @@ export const GET_POOLS_STRING = `
 export const GET_POOLS = gql(GET_POOLS_STRING);
 
 /**
- * Raw query string for non-Apollo environments
- */
-/**
  * Query to fetch a single pool by ID
  */
 export const GET_POOL_STRING = `
@@ -104,9 +98,6 @@ export const GET_POOL_STRING = `
  */
 export const GET_POOL = gql(GET_POOL_STRING);
 
-/**
- * Raw query string for non-Apollo environments
- */
 /**
  * Query to fetch bets with filtering, ordering and pagination
  */
@@ -139,9 +130,6 @@ export const GET_BETS_STRING = `
 export const GET_BETS = gql(GET_BETS_STRING);
 
 /**
- * Raw query string for non-Apollo environments
- */
-/**
  * Query to fetch bet placed events
  */
 export const GET_BET_PLACED_STRING = `
@@ -163,24 +151,9 @@ export const GET_BET_PLACED_STRING = `
       betId
       poolId
       user
-      option
-      optionIndex      
+      optionIndex
       amount
       tokenType
-      blockNumber
-      blockTimestamp
-      transactionHash
-      chainName
-      chainId
-      bet {
-        ${BET_FIELDS}
-        pool {
-          ${POOL_FIELDS}
-        }
-      }
-      pool {
-        ${POOL_FIELDS}
-      }
     }
   }
 `;
@@ -191,16 +164,13 @@ export const GET_BET_PLACED_STRING = `
 export const GET_BET_PLACED = gql(GET_BET_PLACED_STRING);
 
 /**
- * Raw query string for non-Apollo environments
- */
-/**
  * Query to fetch payout claimed events
  */
 export const GET_PAYOUT_CLAIMED_STRING = `
   query GetPayoutClaimed(
     $first: Int = 100
     $skip: Int = 0
-    $orderBy: PayoutClaimed_orderBy = blockTimestamp
+    $orderBy: PayoutClaimed_orderBy = id
     $orderDirection: OrderDirection = desc
     $where: PayoutClaimed_filter
   ) {
@@ -217,20 +187,6 @@ export const GET_PAYOUT_CLAIMED_STRING = `
       user
       amount
       tokenType
-      blockNumber
-      blockTimestamp
-      transactionHash
-      chainName
-      chainId
-      bet {
-        ${BET_FIELDS}
-        pool {
-          ${POOL_FIELDS}
-        }
-      }
-      pool {
-        ${POOL_FIELDS}
-      }
     }
   }
 `;
@@ -239,34 +195,3 @@ export const GET_PAYOUT_CLAIMED_STRING = `
  * Apollo Client version of the payout claimed query
  */
 export const GET_PAYOUT_CLAIMED = gql(GET_PAYOUT_CLAIMED_STRING);
-
-/**
- * Raw query string for non-Apollo environments
- */
-/**
- * Query to fetch bet withdrawals
- */
-export const GET_BET_WITHDRAWALS_STRING = `
-  query GetBetWithdrawals(
-    $first: Int = 100
-    $skip: Int = 0
-    $orderBy: BetWithdrawal_orderBy = blockTimestamp
-    $orderDirection: OrderDirection = desc
-    $where: BetWithdrawal_filter
-  ) {
-    betWithdrawals(
-      first: $first
-      skip: $skip
-      orderBy: $orderBy
-      orderDirection: $orderDirection
-      where: $where
-    ) {
-      ${BET_WITHDRAWAL_FIELDS}
-    }
-  }
-`;
-
-/**
- * Apollo Client version of the bet withdrawals query
- */
-export const GET_BET_WITHDRAWALS = gql(GET_BET_WITHDRAWALS_STRING);

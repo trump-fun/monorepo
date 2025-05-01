@@ -15,14 +15,6 @@ export enum MediaType {
 }
 
 /**
- * Token types for Solana tokens in the application
- */
-export enum TokenType {
-  USDC = 'USDC',
-  Freedom = 'Freedom',
-}
-
-/**
  * Pool status in Solana program representation
  */
 export enum SolanaPoolStatus {

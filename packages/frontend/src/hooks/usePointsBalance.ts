@@ -1,11 +1,10 @@
+import { TokenType } from '@/types';
 import { useSolanaWallets } from '@privy-io/react-auth';
-import { FREEDOM_DECIMALS, erc20Abi, TokenType } from '@trump-fun/common';
-import { ethers } from 'ethers';
+import { PublicKey } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
 import { useEmbeddedWallet } from '../components/EmbeddedWalletProvider';
 import { useNetwork } from './useNetwork';
 import { useTokenContext } from './useTokenContext';
-import { PublicKey } from '@solana/web3.js';
 
 export const useBalance = () => {
   const { usdcMint, freedomMint } = useNetwork();
@@ -88,7 +87,7 @@ export const useBalance = () => {
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [walletsReady, isWalletLoading, embeddedWallet, tokenAddress, freedomMint]);
+  }, [walletsReady, isWalletLoading, embeddedWallet, tokenAddress]);
 
   // Trigger a balance fetch when dependencies change
   useEffect(() => {

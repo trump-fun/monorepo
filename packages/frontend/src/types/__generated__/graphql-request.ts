@@ -1,5 +1,5 @@
-import { gql } from '@apollo/client';
-import * as Apollo from '@apollo/client';
+import { GraphQLClient, RequestOptions } from 'graphql-request';
+import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -11,7 +11,7 @@ export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> =
 export type Incremental<T> =
   | T
   | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
-const defaultOptions = {} as const;
+type GraphQLClientRequestHeaders = RequestOptions['requestHeaders'];
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string };
@@ -1786,53 +1786,6 @@ export const GetPoolsDocument = gql`
   }
   ${PoolFieldsFragmentDoc}
 `;
-
-/**
- * __useGetPoolsQuery__
- *
- * To run a query within a React component, call `useGetPoolsQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetPoolsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetPoolsQuery({
- *   variables: {
- *      filter: // value for 'filter'
- *      orderBy: // value for 'orderBy'
- *      orderDirection: // value for 'orderDirection'
- *      first: // value for 'first'
- *      skip: // value for 'skip'
- *   },
- * });
- */
-export function useGetPoolsQuery(
-  baseOptions: Apollo.QueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables> &
-    ({ variables: GetPoolsQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
-}
-export function useGetPoolsLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
-}
-export function useGetPoolsSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
-}
-export type GetPoolsQueryHookResult = ReturnType<typeof useGetPoolsQuery>;
-export type GetPoolsLazyQueryHookResult = ReturnType<typeof useGetPoolsLazyQuery>;
-export type GetPoolsSuspenseQueryHookResult = ReturnType<typeof useGetPoolsSuspenseQuery>;
-export type GetPoolsQueryResult = Apollo.QueryResult<GetPoolsQuery, GetPoolsQueryVariables>;
 export const GetPoolDocument = gql`
   query GetPool($poolId: ID!) {
     pool(id: $poolId) {
@@ -1841,49 +1794,6 @@ export const GetPoolDocument = gql`
   }
   ${PoolFieldsFragmentDoc}
 `;
-
-/**
- * __useGetPoolQuery__
- *
- * To run a query within a React component, call `useGetPoolQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetPoolQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetPoolQuery({
- *   variables: {
- *      poolId: // value for 'poolId'
- *   },
- * });
- */
-export function useGetPoolQuery(
-  baseOptions: Apollo.QueryHookOptions<GetPoolQuery, GetPoolQueryVariables> &
-    ({ variables: GetPoolQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
-}
-export function useGetPoolLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetPoolQuery, GetPoolQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
-}
-export function useGetPoolSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetPoolQuery, GetPoolQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
-}
-export type GetPoolQueryHookResult = ReturnType<typeof useGetPoolQuery>;
-export type GetPoolLazyQueryHookResult = ReturnType<typeof useGetPoolLazyQuery>;
-export type GetPoolSuspenseQueryHookResult = ReturnType<typeof useGetPoolSuspenseQuery>;
-export type GetPoolQueryResult = Apollo.QueryResult<GetPoolQuery, GetPoolQueryVariables>;
 export const GetBetsDocument = gql`
   query GetBets(
     $first: Int = 10
@@ -1908,53 +1818,6 @@ export const GetBetsDocument = gql`
   ${BetFieldsFragmentDoc}
   ${PoolFieldsFragmentDoc}
 `;
-
-/**
- * __useGetBetsQuery__
- *
- * To run a query within a React component, call `useGetBetsQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetBetsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetBetsQuery({
- *   variables: {
- *      first: // value for 'first'
- *      filter: // value for 'filter'
- *      orderBy: // value for 'orderBy'
- *      orderDirection: // value for 'orderDirection'
- *      skip: // value for 'skip'
- *   },
- * });
- */
-export function useGetBetsQuery(
-  baseOptions: Apollo.QueryHookOptions<GetBetsQuery, GetBetsQueryVariables> &
-    ({ variables: GetBetsQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
-}
-export function useGetBetsLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetBetsQuery, GetBetsQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
-}
-export function useGetBetsSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetBetsQuery, GetBetsQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
-}
-export type GetBetsQueryHookResult = ReturnType<typeof useGetBetsQuery>;
-export type GetBetsLazyQueryHookResult = ReturnType<typeof useGetBetsLazyQuery>;
-export type GetBetsSuspenseQueryHookResult = ReturnType<typeof useGetBetsSuspenseQuery>;
-export type GetBetsQueryResult = Apollo.QueryResult<GetBetsQuery, GetBetsQueryVariables>;
 export const GetBetPlacedDocument = gql`
   query GetBetPlaced(
     $first: Int = 10
@@ -1980,65 +1843,6 @@ export const GetBetPlacedDocument = gql`
     }
   }
 `;
-
-/**
- * __useGetBetPlacedQuery__
- *
- * To run a query within a React component, call `useGetBetPlacedQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetBetPlacedQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetBetPlacedQuery({
- *   variables: {
- *      first: // value for 'first'
- *      filter: // value for 'filter'
- *      orderBy: // value for 'orderBy'
- *      orderDirection: // value for 'orderDirection'
- *      skip: // value for 'skip'
- *   },
- * });
- */
-export function useGetBetPlacedQuery(
-  baseOptions: Apollo.QueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables> &
-    ({ variables: GetBetPlacedQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(
-    GetBetPlacedDocument,
-    options
-  );
-}
-export function useGetBetPlacedLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(
-    GetBetPlacedDocument,
-    options
-  );
-}
-export function useGetBetPlacedSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(
-    GetBetPlacedDocument,
-    options
-  );
-}
-export type GetBetPlacedQueryHookResult = ReturnType<typeof useGetBetPlacedQuery>;
-export type GetBetPlacedLazyQueryHookResult = ReturnType<typeof useGetBetPlacedLazyQuery>;
-export type GetBetPlacedSuspenseQueryHookResult = ReturnType<typeof useGetBetPlacedSuspenseQuery>;
-export type GetBetPlacedQueryResult = Apollo.QueryResult<
-  GetBetPlacedQuery,
-  GetBetPlacedQueryVariables
->;
 export const GetPayoutClaimedDocument = gql`
   query GetPayoutClaimed(
     $first: Int = 100
@@ -2064,62 +1868,93 @@ export const GetPayoutClaimedDocument = gql`
   }
 `;
 
-/**
- * __useGetPayoutClaimedQuery__
- *
- * To run a query within a React component, call `useGetPayoutClaimedQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetPayoutClaimedQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetPayoutClaimedQuery({
- *   variables: {
- *      first: // value for 'first'
- *      skip: // value for 'skip'
- *      orderBy: // value for 'orderBy'
- *      orderDirection: // value for 'orderDirection'
- *      where: // value for 'where'
- *   },
- * });
- */
-export function useGetPayoutClaimedQuery(
-  baseOptions?: Apollo.QueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(
-    GetPayoutClaimedDocument,
-    options
-  );
+export type SdkFunctionWrapper = <T>(
+  action: (requestHeaders?: Record<string, string>) => Promise<T>,
+  operationName: string,
+  operationType?: string,
+  variables?: any
+) => Promise<T>;
+
+const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType, _variables) =>
+  action();
+
+export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
+  return {
+    GetPools(
+      variables: GetPoolsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPoolsQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetPoolsQuery>(GetPoolsDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetPools',
+        'query',
+        variables
+      );
+    },
+    GetPool(
+      variables: GetPoolQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPoolQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetPoolQuery>(GetPoolDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetPool',
+        'query',
+        variables
+      );
+    },
+    GetBets(
+      variables: GetBetsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetBetsQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetBetsQuery>(GetBetsDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetBets',
+        'query',
+        variables
+      );
+    },
+    GetBetPlaced(
+      variables: GetBetPlacedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetBetPlacedQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetBetPlacedQuery>(GetBetPlacedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetBetPlaced',
+        'query',
+        variables
+      );
+    },
+    GetPayoutClaimed(
+      variables?: GetPayoutClaimedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPayoutClaimedQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetPayoutClaimedQuery>(GetPayoutClaimedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetPayoutClaimed',
+        'query',
+        variables
+      );
+    },
+  };
 }
-export function useGetPayoutClaimedLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(
-    GetPayoutClaimedDocument,
-    options
-  );
-}
-export function useGetPayoutClaimedSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(
-    GetPayoutClaimedDocument,
-    options
-  );
-}
-export type GetPayoutClaimedQueryHookResult = ReturnType<typeof useGetPayoutClaimedQuery>;
-export type GetPayoutClaimedLazyQueryHookResult = ReturnType<typeof useGetPayoutClaimedLazyQuery>;
-export type GetPayoutClaimedSuspenseQueryHookResult = ReturnType<
-  typeof useGetPayoutClaimedSuspenseQuery
->;
-export type GetPayoutClaimedQueryResult = Apollo.QueryResult<
-  GetPayoutClaimedQuery,
-  GetPayoutClaimedQueryVariables
->;
+export type Sdk = ReturnType<typeof getSdk>;

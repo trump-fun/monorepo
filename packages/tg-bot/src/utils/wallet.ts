@@ -3,7 +3,7 @@ import { privy, createPrivyWallet } from '../lib/privy';
 import { supabase } from '../lib/supabase';
 import config from '../config';
 import type { Context } from 'grammy';
-import { TokenType } from '@trump-fun/common';
+import { TokenType } from '@/types';
 
 /**
  * Representation of a user's wallet

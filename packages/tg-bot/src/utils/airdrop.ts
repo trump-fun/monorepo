@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { supabase } from '../lib/supabase';
 import config from '../config';
-import { TokenType } from '@trump-fun/common';
+import { TokenType } from '@/types';
 import { checkTokenBalance } from './wallet';
 
 // Constants for token airdrop

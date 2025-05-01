@@ -2,7 +2,7 @@
 
 import { useTokenContext } from './useTokenContext';
 import { useBalance as usePrivyBalance } from './usePointsBalance';
-import { TokenType } from '@trump-fun/common';
+import { TokenType } from '@/types';
 
 export function useTokenBalance() {
   const { tokenType, tokenSymbol, tokenLogo, tokenDecimals, tokenMint } = useTokenContext();

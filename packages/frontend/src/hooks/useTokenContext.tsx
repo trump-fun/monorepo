@@ -1,10 +1,10 @@
 'use client';
 
-import { TokenType } from '@trump-fun/common';
 import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 import { PublicKey } from '@solana/web3.js';
 import { useNetwork } from './useNetwork';
+import { TokenType } from '@/types';
 
 interface TokenContextType {
   tokenType: TokenType;
