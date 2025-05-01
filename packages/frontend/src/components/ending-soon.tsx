@@ -31,7 +31,7 @@ export function EndingSoon() {
     data: initialData,
     loading,
     previousData,
-  } = useQuery(GET_POOLS, {
+  } = useGetPoolsQuery(GET_POOLS, {
     variables,
     context: { name: 'endingSoonSearch' },
     notifyOnNetworkStatusChange: true,

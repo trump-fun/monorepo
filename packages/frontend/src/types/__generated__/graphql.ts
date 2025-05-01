@@ -4,37 +4,33 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
-  [_ in K]?: never;
-};
-export type Incremental<T> =
-  | T
-  | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string };
-  String: { input: string; output: string };
-  Boolean: { input: boolean; output: boolean };
-  Int: { input: number; output: number };
-  Float: { input: number; output: number };
-  BigDecimal: { input: any; output: any };
-  BigInt: { input: any; output: any };
-  Bytes: { input: any; output: any };
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  BigDecimal: { input: any; output: any; }
+  BigInt: { input: any; output: any; }
+  Bytes: { input: any; output: any; }
   /**
    * 8 bytes signed integer
    *
    */
-  Int8: { input: any; output: any };
+  Int8: { input: any; output: any; }
   /**
    * A string representation of microseconds UNIX timestamp (16 digits)
    *
    */
-  Timestamp: { input: any; output: any };
+  Timestamp: { input: any; output: any; }
 };
 
 export enum Aggregation_interval {
   day = 'day',
-  hour = 'hour',
+  hour = 'hour'
 }
 
 export type Bet = {
@@ -58,7 +54,7 @@ export enum BetOutcome {
   Lost = 'Lost',
   None = 'None',
   Voided = 'Voided',
-  Won = 'Won',
+  Won = 'Won'
 }
 
 export type BetPlaced = {
@@ -259,7 +255,7 @@ export enum BetPlaced_orderBy {
   pool__winningOption = 'pool__winningOption',
   tokenType = 'tokenType',
   txHash = 'txHash',
-  user = 'user',
+  user = 'user'
 }
 
 export type Bet_filter = {
@@ -422,7 +418,7 @@ export enum Bet_orderBy {
   pool__winningOption = 'pool__winningOption',
   tokenType = 'tokenType',
   txHash = 'txHash',
-  userAddress = 'userAddress',
+  userAddress = 'userAddress'
 }
 
 export type BlockChangedFilter = {
@@ -442,13 +438,13 @@ export enum MediaType {
   Instagram = 'Instagram',
   TikTok = 'TikTok',
   Video = 'Video',
-  X = 'X',
+  X = 'X'
 }
 
 /** Defines the order direction, either ascending or descending */
 export enum OrderDirection {
   asc = 'asc',
-  desc = 'desc',
+  desc = 'desc'
 }
 
 export type PayoutClaimed = {
@@ -552,7 +548,7 @@ export enum PayoutClaimed_orderBy {
   poolId = 'poolId',
   tokenType = 'tokenType',
   txHash = 'txHash',
-  user = 'user',
+  user = 'user'
 }
 
 export type Pool = {
@@ -655,7 +651,7 @@ export enum PoolClosed_orderBy {
   id = 'id',
   poolId = 'poolId',
   selectedOption = 'selectedOption',
-  txHash = 'txHash',
+  txHash = 'txHash'
 }
 
 export type PoolCreated = {
@@ -893,7 +889,7 @@ export enum PoolCreated_orderBy {
   options = 'options',
   poolId = 'poolId',
   question = 'question',
-  txHash = 'txHash',
+  txHash = 'txHash'
 }
 
 export type PoolMediaSet = {
@@ -1014,14 +1010,14 @@ export enum PoolMediaSet_orderBy {
   pool__twitterPostId = 'pool__twitterPostId',
   pool__usdcBetTotals = 'pool__usdcBetTotals',
   pool__winningOption = 'pool__winningOption',
-  txHash = 'txHash',
+  txHash = 'txHash'
 }
 
 export enum PoolStatus {
   Graded = 'Graded',
   None = 'None',
   Pending = 'Pending',
-  Regraded = 'Regraded',
+  Regraded = 'Regraded'
 }
 
 export type Pool_filter = {
@@ -1344,7 +1340,7 @@ export enum Pool_orderBy {
   twitterPostId = 'twitterPostId',
   usdcBetTotals = 'usdcBetTotals',
   usdcBetTotalsByOption = 'usdcBetTotalsByOption',
-  winningOption = 'winningOption',
+  winningOption = 'winningOption'
 }
 
 export type Query = {
@@ -1367,9 +1363,11 @@ export type Query = {
   pools: Array<Pool>;
 };
 
+
 export type Query_metaArgs = {
   block?: InputMaybe<Block_height>;
 };
+
 
 export type QuerybetArgs = {
   block?: InputMaybe<Block_height>;
@@ -1377,11 +1375,13 @@ export type QuerybetArgs = {
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
+
 export type QuerybetPlacedArgs = {
   block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QuerybetPlacedsArgs = {
   block?: InputMaybe<Block_height>;
@@ -1393,6 +1393,7 @@ export type QuerybetPlacedsArgs = {
   where?: InputMaybe<BetPlaced_filter>;
 };
 
+
 export type QuerybetsArgs = {
   block?: InputMaybe<Block_height>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1403,11 +1404,13 @@ export type QuerybetsArgs = {
   where?: InputMaybe<Bet_filter>;
 };
 
+
 export type QuerypayoutClaimedArgs = {
   block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QuerypayoutClaimedsArgs = {
   block?: InputMaybe<Block_height>;
@@ -1419,17 +1422,20 @@ export type QuerypayoutClaimedsArgs = {
   where?: InputMaybe<PayoutClaimed_filter>;
 };
 
+
 export type QuerypoolArgs = {
   block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
+
 export type QuerypoolClosedArgs = {
   block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QuerypoolClosedsArgs = {
   block?: InputMaybe<Block_height>;
@@ -1441,11 +1447,13 @@ export type QuerypoolClosedsArgs = {
   where?: InputMaybe<PoolClosed_filter>;
 };
 
+
 export type QuerypoolCreatedArgs = {
   block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QuerypoolCreatedsArgs = {
   block?: InputMaybe<Block_height>;
@@ -1457,11 +1465,13 @@ export type QuerypoolCreatedsArgs = {
   where?: InputMaybe<PoolCreated_filter>;
 };
 
+
 export type QuerypoolMediaSetArgs = {
   block?: InputMaybe<Block_height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QuerypoolMediaSetsArgs = {
   block?: InputMaybe<Block_height>;
@@ -1472,6 +1482,7 @@ export type QuerypoolMediaSetsArgs = {
   subgraphError?: _SubgraphErrorPolicy_;
   where?: InputMaybe<PoolMediaSet_filter>;
 };
+
 
 export type QuerypoolsArgs = {
   block?: InputMaybe<Block_height>;
@@ -1485,7 +1496,7 @@ export type QuerypoolsArgs = {
 
 export enum TokenType {
   Freedom = 'Freedom',
-  Usdc = 'USDC',
+  USDC = 'USDC'
 }
 
 export type _Block_ = {
@@ -1521,5 +1532,5 @@ export enum _SubgraphErrorPolicy_ {
   /** Data will be returned even if the subgraph has indexing errors */
   allow = 'allow',
   /** If the subgraph has indexing errors, data will be omitted. The default. */
-  deny = 'deny',
+  deny = 'deny'
 }
