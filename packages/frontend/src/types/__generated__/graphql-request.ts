@@ -401,7 +401,6 @@ export enum Bet_OrderBy {
   PoolCreatorId = 'pool__creatorId',
   PoolCreatorName = 'pool__creatorName',
   PoolDecisionTime = 'pool__decisionTime',
-  PoolId = 'pool__id',
   PoolImageUrl = 'pool__imageUrl',
   PoolIsDraw = 'pool__isDraw',
   PoolOriginalTruthSocialPostId = 'pool__originalTruthSocialPostId',

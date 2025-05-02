@@ -1,3 +1,4 @@
+import { getSdk } from '@/types/__generated__/graphql-request';
 import { GraphQLClient } from 'graphql-request';
 
 export function createGraphQLClient() {
@@ -16,3 +17,4 @@ export function createGraphQLClient() {
 }
 
 export const graphqlClient = createGraphQLClient();
+export const graphqlRequestSdk = getSdk(graphqlClient);

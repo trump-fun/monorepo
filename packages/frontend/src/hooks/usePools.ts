@@ -1,5 +1,10 @@
-import { useQuery } from '@apollo/client';
-import { GET_POOLS, OrderDirection, Pool, Pool_OrderBy, TokenType } from '@trump-fun/common';
+import {
+  GetPoolsQueryVariables,
+  OrderDirection,
+  Pool_OrderBy,
+  TokenType,
+  useGetPoolsQuery,
+} from '@/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useTokenContext } from './useTokenContext';
@@ -11,7 +16,7 @@ interface UsePoolsOptions {
   skip?: number;
   first?: number;
   pollInterval?: number;
-  filter?: any;
+  filter?: GetPoolsQueryVariables['filter'];
   context?: any;
 }
 
@@ -24,37 +29,33 @@ export function usePools({
   pollInterval = 0,
   filter = {},
   context = { name: 'pools' },
-}: UsePoolsOptions = {}) {
+}: UsePoolsOptions) {
   const { tokenType } = useTokenContext();
   const [hasMore, setHasMore] = useState(true);
   const { ref, inView } = useInView();
-  const currentTimestamp = Math.floor(Date.now() / 1000);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
-  // Default order by token type
-  const defaultOrderBy =
-    tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals;
-
   // Default filter includes pending status and future bets close time
   // Important: Use the enum value directly without wrapping in a string
-  const defaultFilter = {
+  const defaultFilter: GetPoolsQueryVariables['filter'] = {
     // status: PoolStatus.Pending, // Use enum value directly, not wrapped in a string
     // betsCloseAt_gt: currentTimestamp, // Send as a number, not a string
     ...filter,
   };
 
   // Combine override variables with defaults
-  const variables = {
+  const variables: GetPoolsQueryVariables = {
     filter: defaultFilter,
-    orderBy: Pool_OrderBy.BetsCloseAt,
+    orderBy:
+      tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals,
     orderDirection: OrderDirection.Desc,
     skip,
     first,
   };
 
   // Fetch pools based on variables
-  const { data, loading, fetchMore, error, networkStatus, refetch } = useQuery(GET_POOLS, {
+  const { data, loading, fetchMore, error, networkStatus, refetch } = useGetPoolsQuery({
     variables,
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'cache-and-network',
@@ -70,7 +71,7 @@ export function usePools({
 
     const query = searchQuery.toLowerCase();
     return data.pools.filter(
-      (pool: Pool) =>
+      (pool) =>
         pool.question.toLowerCase().includes(query) ||
         pool.options.some((option) => option.toLowerCase().includes(query))
     );
@@ -114,7 +115,7 @@ export function usePools({
   // Reset hasMore when filter changes
   useEffect(() => {
     setHasMore(true);
-  }, [JSON.stringify(variables.filter), variables.orderBy, variables.orderDirection]);
+  }, [variables.filter, variables.orderBy, variables.orderDirection]);
 
   // Expose variables for potential UI controls
   const sortOptions = {

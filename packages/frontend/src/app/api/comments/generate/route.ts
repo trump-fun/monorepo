@@ -1,6 +1,6 @@
+import { graphqlRequestSdk } from '@/lib/graphql-client';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { Pool } from '@/types';
-import { fetchPoolWithRequest } from '@/utils/fetchPoolWithRequest';
+import { GetPoolQuery, Pool } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
@@ -36,10 +36,8 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Missing API key configuration' }, { status: 500 });
     }
 
-    const pool = await fetchPoolWithRequest(poolId, {
-      headers: {
-        Authorization: `Bearer ${indexerApiKey}`,
-      },
+    const pool = await graphqlRequestSdk.GetPool({
+      poolId,
     });
 
     if (!pool) {
@@ -65,7 +63,7 @@ export const GET = async (request: NextRequest) => {
   }
 };
 
-async function generateComments(pool: Pool): Promise<string[]> {
+async function generateComments(pool: GetPoolQuery['pool']): Promise<string[]> {
   const prompt = `Generate 10 diverse, realistic comments for a prediction market about "${
     pool.question || pool.poolId
   }".

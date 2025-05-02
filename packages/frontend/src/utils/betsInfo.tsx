@@ -1,4 +1,4 @@
-import { Pool, TokenType } from '@/types';
+import { GetPoolQuery, GetPoolsQuery, Pool, TokenType } from '@/types';
 import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import React from 'react';
 
@@ -13,7 +13,7 @@ const formatTokenAmount = (
   return floor ? Math.floor(value) : value;
 };
 export const getVolumeForTokenType = (
-  pool: Pool | Pool[][number],
+  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
   tokenType: TokenType,
   raw = false
 ) => {
@@ -83,30 +83,24 @@ export const getBetTotals = (
  * Calculate percentages for each option in a pool
  */
 export const calculateOptionPercentages = (
-  pool: Pool | Pool[][number],
+  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number],
   tokenType: TokenType
 ): number[] => {
   if (!pool) return [];
 
-  const totalPoints = pool.pointsBetTotals.reduce(
-    (sum: bigint, points: string) => sum + BigInt(points || '0'),
-    BigInt(0)
-  );
-  const totalUsdc = pool.usdcBetTotals.reduce(
-    (sum: bigint, usdc: string) => sum + BigInt(usdc || '0'),
-    BigInt(0)
-  );
+  const totalPoints = pool.pointsBetTotals;
+  const totalUsdc = pool.usdcBetTotals;
 
   const pointsPercentages =
     totalPoints > BigInt(0)
-      ? pool.pointsBetTotals.map((points: string) =>
+      ? pool.pointsBetTotalsByOption.map((points: string) =>
           Number((BigInt(points || '0') * BigInt(100)) / totalPoints)
         )
       : pool.options.map(() => 0);
 
   const usdcPercentages =
     totalUsdc > BigInt(0)
-      ? pool.usdcBetTotals.map((usdc: string) =>
+      ? pool.usdcBetTotalsByOption.map((usdc: string) =>
           Number((BigInt(usdc || '0') * BigInt(100)) / totalUsdc)
         )
       : pool.options.map(() => 0);

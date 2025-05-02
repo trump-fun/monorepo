@@ -3,15 +3,8 @@
 import { BettingProgress } from '@/components/pools/BettingProgress';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { calculateOptionPercentages } from '@/utils/betsInfo';
-import { useQuery } from '@apollo/client';
-import {
-  GET_POOLS,
-  OrderDirection,
-  Pool,
-  Pool_OrderBy,
-  PoolStatus,
-  TokenType,
-} from '@trump-fun/common';
+
+import { OrderDirection, Pool, Pool_OrderBy, TokenType, useGetPoolsQuery } from '@/types';
 import { TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -26,21 +19,20 @@ export function HighestVolume() {
     loading,
     previousData,
     error,
-  } = useQuery(GET_POOLS, {
+  } = useGetPoolsQuery({
     variables: {
       filter: {
         // status: PoolStatus.Pending,
         betsCloseAt_gt: currentTimestamp.toString(),
       },
-      orderBy: tokenType === TokenType.Usdc ? 'usdcBetTotals' : 'pointsBetTotals',
+      orderBy:
+        tokenType === TokenType.Usdc ? Pool_OrderBy.UsdcBetTotals : Pool_OrderBy.PointsBetTotals,
       orderDirection: OrderDirection.Desc,
       first: 3,
     },
     context: { name: 'volumeSearch' },
     notifyOnNetworkStatusChange: true,
   });
-
-  console.error(error);
 
   const poolsToDisplay = useMemo(() => {
     if (loading && !previousData) {
@@ -56,7 +48,7 @@ export function HighestVolume() {
     }
 
     const pools = poolsToDisplay.pools.slice(0, 3);
-    return pools.map((pool: Pool) => ({
+    return pools.map((pool) => ({
       pool,
       displayVolume:
         Number(tokenType === TokenType.Usdc ? pool.usdcBetTotals : pool.pointsBetTotals) /
@@ -64,6 +56,14 @@ export function HighestVolume() {
     }));
   }, [poolsToDisplay, tokenType]);
 
+  if (error) {
+    console.error(error);
+    return (
+      <div className='py-4 text-center text-gray-400'>
+        <p>Error loading highest volume pools</p>
+      </div>
+    );
+  }
   return (
     <div className='bg-background mb-4 rounded-lg border border-gray-800 p-4 shadow-lg'>
       <div className='mb-4 flex items-center gap-2'>

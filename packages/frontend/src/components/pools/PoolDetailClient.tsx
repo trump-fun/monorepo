@@ -1,6 +1,6 @@
 'use client';
 
-import { useApolloClient, useQuery as useApolloQuery } from '@apollo/client';
+import { useApolloClient } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useQuery } from '@tanstack/react-query';
@@ -18,17 +18,12 @@ import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsI
 import { showSuccessToast } from '@/utils/toast';
 import { gql as apolloGql } from '@apollo/client';
 import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
-import {
-  GET_BET_PLACED_STRING,
-  GET_BETS_STRING,
-  GET_POOL,
-} from '@trump-fun/common/src/graphql/queries';
 
 import { useAnchorProvider } from '@/components/AnchorProvider';
 import { useChainConfig } from '@/components/ChainConfigProvider';
 import { useBettingForm } from '@/hooks/useBettingForm';
-import { usePoolFacts } from '@/hooks/usePoolFacts';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
+import { usePoolFacts } from '@/hooks/usePoolFacts';
 
 import { BettingForm } from '@/components/pools/BettingForm';
 import { BettingProgress } from '@/components/pools/BettingProgress';
@@ -37,14 +32,7 @@ import { PoolHeader } from '@/components/pools/PoolHeader';
 import { PoolStats } from '@/components/pools/PoolStats';
 import { TabSwitcher } from '@/components/pools/TabSwitcher';
 import { UserBets } from '@/components/pools/UserBets';
-import {
-  Bet,
-  Bet_OrderBy,
-  BetPlaced,
-  BetPlaced_OrderBy,
-  OrderDirection,
-  PoolStatus,
-} from '@trump-fun/common';
+import { useGetPoolQuery } from '@/types';
 
 type PoolDetailClientProps = {
   id: string;
@@ -78,7 +66,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     loading,
     error: poolError,
     refetch,
-  } = useApolloQuery(GET_POOL, {
+  } = useGetPoolQuery({
     variables: { poolId: id },
     fetchPolicy: 'network-only',
   });

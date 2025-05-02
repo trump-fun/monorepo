@@ -1,18 +1,15 @@
 'use client';
 
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { GET_POOLS } from '@trump-fun/common';
-import { OrderDirection, Pool_orderBy, PoolStatus } from '@/types';
+import { GetPoolsQuery, OrderDirection, Pool_OrderBy, PoolStatus, useGetPoolsQuery } from '@/types';
 import { getVolumeForTokenType } from '@/utils/betsInfo';
-import { useQuery } from '@apollo/client';
 import { Clock } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { EndingSoonBet } from './ending-soon-bet';
-import { Pool } from '@trump-fun/common';
 
 export function EndingSoon() {
   const { tokenType } = useTokenContext();
-  const [pools, setPools] = useState<Pool[]>([]);
+  const [pools, setPools] = useState<GetPoolsQuery['pools']>([]);
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const oneDayFromNow = currentTimestamp + 86400;
 
@@ -22,8 +19,8 @@ export function EndingSoon() {
       betsCloseAt_lt: oneDayFromNow.toString(),
       status_in: [PoolStatus.Pending, PoolStatus.None],
     },
-    orderBy: Pool_orderBy.betsCloseAt,
-    orderDirection: OrderDirection.asc,
+    orderBy: Pool_OrderBy.BetsCloseAt,
+    orderDirection: OrderDirection.Asc,
     first: 3,
   };
 
@@ -31,7 +28,7 @@ export function EndingSoon() {
     data: initialData,
     loading,
     previousData,
-  } = useGetPoolsQuery(GET_POOLS, {
+  } = useGetPoolsQuery({
     variables,
     context: { name: 'endingSoonSearch' },
     notifyOnNetworkStatusChange: true,
@@ -78,7 +75,7 @@ export function EndingSoon() {
             ))}
           </div>
         ) : poolsToDisplay.length > 0 ? (
-          poolsToDisplay.map((pool: Pool) => {
+          poolsToDisplay.map((pool) => {
             return (
               <EndingSoonBet
                 key={pool.id}

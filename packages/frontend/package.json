@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "deploy": "sh deploy.sh",
-    "codegen": "graphql-codegen && grep -v \"PoolId = 'pool__id',|BetId = 'bet__id',\" src/types/__generated__/graphql.ts > temp.ts && mv temp.ts src/types/__generated__/graphql.ts && sed -i '' 's/const documents = [[]][]];/const documents: any[[]][]] = [[]][]];/' src/types/__generated__/graphql.ts"
+    "codegen": "bash generate-types.sh"
   },
   "dependencies": {
     "@apollo/client": "^3.13.5",
@@ -27,6 +27,7 @@
     "@radix-ui/react-tabs": "^1.1.3",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@solana/spl-token": "^0.3.8",
+    "@solana/wallet-adapter-react": "^0.15.38",
     "@solana/web3.js": "^1.78.4",
     "@supabase/ssr": "^0.6.1",
     "@tanstack/react-query": "^5.70.0",

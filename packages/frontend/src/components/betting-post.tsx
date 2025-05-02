@@ -2,7 +2,8 @@
 
 import { isPoolFactsd, savePoolFacts } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
-import { Pool, PoolStatus, TokenType } from '@trump-fun/common';
+import { GetPoolQuery, GetPoolsQuery, PoolStatus, TokenType } from '@/types';
+import { getBetTotals, getVolumeForTokenType } from '@/utils/betsInfo';
 import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
 import { USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
@@ -16,10 +17,9 @@ import { CommentModal } from './dialogs/comment';
 import { PoolImage } from './pool-image';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
-import { getBetTotals, getVolumeForTokenType } from '@/utils/betsInfo';
 
 interface BettingPostProps {
-  pool: Pool;
+  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
   tokenType: TokenType;
   commentCount?: number;
 }
@@ -29,29 +29,28 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
   const [modalOpen, setModalOpen] = useState(false);
   const [betModalOpen, setBetModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const { authenticated, login } = usePrivy();
+  const { wallets } = useSolanaWallets();
+  const { signMessage } = useSignMessage();
   const [factsCount, setFactsCount] = useState(() => {
     if (typeof window !== 'undefined') {
-      return parseInt(localStorage.getItem(`pool_facts_${pool.id}`) || '0', 10);
+      return parseInt(localStorage.getItem(`pool_facts_${pool?.id}`) || '0', 10);
     }
     return 5;
   });
 
   const [hasFactsed, setHasFactsed] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(`pool_facts_liked_${pool.id}`) === 'true';
+      return localStorage.getItem(`pool_facts_liked_${pool?.id}`) === 'true';
     }
     return false;
   });
-  const { authenticated, login } = usePrivy();
-  const { wallets } = useSolanaWallets();
-  const { signMessage } = useSignMessage();
 
-  const isActive = pool.status === PoolStatus.Pending || pool.status === PoolStatus.None;
+  const isActive = pool?.status === PoolStatus.Pending || pool?.status === PoolStatus.None;
   const isWalletConnected = authenticated && wallets && wallets.length > 0 && wallets[0]?.address;
 
   const optionBets = useMemo(
-    () => pool.options.map((_, index) => getBetTotals(pool, tokenType, index)),
+    () => pool?.options.map((_, index) => getBetTotals(pool, tokenType, index)) ?? [],
     [pool, tokenType]
   );
 
@@ -89,6 +88,7 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
   const currentUserAddress = '0x6bF08768995E7430184a48e96940B83C15c1653f';
 
   const userBetsByOption = useMemo(() => {
+    if (!pool) return;
     if (!currentUserAddress) return {} as Record<string, { amount: string; tokenType: string }[]>;
 
     const optionMapping: Record<string, string> = {};
@@ -99,7 +99,7 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
     const betsByOption: Record<string, { amount: string; tokenType: string }[]> = {};
 
     return betsByOption;
-  }, [currentUserAddress, pool.options]);
+  }, [currentUserAddress, pool]);
 
   // Format bet amount for display
   const formatBetAmount = (amount: string) => {
@@ -112,13 +112,15 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
   };
 
   useEffect(() => {
+    if (!pool) return;
     if (typeof window !== 'undefined') {
       const wasFactsd = isPoolFactsd(pool.id);
       setHasFactsed(wasFactsd);
     }
-  }, [pool.id]);
+  }, [pool]);
 
   const handleFacts = async () => {
+    if (!pool) return;
     if (!isWalletConnected) {
       login();
       return;
@@ -241,6 +243,8 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
     );
   };
 
+  if (!pool) return null;
+
   return (
     <div className='bg-background overflow-hidden rounded-lg border border-gray-200 transition-colors hover:border-gray-100 dark:border-gray-800 dark:hover:border-gray-700'>
       <CommentModal
@@ -316,7 +320,7 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
             const percent = betData.displayPercentages[i] || 0;
 
             const optionKey = i.toString();
-            const userBetsOnOption = userBetsByOption[optionKey] || [];
+            const userBetsOnOption = userBetsByOption?.[optionKey] || [];
             const hasUserBet = userBetsOnOption.length > 0;
 
             return (
