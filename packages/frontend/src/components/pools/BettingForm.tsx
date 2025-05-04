@@ -2,11 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
-import { Pool } from '@/types';
-import { ExtendedPool } from '@/types/extended-types';
+import { PoolsQueryResultTypeSingle } from '@/types';
 
 interface BettingFormProps {
-  pool: Pool | Pool[][number] | ExtendedPool; // Replace with proper typing
+  pool: PoolsQueryResultTypeSingle;
   handlePercentageClick: (percentage: number) => void;
   sliderValue: number[];
   setSliderValue: (value: number[]) => void;

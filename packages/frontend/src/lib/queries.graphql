@@ -19,6 +19,10 @@ fragment PoolFields on Pool {
   twitterPostId
   usdcBetTotalsByOption
   winningOption
+  imageUrl
+  originalTruthSocialPostId
+  usdcBetTotals
+  pointsBetTotals
 }
 
 fragment BetFields on Bet {
@@ -33,6 +37,7 @@ fragment BetFields on Bet {
   tokenType
   txHash
   userAddress
+  isWithdrawn
 }
 
 # Queries

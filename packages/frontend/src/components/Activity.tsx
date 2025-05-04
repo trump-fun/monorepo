@@ -1,10 +1,9 @@
 'use client';
 
-import { gql as apolloGql } from '@apollo/client';
-import { GET_BETS_STRING } from '@trump-fun/common/src/graphql/queries';
-import { Bet, Pool } from '@/types';
-import { useQuery } from '@apollo/client';
-import { Bet_OrderBy, formatTokenAmount, getTokenName } from '@trump-fun/common';
+import { useTokenContext } from '@/hooks/useTokenContext';
+import { Bet_OrderBy, OrderDirection, Pool, useGetBetsQuery } from '@/types';
+import { BetsQueryResultTypeMulti } from '@/types/bet';
+import { formatTokenAmount } from '@/utils/betsCalculations';
 import { formatDistanceToNow } from 'date-fns';
 import { ArrowUpRight, Clock, Loader2 } from 'lucide-react';
 import { type FC, useEffect, useState } from 'react';
@@ -18,30 +17,29 @@ interface ActivityProps {
 export const Activity: FC<ActivityProps> = ({ pool }) => {
   const { id: poolId } = pool;
   const [page, setPage] = useState(1);
-  const [allBets, setAllBets] = useState<Bet[]>([]);
+  const [allBets, setAllBets] = useState<BetsQueryResultTypeMulti>([]);
   const pageSize = 10;
 
   const { ref, inView } = useInView({
     threshold: 0,
   });
 
-  const { data, loading, error, fetchMore } = useQuery<{ bets: Bet[] }>(
-    apolloGql(GET_BETS_STRING),
-    {
-      variables: {
-        filter: {
-          poolId,
-        },
-        first: pageSize,
-        skip: 0,
-        orderBy: Bet_OrderBy.CreatedAt,
-        orderDirection: 'desc',
+  const { data, loading, error, fetchMore } = useGetBetsQuery({
+    variables: {
+      filter: {
+        pool: poolId,
       },
-      context: { name: 'userBets' },
-      notifyOnNetworkStatusChange: true,
-      fetchPolicy: 'network-only',
-    }
-  );
+      first: pageSize,
+      skip: 0,
+      orderBy: Bet_OrderBy.CreatedAt,
+      orderDirection: OrderDirection.Desc,
+    },
+    context: { name: 'userBets' },
+    notifyOnNetworkStatusChange: true,
+    fetchPolicy: 'network-only',
+  });
+
+  const { tokenSymbol } = useTokenContext();
 
   useEffect(() => {
     if (data?.bets) {
@@ -159,13 +157,13 @@ export const Activity: FC<ActivityProps> = ({ pool }) => {
                 <div className='flex flex-wrap items-center gap-4'>
                   <div className='flex flex-col items-end'>
                     <span className='text-primary group-hover:text-primary/90 text-xl font-bold transition-colors'>
-                      {formatTokenAmount(bet.amount, bet.tokenType)} {getTokenName(bet.tokenType)}
+                      {formatTokenAmount(bet.amount, bet.tokenType)} {tokenSymbol}
                     </span>
                     <span className='text-xs text-gray-500 dark:text-gray-400'>placed on</span>
                   </div>
 
                   <div className='rounded-full bg-gray-100 px-4 py-1.5 text-sm font-medium shadow-sm dark:bg-gray-800 dark:text-gray-200'>
-                    {getOptionLabel('option' in bet ? bet.option : (bet as any).optionIndex)}
+                    {getOptionLabel(bet.optionIndex)}
                   </div>
 
                   <div

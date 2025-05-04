@@ -1,6 +1,6 @@
 'use client';
 
-import { usePrivy, useSolanaWallets, WalletWithMetadata } from '@privy-io/react-auth';
+import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Cluster, PublicKey } from '@solana/web3.js';
 

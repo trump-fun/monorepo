@@ -1,31 +1,8 @@
-import { graphqlClient } from '@/lib/graphql-client';
-import { OrderDirection, Pool_orderBy, PoolStatus } from '@/types';
+import { graphqlRequestSdk } from '@/lib/graphql-client';
+import { OrderDirection, Pool_OrderBy, PoolStatus } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
-import { GET_POOLS_STRING } from '@trump-fun/common/src/graphql/queries';
 import OpenAI from 'openai';
 const openaiClient = new OpenAI();
-
-// Define interfaces for the GraphQL response types
-interface Pool {
-  id: string;
-  poolId: string;
-  question: string;
-  options: string[];
-  status: string;
-  chainId: string;
-  chainName: string;
-  createdAt: string;
-  imageUrl?: string;
-  // Additional optional properties that might be present in the Pool object
-  bets?: unknown[];
-  usdcBetTotals?: string;
-  pointsBetTotals?: string;
-  betsCloseAt?: number;
-}
-
-interface PoolsResponse {
-  pools: Pool[];
-}
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -35,12 +12,12 @@ export const GET = async (request: NextRequest) => {
     }
 
     // Get pools using graphql-request with centralized query
-    const data = await graphqlClient.request<PoolsResponse>(GET_POOLS_STRING, {
+    const data = await graphqlRequestSdk.GetPools({
       filter: {
         status: PoolStatus.Pending,
       },
-      orderBy: Pool_orderBy.createdAt,
-      orderDirection: OrderDirection.desc,
+      orderBy: Pool_OrderBy.CreatedAt,
+      orderDirection: OrderDirection.Desc,
       first: 20,
     });
 
@@ -49,7 +26,7 @@ export const GET = async (request: NextRequest) => {
     }
 
     const poolSummaries = data.pools
-      .map((pool: Pool) => `ID: ${pool.id}, Question: ${pool.question}`)
+      .map((pool) => `ID: ${pool.id}, Question: ${pool.question}`)
       .join('\n');
     const prompt = `The user is currently viewing a pool with the question: "${question}".\n\nHere are 10 pools with their IDs and questions:\n${poolSummaries}\n\nBased on similar characteristics (e.g., question), provide an array of 5 pool IDs that are most closely related to this pool.\n\nReturn the results in a JSON array format like this:\n["pool_id_1", "pool_id_2", "pool_id_3", "pool_id_4", "pool_id_5"]`;
 
@@ -66,12 +43,12 @@ export const GET = async (request: NextRequest) => {
     const relatedPoolIds = JSON.parse(responseContent);
 
     // Get related pools using graphql-request with centralized query
-    const relatedPools = await graphqlClient.request<PoolsResponse>(GET_POOLS_STRING, {
+    const relatedPools = await graphqlRequestSdk.GetPools({
       filter: {
         id_in: relatedPoolIds,
       },
-      orderBy: Pool_orderBy.createdAt,
-      orderDirection: OrderDirection.desc,
+      orderBy: Pool_OrderBy.CreatedAt,
+      orderDirection: OrderDirection.Desc,
       first: 5,
     });
 

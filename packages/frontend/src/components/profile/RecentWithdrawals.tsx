@@ -1,10 +1,10 @@
-import { TokenType, toDecimal } from '@trump-fun/common';
+import { TokenType } from '@/types';
 import { formatDistance } from 'date-fns';
-
+import { toDecimal } from '@/utils/betsCalculations';
 type WithdrawalData = {
   bet?: {
     amount: string;
-    tokenType: any;
+    tokenType: TokenType;
   };
   createdAt?: string | number;
   txHash?: string;

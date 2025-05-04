@@ -1,4 +1,4 @@
-import { GetPoolQuery, GetPoolsQuery, Pool, TokenType } from '@/types';
+import { GetPoolQuery, GetPoolsQuery, Pool, PoolsQueryResultTypeSingle, TokenType } from '@/types';
 import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
 import React from 'react';
 
@@ -36,7 +36,7 @@ export const getFormattedVolumeForTokenType = (pool: Pool, tokenType: TokenType,
   return Number(volume).toLocaleString();
 };
 
-export const calculateVolume = (pool: Pool[][number], tokenType: TokenType): React.ReactNode => {
+export const calculateVolume = (pool: PoolsQueryResultTypeSingle, tokenType: TokenType): React.ReactNode => {
   if (!pool) return tokenType === TokenType.Usdc ? '0' : '0';
 
   try {
@@ -58,7 +58,7 @@ export const calculateVolume = (pool: Pool[][number], tokenType: TokenType): Rea
 };
 
 export const getBetTotals = (
-  pool: Pool | Pool[][number],
+  pool: PoolsQueryResultTypeSingle,
   tokenType: TokenType | string,
   option: number
 ): string => {

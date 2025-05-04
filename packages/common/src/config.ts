@@ -44,7 +44,7 @@ export const CHAIN_CONFIG: Record<SupportedChainIds, ChainConfig> = {
 
 export const SOLANA_DEVNET_CONFIG = {
   rpcUrl: 'https://api.devnet.solana.com',
-  programId: new PublicKey('5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ'),
+  programId: new PublicKey('9Z3iCTvR4zzCxvPYYi9WYXD4DuPrMCajKtTjvQoZz8Ds'),
   freedomMint: new PublicKey('F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5'),
   usdcMint: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
 };

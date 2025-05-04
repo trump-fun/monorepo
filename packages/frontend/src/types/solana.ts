@@ -1,18 +1,7 @@
 import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
+import { MediaType } from './__generated__/graphql';
 
-/**
- * Enum for media types in Solana program representation
- */
-export enum MediaType {
-  None = 'none',
-  Image = 'image',
-  Video = 'video',
-  Audio = 'audio',
-  Gif = 'gif',
-  Article = 'article',
-  Pdf = 'pdf',
-}
 
 /**
  * Pool status in Solana program representation
@@ -67,16 +56,6 @@ export interface SolanaTokenAccount {
   amount: BN;
   delegate: PublicKey | null;
   delegatedAmount: BN;
-}
-
-/**
- * Interface for Solana token balance
- */
-export interface SolanaTokenBalance {
-  raw: BN;
-  decimals: number;
-  ui: number;
-  uiFormatted: string;
 }
 
 /**

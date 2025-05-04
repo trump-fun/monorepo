@@ -7,7 +7,7 @@ import {
 } from '@solana/spl-token';
 import { expect } from 'chai';
 
-import { Solana } from '../target/types/solana';
+import { TrumpFun } from '../target/types/trump_fun';
 import { getOrCreateFreedomMint, getUsdcMint } from './create-token';
 import {
   BETTING_POOLS_SEED,
@@ -22,7 +22,7 @@ describe('solana', () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.solana as Program<Solana>;
+  const program = anchor.workspace.trumpFun as Program<TrumpFun>;
   const wallet = anchor.AnchorProvider.env().wallet;
   const connection = anchor.getProvider().connection;
 

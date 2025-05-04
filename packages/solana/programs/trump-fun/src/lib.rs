@@ -2,14 +2,14 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
-declare_id!("5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ");
+declare_id!("9Z3iCTvR4zzCxvPYYi9WYXD4DuPrMCajKtTjvQoZz8Ds");
 
 pub const BETTING_POOLS_SEED: &[u8] = b"betting_pools_v1";
 pub const POOL_SEED: &[u8] = b"pool_v1";
 pub const BET_SEED: &[u8] = b"bet_v1";
 
 #[program]
-pub mod solana {
+pub mod trump_fun {
     use super::*;
 
     /// Initialize the BettingPools program
@@ -185,10 +185,7 @@ pub mod solana {
 
     /// Grade a betting pool
     /// Determines the winning option and releases payouts
-    pub fn grade_bet(
-        ctx: Context<GradeBet>,
-        response_option: u64,
-    ) -> Result<()> {
+    pub fn grade_bet(ctx: Context<GradeBet>, response_option: u64) -> Result<()> {
         let pool = &mut ctx.accounts.pool;
 
         // Check if pool is already graded
@@ -222,57 +219,56 @@ pub mod solana {
     }
 
     /// Claim payouts for a bet
-    pub fn claim_payout(
-        ctx: Context<ClaimPayout>,
-    ) -> Result<()> {
+    pub fn claim_payout(ctx: Context<ClaimPayout>) -> Result<()> {
         let pool = &ctx.accounts.pool;
         let bet = &mut ctx.accounts.bet;
         let betting_pools = &ctx.accounts.betting_pools;
-        
+
         // Check if the pool is graded
         if pool.status != PoolStatus::Graded {
             return err!(BettingPoolsError::PoolNotGraded);
         }
-        
+
         // Check if bet is already withdrawn
         if bet.is_withdrawn {
             return err!(BettingPoolsError::BetAlreadyWithdrawn);
         }
-        
+
         // Mark bet as withdrawn
         bet.is_withdrawn = true;
-        
+
         let token_type = bet.token_type;
-        
+
         // Get the appropriate betTotals based on token type
         let bet_totals = if token_type == TokenType::Usdc {
             pool.usdc_bet_totals
         } else {
             pool.points_bet_totals
         };
-        
+
         let amount_to_transfer: u64;
-        
+
         // If it is a draw or there are no bets on one side or the other for this token type, refund the bet
         if pool.is_draw || bet_totals[0] == 0 || bet_totals[1] == 0 {
             amount_to_transfer = bet.amount;
         } else {
             let losing_option = if pool.winning_option == 0 { 1 } else { 0 };
-            
+
             if bet.option == pool.winning_option {
                 // Calculate winnings
-                let win_amount = (bet.amount * bet_totals[losing_option as usize]) / 
-                    bet_totals[pool.winning_option as usize] + bet.amount;
+                let win_amount = (bet.amount * bet_totals[losing_option as usize])
+                    / bet_totals[pool.winning_option as usize]
+                    + bet.amount;
                 let fee = (win_amount * betting_pools.payout_fee_bp as u64) / 10000;
                 amount_to_transfer = win_amount - fee;
-                
+
                 // Fee stays in the program account
             } else {
                 // Losing bets get nothing
                 amount_to_transfer = 0;
             }
         }
-        
+
         // If there's an amount to transfer, do the transfer
         if amount_to_transfer > 0 {
             // Get the right mint based on token type
@@ -281,14 +277,11 @@ pub mod solana {
             } else {
                 betting_pools.freedom_mint
             };
-            
+
             // Transfer tokens from program account to bettor
-            let betting_pools_seeds = &[
-                BETTING_POOLS_SEED,
-                &[ctx.bumps.betting_pools],
-            ];
+            let betting_pools_seeds = &[BETTING_POOLS_SEED, &[ctx.bumps.betting_pools]];
             let signer = &[&betting_pools_seeds[..]];
-            
+
             token::transfer(
                 CpiContext::new_with_signer(
                     ctx.accounts.token_program.to_account_info(),
@@ -301,7 +294,7 @@ pub mod solana {
                 ),
                 amount_to_transfer,
             )?;
-            
+
             emit!(PayoutClaimed {
                 bet_id: bet.id,
                 pool_id: pool.id,
@@ -310,26 +303,23 @@ pub mod solana {
                 token_type,
             });
         }
-        
+
         Ok(())
     }
 
     /// Update the image URL for a pool
-    pub fn set_image(
-        ctx: Context<SetImage>,
-        image_url: String,
-    ) -> Result<()> {
+    pub fn set_image(ctx: Context<SetImage>, image_url: String) -> Result<()> {
         let pool = &mut ctx.accounts.pool;
-        
+
         // Update the image URL
         pool.image_url = image_url.clone();
-        
+
         // Emit the PoolImageSet event
         emit!(PoolImageSet {
             pool_id: pool.id,
             image_url,
         });
-        
+
         Ok(())
     }
 }
@@ -527,17 +517,17 @@ pub struct SetImage<'info> {
         bump
     )]
     pub pool: Account<'info, Pool>,
-    
+
     #[account(
         seeds = [BETTING_POOLS_SEED],
         bump,
         has_one = authority @ BettingPoolsError::NotAuthorized
     )]
     pub betting_pools: Account<'info, BettingPoolsState>,
-    
+
     #[account(mut)]
     pub authority: Signer<'info>,
-    
+
     pub system_program: Program<'info, System>,
 }
 

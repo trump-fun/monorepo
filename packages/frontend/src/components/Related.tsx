@@ -43,7 +43,7 @@ export const Related: FC<RelatedProps> = ({ question }) => {
         <h2 className='text-xl font-semibold'>Related Pools</h2>
         <div className='flex flex-col gap-2'>
           {pools.map((pool: Pool) => (
-            <PoolCard key={pool.id} pool={pool as unknown as Pool} />
+            <PoolCard key={pool.id} pool={pool} />
           ))}
         </div>
       </div>

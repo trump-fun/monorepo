@@ -1,6 +1,5 @@
 import { BettingPost } from '@/components/betting-post';
 import { Pool, TokenType } from '@/types';
-import Image from 'next/image';
 
 interface PoolListProps {
   pools: Pool[];
@@ -59,7 +58,7 @@ export function PoolList({
       {/* End of list indicator */}
       {!hasMore && pools.length > 0 && (
         <div className='py-4 text-center text-gray-500 dark:text-gray-400'>
-          You've reached the end!
+          You&apos;ve reached the end!
         </div>
       )}
     </div>

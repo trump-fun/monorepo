@@ -1525,7 +1525,7 @@ export enum _SubgraphErrorPolicy_ {
   Deny = 'deny'
 }
 
-export type PoolFieldsFragment = { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any };
+export type PoolFieldsFragment = { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any };
 
 export type BetFieldsFragment = { __typename?: 'Bet', amount: any, betIntId: any, createdAt: any, id: string, isPayedOut: boolean, optionIndex: any, outcome: BetOutcome, poolIntId: any, tokenType: TokenType, txHash: string, userAddress: string };
 
@@ -1538,14 +1538,14 @@ export type GetPoolsQueryVariables = Exact<{
 }>;
 
 
-export type GetPoolsQuery = { __typename?: 'Query', pools: Array<{ __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any }> };
+export type GetPoolsQuery = { __typename?: 'Query', pools: Array<{ __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any }> };
 
 export type GetPoolQueryVariables = Exact<{
   poolId: Scalars['ID']['input'];
 }>;
 
 
-export type GetPoolQuery = { __typename?: 'Query', pool?: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any } | null };
+export type GetPoolQuery = { __typename?: 'Query', pool?: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any } | null };
 
 export type GetBetsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1556,7 +1556,7 @@ export type GetBetsQueryVariables = Exact<{
 }>;
 
 
-export type GetBetsQuery = { __typename?: 'Query', bets: Array<{ __typename?: 'Bet', amount: any, betIntId: any, createdAt: any, id: string, isPayedOut: boolean, optionIndex: any, outcome: BetOutcome, poolIntId: any, tokenType: TokenType, txHash: string, userAddress: string, pool: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any } }> };
+export type GetBetsQuery = { __typename?: 'Query', bets: Array<{ __typename?: 'Bet', amount: any, betIntId: any, createdAt: any, id: string, isPayedOut: boolean, optionIndex: any, outcome: BetOutcome, poolIntId: any, tokenType: TokenType, txHash: string, userAddress: string, pool: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any } }> };
 
 export type GetBetPlacedQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1601,6 +1601,10 @@ export const PoolFieldsFragmentDoc = gql`
   twitterPostId
   usdcBetTotalsByOption
   winningOption
+  imageUrl
+  originalTruthSocialPostId
+  usdcBetTotals
+  pointsBetTotals
 }
     `;
 export const BetFieldsFragmentDoc = gql`

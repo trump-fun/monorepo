@@ -8,7 +8,7 @@ bun run --cwd packages/contracts generate-types
 # Generate subgraph types
 
 echo "📊 Generating subgraph types..."
-bun run --cwd packages/graph codegen
+bun run --cwd packages/solana-substream/subgraph codegen
 
 # Generate frontend and common types
 

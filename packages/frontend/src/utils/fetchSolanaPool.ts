@@ -2,7 +2,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 import { findPoolPDA } from '@/lib/solana';
 import { SolanaPoolData, SolanaPoolStatus } from '@/types/solana';
-import { MediaType } from '@trump-fun/common';
+import { MediaType } from '@/types';
 
 /**
  * Fetches pool data directly from the Solana blockchain

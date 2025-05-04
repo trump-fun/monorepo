@@ -1,11 +1,15 @@
 'use client';
 
-import { Bet, PayoutClaimed } from '@trump-fun/common';
+import { GetPayoutClaimedQuery, PoolStatus } from '@/types';
+import { BetsQueryResultTypeMulti } from '@/types/bet';
 import { calculateVolume } from '@/utils/betsCalculations';
 import { useMemo } from 'react';
 import { useUserBetsData } from './useUserBetsData';
 
-export function useUserStats(bets?: Bet[], _payoutClaimeds?: PayoutClaimed[]) {
+export function useUserStats(
+  bets?: BetsQueryResultTypeMulti,
+  _payoutClaimeds?: GetPayoutClaimedQuery['payoutClaimeds']
+) {
   const { betsData } = useUserBetsData('won');
 
   return useMemo(() => {
@@ -14,12 +18,13 @@ export function useUserStats(bets?: Bet[], _payoutClaimeds?: PayoutClaimed[]) {
 
     const wonBets =
       betsData.payoutClaimeds.length +
-      betsData.bets.filter((bet: Bet) => bet.pool.status === 'GRADED' && bet.isWithdrawn).length;
+      betsData.bets.filter((bet) => bet.pool.status === PoolStatus.Graded && bet.isWithdrawn)
+        .length;
 
     const lostBets = allBets.filter(
-      (bet: Bet) => bet.pool.status === 'GRADED' && !bet.isWithdrawn
+      (bet) => bet.pool.status === PoolStatus.Graded && !bet.isWithdrawn
     ).length;
-    const pendingBets = allBets.filter((bet: Bet) => bet.pool.status === 'PENDING').length;
+    const pendingBets = allBets.filter((bet) => bet.pool.status === PoolStatus.Pending).length;
 
     // Calculate volumes
     const { totalVolume, activeVolume } = calculateVolume(allBets);

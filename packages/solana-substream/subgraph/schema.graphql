@@ -69,6 +69,7 @@ type Bet @entity {
   outcome: BetOutcome!
   tokenType: TokenType!
   txHash: String!
+  isWithdrawn: Boolean!
 }
 
 type PoolCreated @entity {

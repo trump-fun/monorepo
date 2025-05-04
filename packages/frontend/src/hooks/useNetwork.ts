@@ -3,7 +3,7 @@
 import { PublicKey } from '@solana/web3.js';
 import { useMemo } from 'react';
 import { Cluster } from '@solana/web3.js';
-
+import { SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 /**
  * Network information for Solana
  */
@@ -38,9 +38,9 @@ export function useNetwork() {
       endpoint: 'https://api.devnet.solana.com',
       color: 'bg-purple-500/10 text-purple-500',
       isSupported: true,
-      programId: new PublicKey('5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ'),
-      usdcMint: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
-      freedomMint: new PublicKey('F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5'),
+      programId: SOLANA_DEVNET_CONFIG.programId,
+      usdcMint: SOLANA_DEVNET_CONFIG.usdcMint,
+      freedomMint: SOLANA_DEVNET_CONFIG.freedomMint,
     };
   }, []);
 

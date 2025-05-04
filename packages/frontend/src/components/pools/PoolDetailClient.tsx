@@ -37,12 +37,12 @@ import {
   BetPlaced,
   BetPlaced_OrderBy,
   OrderDirection,
+  PoolsQueryResultTypeSingle,
   PoolStatus,
   useGetBetPlacedQuery,
   useGetBetsQuery,
   useGetPoolQuery,
 } from '@/types';
-import { asExtendedPool } from '@/types/extended-types';
 import { Connection, Transaction } from '@solana/web3.js';
 
 type PoolDetailClientProps = {
@@ -101,7 +101,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     fetchPolicy: 'network-only',
   });
 
-  const pool = poolData?.pool ? asExtendedPool(poolData.pool as any) : null;
+  const pool = poolData?.pool as PoolsQueryResultTypeSingle;
 
   const {
     betAmount,

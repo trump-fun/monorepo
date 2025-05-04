@@ -1,13 +1,12 @@
 'use client';
-import { Bet, Pool, TokenType } from '@/types';
-import { ExtendedPool } from '@/types/extended-types';
+import { Bet, PoolsQueryResultTypeSingle, TokenType } from '@/types';
 import { formatTokenAmount } from '@/utils/betsCalculations';
 import { format } from 'date-fns';
 import { ReactNode } from 'react';
 
 interface UserBetsProps {
   placedBets: Bet[];
-  pool: Pool | ExtendedPool;
+  pool: PoolsQueryResultTypeSingle;
   tokenLogo: ReactNode;
   symbol: string;
 }

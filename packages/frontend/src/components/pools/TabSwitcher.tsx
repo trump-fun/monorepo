@@ -1,20 +1,19 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BetPlaced, PoolsQueryResultTypeSingle, TokenType } from '@/types';
+import { formatTokenAmount } from '@/utils/betsCalculations';
 import { RefetchOptions } from '@tanstack/react-query';
-import { BetPlaced, Pool, TokenType } from '@/types';
+import { Tables } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
 import { Related } from '../Related';
-import { ExtendedPool } from '@/types/extended-types';
-import { Tables } from '@trump-fun/common';
-import { formatTokenAmount } from '@/utils/betsCalculations';
 
 interface TabSwitcherProps {
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
-  pool: Pool | ExtendedPool;
+  pool: PoolsQueryResultTypeSingle;
   bets: BetPlaced[];
   comments: Tables<'comments'>[];
   isCommentsLoading: boolean;

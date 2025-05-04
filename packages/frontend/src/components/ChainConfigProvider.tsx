@@ -2,12 +2,9 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { PublicKey } from '@solana/web3.js';
-// import { BETTING_POOLS_SEED } from '@/consts';
+import { SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 
 // Configuration constants
-const PROGRAM_ID = '5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ';
-const FREEDOM_MINT = 'F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5';
-const USDC_MINT = '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU';
 const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 
 interface ChainConfig {
@@ -26,9 +23,9 @@ interface ChainConfigContextType {
 
 // Default configuration
 const defaultConfig: ChainConfig = {
-  programId: new PublicKey(PROGRAM_ID),
-  freedomMint: new PublicKey(FREEDOM_MINT),
-  usdcMint: new PublicKey(USDC_MINT),
+  programId: SOLANA_DEVNET_CONFIG.programId,
+  freedomMint: SOLANA_DEVNET_CONFIG.freedomMint,
+  usdcMint: SOLANA_DEVNET_CONFIG.usdcMint,
   cluster: 'devnet',
   chainType: 'solana',
   programTokenAccount: TOKEN_PROGRAM,
