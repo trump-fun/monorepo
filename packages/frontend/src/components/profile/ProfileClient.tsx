@@ -12,25 +12,32 @@ import { useUserBetsData } from '@/hooks/useUserBetsData';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { useWithdraw } from '@/hooks/useWithdraw';
-import { Bet, PayoutClaimed } from '@trump-fun/common';
-import { Search } from 'lucide-react';
+import { Bet, PayoutClaimed } from '@/types';
+import { AlertCircle, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-//TODO Types are very sloppy in this file
 export function ProfileClient() {
   const [activeFilter, setActiveFilter] = useState<string>('active');
   const [searchQuery, setSearchQuery] = useState('');
   const { address } = useWalletAddress();
   const { tokenType } = useTokenContext();
-  const { betsData, isLoading, isError, error } = useUserBetsData(activeFilter);
+  const { betsData, isLoading, isError, error, refreshData } = useUserBetsData(activeFilter);
   const withdrawalProps = useWithdraw();
 
-  console.log(error);
+  // Use memoized values with proper type guards
+  const memoizedBets = useMemo<Bet[]>(
+    () => (Array.isArray(betsData.bets) ? betsData.bets : []),
+    [betsData.bets]
+  );
 
-  // Use memoized values from the GraphQL queries
-  const memoizedBets = useMemo(() => betsData.bets as Bet[], [betsData.bets]);
-  const memoizedPayouts = useMemo(
-    () => betsData.payoutClaimeds as PayoutClaimed[],
+  const memoizedPayouts = useMemo<PayoutClaimed[]>(
+    () =>
+      Array.isArray(betsData.payoutClaimeds)
+        ? betsData.payoutClaimeds.map((payout) => ({
+            ...payout,
+            txHash: payout.txHash || '', // Add missing txHash property with default empty string
+          }))
+        : [],
     [betsData.payoutClaimeds]
   );
 
@@ -43,8 +50,20 @@ export function ProfileClient() {
 
   if (isError) {
     return (
-      <div className='flex h-[calc(100vh-4rem)] items-center justify-center'>
-        <p className='text-red-500'>Error loading your betting data. Please try again later.</p>
+      <div className='flex h-[calc(100vh-4rem)] flex-col items-center justify-center p-4'>
+        <AlertCircle className='mb-4 h-10 w-10 text-red-500' />
+        <p className='mb-2 text-center font-semibold text-red-500'>
+          Error loading your betting data
+        </p>
+        <p className='mb-4 text-center text-sm text-gray-500 dark:text-gray-400'>
+          {error?.message || 'Please try again later'}
+        </p>
+        <button
+          onClick={refreshData}
+          className='rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600'
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -53,7 +72,7 @@ export function ProfileClient() {
     <div className='flex h-[calc(100vh-4rem)] flex-col'>
       <div className='flex flex-1 overflow-hidden'>
         <ProfileSidebar
-          address={address}
+          address={address!}
           activeFilter={activeFilter}
           handleFilterChange={handleFilterChange}
           userStats={userStats}

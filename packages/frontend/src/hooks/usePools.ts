@@ -2,6 +2,7 @@ import {
   GetPoolsQueryVariables,
   OrderDirection,
   Pool_OrderBy,
+  PoolStatus,
   TokenType,
   useGetPoolsQuery,
 } from '@/types';
@@ -36,11 +37,13 @@ export function usePools({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+
   // Default filter includes pending status and future bets close time
   // Important: Use the enum value directly without wrapping in a string
   const defaultFilter: GetPoolsQueryVariables['filter'] = {
-    // status: PoolStatus.Pending, // Use enum value directly, not wrapped in a string
-    // betsCloseAt_gt: currentTimestamp, // Send as a number, not a string
+    status: PoolStatus.Pending, // Use enum value directly, not wrapped in a string
+    betsCloseAt_gt: currentTimestamp, // Send as a number, not a string
     ...filter,
   };
 

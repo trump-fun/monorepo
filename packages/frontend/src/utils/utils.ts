@@ -1,10 +1,10 @@
-import { Pool, PoolStatus } from '@/types';
-import { DEFAULT_CHAIN_ID, USDC_DECIMALS, toDecimal, TokenType } from '@trump-fun/common';
+import { TokenType } from '@/types';
+import { DEFAULT_CHAIN_ID, USDC_DECIMALS } from '@trump-fun/common';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 // Re-export constants from common package
 export { USDC_DECIMALS };
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 
 export enum FrontendPoolStatus {
   Pending = 'pending',
@@ -20,6 +20,17 @@ export type PartialExcept<T, K extends keyof T> = Partial<Omit<T, K>> & Pick<T, 
 export const addressToBackgroundColor = (address: string) => {
   const hash = address.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return `hsl(${hash % 360}, 50%, 50%)`;
+};
+
+const toDecimal = (amount: number | string, tokenType: TokenType) => {
+  if (typeof amount === 'string') {
+    amount = parseFloat(amount);
+  }
+  if (isNaN(amount)) {
+    return 0;
+  }
+  const decimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : 0;
+  return amount / Math.pow(10, decimals);
 };
 
 export function generateRandomColor(isLight: boolean) {

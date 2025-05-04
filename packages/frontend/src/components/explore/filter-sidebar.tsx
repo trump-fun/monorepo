@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { FilterType } from '@/hooks/usePools';
 import {
   TRUMP_FUN_TG_URL,
   TRUMP_FUN_TWITTER_URL,
@@ -8,6 +7,9 @@ import {
 } from '@trump-fun/common';
 import Link from 'next/link';
 import { FaTelegramPlane } from 'react-icons/fa';
+
+// Define filter types to match the sidebar options
+type FilterType = 'newest' | 'highest' | 'ending_soon' | 'recently_closed';
 
 interface FilterSidebarProps {
   activeFilter: FilterType;

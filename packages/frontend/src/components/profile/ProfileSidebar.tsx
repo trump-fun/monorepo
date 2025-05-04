@@ -62,14 +62,14 @@ export function ProfileSidebar({
       <div className='space-y-3'>
         {/* <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div> */}
 
-        <p className='text-md text-center text-gray-500 dark:text-gray-400'>
+        <div className='text-md text-center text-gray-500 dark:text-gray-400'>
           <p className='font-bold'>Your winnings</p>
           <div className='flex items-center justify-center gap-2 text-center'>
             <p>{tokenLogo}</p>
             <p>{formattedWithdrawableBalance.toFixed(0).toLocaleString()}</p>
             <p>{symbol}</p>
           </div>
-        </p>
+        </div>
 
         <div className='mb-2'>
           <Input
