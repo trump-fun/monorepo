@@ -5,30 +5,26 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
-  [_ in K]?: never;
-};
-export type Incremental<T> =
-  | T
-  | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string };
-  String: { input: string; output: string };
-  Boolean: { input: boolean; output: boolean };
-  Int: { input: number; output: number };
-  Float: { input: number; output: number };
-  BigDecimal: { input: any; output: any };
-  BigInt: { input: any; output: any };
-  Bytes: { input: any; output: any };
-  Int8: { input: any; output: any };
-  Timestamp: { input: any; output: any };
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  BigDecimal: { input: any; output: any; }
+  BigInt: { input: any; output: any; }
+  Bytes: { input: any; output: any; }
+  Int8: { input: any; output: any; }
+  Timestamp: { input: any; output: any; }
 };
 
 export enum Aggregation_Interval {
   Day = 'day',
-  Hour = 'hour',
+  Hour = 'hour'
 }
 
 export type Bet = {
@@ -52,7 +48,7 @@ export enum BetOutcome {
   Lost = 'Lost',
   None = 'None',
   Voided = 'Voided',
-  Won = 'Won',
+  Won = 'Won'
 }
 
 export type BetPlaced = {
@@ -251,7 +247,7 @@ export enum BetPlaced_OrderBy {
   PoolWinningOption = 'pool__winningOption',
   TokenType = 'tokenType',
   TxHash = 'txHash',
-  User = 'user',
+  User = 'user'
 }
 
 export type Bet_Filter = {
@@ -413,7 +409,7 @@ export enum Bet_OrderBy {
   PoolWinningOption = 'pool__winningOption',
   TokenType = 'tokenType',
   TxHash = 'txHash',
-  UserAddress = 'userAddress',
+  UserAddress = 'userAddress'
 }
 
 export type BlockChangedFilter = {
@@ -433,13 +429,13 @@ export enum MediaType {
   Instagram = 'Instagram',
   TikTok = 'TikTok',
   Video = 'Video',
-  X = 'X',
+  X = 'X'
 }
 
 /** Defines the order direction, either ascending or descending */
 export enum OrderDirection {
   Asc = 'asc',
-  Desc = 'desc',
+  Desc = 'desc'
 }
 
 export type PayoutClaimed = {
@@ -543,7 +539,7 @@ export enum PayoutClaimed_OrderBy {
   PoolId = 'poolId',
   TokenType = 'tokenType',
   TxHash = 'txHash',
-  User = 'user',
+  User = 'user'
 }
 
 export type Pool = {
@@ -646,7 +642,7 @@ export enum PoolClosed_OrderBy {
   Id = 'id',
   PoolId = 'poolId',
   SelectedOption = 'selectedOption',
-  TxHash = 'txHash',
+  TxHash = 'txHash'
 }
 
 export type PoolCreated = {
@@ -884,7 +880,7 @@ export enum PoolCreated_OrderBy {
   Options = 'options',
   PoolId = 'poolId',
   Question = 'question',
-  TxHash = 'txHash',
+  TxHash = 'txHash'
 }
 
 export type PoolMediaSet = {
@@ -1004,14 +1000,14 @@ export enum PoolMediaSet_OrderBy {
   PoolTwitterPostId = 'pool__twitterPostId',
   PoolUsdcBetTotals = 'pool__usdcBetTotals',
   PoolWinningOption = 'pool__winningOption',
-  TxHash = 'txHash',
+  TxHash = 'txHash'
 }
 
 export enum PoolStatus {
   Graded = 'Graded',
   None = 'None',
   Pending = 'Pending',
-  Regraded = 'Regraded',
+  Regraded = 'Regraded'
 }
 
 export type Pool_Filter = {
@@ -1334,7 +1330,7 @@ export enum Pool_OrderBy {
   TwitterPostId = 'twitterPostId',
   UsdcBetTotals = 'usdcBetTotals',
   UsdcBetTotalsByOption = 'usdcBetTotalsByOption',
-  WinningOption = 'winningOption',
+  WinningOption = 'winningOption'
 }
 
 export type Query = {
@@ -1357,9 +1353,11 @@ export type Query = {
   pools: Array<Pool>;
 };
 
+
 export type Query_MetaArgs = {
   block?: InputMaybe<Block_Height>;
 };
+
 
 export type QueryBetArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1367,11 +1365,13 @@ export type QueryBetArgs = {
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
+
 export type QueryBetPlacedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QueryBetPlacedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1383,6 +1383,7 @@ export type QueryBetPlacedsArgs = {
   where?: InputMaybe<BetPlaced_Filter>;
 };
 
+
 export type QueryBetsArgs = {
   block?: InputMaybe<Block_Height>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1393,11 +1394,13 @@ export type QueryBetsArgs = {
   where?: InputMaybe<Bet_Filter>;
 };
 
+
 export type QueryPayoutClaimedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QueryPayoutClaimedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1409,17 +1412,20 @@ export type QueryPayoutClaimedsArgs = {
   where?: InputMaybe<PayoutClaimed_Filter>;
 };
 
+
 export type QueryPoolArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
+
 export type QueryPoolClosedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QueryPoolClosedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1431,11 +1437,13 @@ export type QueryPoolClosedsArgs = {
   where?: InputMaybe<PoolClosed_Filter>;
 };
 
+
 export type QueryPoolCreatedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QueryPoolCreatedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1447,11 +1455,13 @@ export type QueryPoolCreatedsArgs = {
   where?: InputMaybe<PoolCreated_Filter>;
 };
 
+
 export type QueryPoolMediaSetArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
+
 
 export type QueryPoolMediaSetsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1462,6 +1472,7 @@ export type QueryPoolMediaSetsArgs = {
   subgraphError?: _SubgraphErrorPolicy_;
   where?: InputMaybe<PoolMediaSet_Filter>;
 };
+
 
 export type QueryPoolsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1475,7 +1486,7 @@ export type QueryPoolsArgs = {
 
 export enum TokenType {
   Freedom = 'Freedom',
-  Usdc = 'USDC',
+  Usdc = 'USDC'
 }
 
 export type _Block_ = {
@@ -1511,50 +1522,12 @@ export enum _SubgraphErrorPolicy_ {
   /** Data will be returned even if the subgraph has indexing errors */
   Allow = 'allow',
   /** If the subgraph has indexing errors, data will be omitted. The default. */
-  Deny = 'deny',
+  Deny = 'deny'
 }
 
-export type PoolFieldsFragment = {
-  __typename?: 'Pool';
-  betsCloseAt: any;
-  category: string;
-  closureCriteria: string;
-  closureInstructions: string;
-  createdAt: any;
-  creationTxHash: string;
-  creatorId: string;
-  creatorName: string;
-  decisionTime: any;
-  id: string;
-  imageUrl: string;
-  isDraw: boolean;
-  options: Array<string>;
-  originalTruthSocialPostId: string;
-  pointsBetTotals: any;
-  pointsBetTotalsByOption: Array<any>;
-  poolIntId: any;
-  question: string;
-  status: PoolStatus;
-  twitterPostId: string;
-  usdcBetTotals: any;
-  usdcBetTotalsByOption: Array<any>;
-  winningOption: any;
-};
+export type PoolFieldsFragment = { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any };
 
-export type BetFieldsFragment = {
-  __typename?: 'Bet';
-  amount: any;
-  betIntId: any;
-  createdAt: any;
-  id: string;
-  isPayedOut: boolean;
-  optionIndex: any;
-  outcome: BetOutcome;
-  poolIntId: any;
-  tokenType: TokenType;
-  txHash: string;
-  userAddress: string;
-};
+export type BetFieldsFragment = { __typename?: 'Bet', amount: any, betIntId: any, createdAt: any, id: string, isPayedOut: boolean, optionIndex: any, outcome: BetOutcome, poolIntId: any, tokenType: TokenType, txHash: string, userAddress: string };
 
 export type GetPoolsQueryVariables = Exact<{
   filter: Pool_Filter;
@@ -1564,69 +1537,15 @@ export type GetPoolsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-export type GetPoolsQuery = {
-  __typename?: 'Query';
-  pools: Array<{
-    __typename?: 'Pool';
-    betsCloseAt: any;
-    category: string;
-    closureCriteria: string;
-    closureInstructions: string;
-    createdAt: any;
-    creationTxHash: string;
-    creatorId: string;
-    creatorName: string;
-    decisionTime: any;
-    id: string;
-    imageUrl: string;
-    isDraw: boolean;
-    options: Array<string>;
-    originalTruthSocialPostId: string;
-    pointsBetTotals: any;
-    pointsBetTotalsByOption: Array<any>;
-    poolIntId: any;
-    question: string;
-    status: PoolStatus;
-    twitterPostId: string;
-    usdcBetTotals: any;
-    usdcBetTotalsByOption: Array<any>;
-    winningOption: any;
-  }>;
-};
+
+export type GetPoolsQuery = { __typename?: 'Query', pools: Array<{ __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any }> };
 
 export type GetPoolQueryVariables = Exact<{
   poolId: Scalars['ID']['input'];
 }>;
 
-export type GetPoolQuery = {
-  __typename?: 'Query';
-  pool?: {
-    __typename?: 'Pool';
-    betsCloseAt: any;
-    category: string;
-    closureCriteria: string;
-    closureInstructions: string;
-    createdAt: any;
-    creationTxHash: string;
-    creatorId: string;
-    creatorName: string;
-    decisionTime: any;
-    id: string;
-    imageUrl: string;
-    isDraw: boolean;
-    options: Array<string>;
-    originalTruthSocialPostId: string;
-    pointsBetTotals: any;
-    pointsBetTotalsByOption: Array<any>;
-    poolIntId: any;
-    question: string;
-    status: PoolStatus;
-    twitterPostId: string;
-    usdcBetTotals: any;
-    usdcBetTotalsByOption: Array<any>;
-    winningOption: any;
-  } | null;
-};
+
+export type GetPoolQuery = { __typename?: 'Query', pool?: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any } | null };
 
 export type GetBetsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1636,49 +1555,8 @@ export type GetBetsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-export type GetBetsQuery = {
-  __typename?: 'Query';
-  bets: Array<{
-    __typename?: 'Bet';
-    amount: any;
-    betIntId: any;
-    createdAt: any;
-    id: string;
-    isPayedOut: boolean;
-    optionIndex: any;
-    outcome: BetOutcome;
-    poolIntId: any;
-    tokenType: TokenType;
-    txHash: string;
-    userAddress: string;
-    pool: {
-      __typename?: 'Pool';
-      betsCloseAt: any;
-      category: string;
-      closureCriteria: string;
-      closureInstructions: string;
-      createdAt: any;
-      creationTxHash: string;
-      creatorId: string;
-      creatorName: string;
-      decisionTime: any;
-      id: string;
-      imageUrl: string;
-      isDraw: boolean;
-      options: Array<string>;
-      originalTruthSocialPostId: string;
-      pointsBetTotals: any;
-      pointsBetTotalsByOption: Array<any>;
-      poolIntId: any;
-      question: string;
-      status: PoolStatus;
-      twitterPostId: string;
-      usdcBetTotals: any;
-      usdcBetTotalsByOption: Array<any>;
-      winningOption: any;
-    };
-  }>;
-};
+
+export type GetBetsQuery = { __typename?: 'Query', bets: Array<{ __typename?: 'Bet', amount: any, betIntId: any, createdAt: any, id: string, isPayedOut: boolean, optionIndex: any, outcome: BetOutcome, poolIntId: any, tokenType: TokenType, txHash: string, userAddress: string, pool: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any } }> };
 
 export type GetBetPlacedQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1688,19 +1566,8 @@ export type GetBetPlacedQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-export type GetBetPlacedQuery = {
-  __typename?: 'Query';
-  betPlaceds: Array<{
-    __typename?: 'BetPlaced';
-    id: string;
-    betId: any;
-    poolId: any;
-    user: string;
-    optionIndex: any;
-    amount: any;
-    tokenType: TokenType;
-  }>;
-};
+
+export type GetBetPlacedQuery = { __typename?: 'Query', betPlaceds: Array<{ __typename?: 'BetPlaced', id: string, betId: any, poolId: any, user: string, optionIndex: any, amount: any, tokenType: TokenType }> };
 
 export type GetPayoutClaimedQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1710,81 +1577,60 @@ export type GetPayoutClaimedQueryVariables = Exact<{
   where?: InputMaybe<PayoutClaimed_Filter>;
 }>;
 
-export type GetPayoutClaimedQuery = {
-  __typename?: 'Query';
-  payoutClaimeds: Array<{
-    __typename?: 'PayoutClaimed';
-    id: string;
-    betId: any;
-    poolId: any;
-    user: string;
-    amount: any;
-    tokenType: TokenType;
-  }>;
-};
+
+export type GetPayoutClaimedQuery = { __typename?: 'Query', payoutClaimeds: Array<{ __typename?: 'PayoutClaimed', id: string, betId: any, poolId: any, user: string, amount: any, tokenType: TokenType }> };
 
 export const PoolFieldsFragmentDoc = gql`
-  fragment PoolFields on Pool {
-    betsCloseAt
-    category
-    closureCriteria
-    closureInstructions
-    createdAt
-    creationTxHash
-    creatorId
-    creatorName
-    decisionTime
-    id
-    imageUrl
-    isDraw
-    options
-    originalTruthSocialPostId
-    pointsBetTotals
-    pointsBetTotalsByOption
-    poolIntId
-    question
-    status
-    twitterPostId
-    usdcBetTotals
-    usdcBetTotalsByOption
-    winningOption
-  }
-`;
+    fragment PoolFields on Pool {
+  betsCloseAt
+  category
+  closureCriteria
+  closureInstructions
+  createdAt
+  creationTxHash
+  creatorId
+  creatorName
+  decisionTime
+  id
+  isDraw
+  options
+  pointsBetTotalsByOption
+  poolIntId
+  question
+  status
+  twitterPostId
+  usdcBetTotalsByOption
+  winningOption
+}
+    `;
 export const BetFieldsFragmentDoc = gql`
-  fragment BetFields on Bet {
-    amount
-    betIntId
-    createdAt
-    id
-    isPayedOut
-    optionIndex
-    outcome
-    poolIntId
-    tokenType
-    txHash
-    userAddress
-  }
-`;
+    fragment BetFields on Bet {
+  amount
+  betIntId
+  createdAt
+  id
+  isPayedOut
+  optionIndex
+  outcome
+  poolIntId
+  tokenType
+  txHash
+  userAddress
+}
+    `;
 export const GetPoolsDocument = gql`
-  query GetPools(
-    $filter: Pool_filter!
-    $orderBy: Pool_orderBy!
-    $orderDirection: OrderDirection!
-    $first: Int
-    $skip: Int
+    query GetPools($filter: Pool_filter!, $orderBy: Pool_orderBy!, $orderDirection: OrderDirection!, $first: Int, $skip: Int) {
+  pools(
+    where: $filter
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    first: $first
+    skip: $skip
   ) {
-    pools(
-      where: $filter
-      orderBy: $orderBy
-      orderDirection: $orderDirection
-      first: $first
-      skip: $skip
-    ) {
-      ...PoolFields
-    }
+    ...PoolFields
   }
-  ${PoolFieldsFragmentDoc}
-`;
+}
+    ${PoolFieldsFragmentDoc}`;
 
 /**
  * __useGetPoolsQuery__
@@ -1806,40 +1652,29 @@ export const GetPoolsDocument = gql`
  *   },
  * });
  */
-export function useGetPoolsQuery(
-  baseOptions: Apollo.QueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables> &
-    ({ variables: GetPoolsQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
-}
-export function useGetPoolsLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
-}
-export function useGetPoolsSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
-}
+export function useGetPoolsQuery(baseOptions: Apollo.QueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables> & ({ variables: GetPoolsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
+      }
+export function useGetPoolsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
+        }
+export function useGetPoolsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetPoolsQuery, GetPoolsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetPoolsQuery, GetPoolsQueryVariables>(GetPoolsDocument, options);
+        }
 export type GetPoolsQueryHookResult = ReturnType<typeof useGetPoolsQuery>;
 export type GetPoolsLazyQueryHookResult = ReturnType<typeof useGetPoolsLazyQuery>;
 export type GetPoolsSuspenseQueryHookResult = ReturnType<typeof useGetPoolsSuspenseQuery>;
 export type GetPoolsQueryResult = Apollo.QueryResult<GetPoolsQuery, GetPoolsQueryVariables>;
 export const GetPoolDocument = gql`
-  query GetPool($poolId: ID!) {
-    pool(id: $poolId) {
-      ...PoolFields
-    }
+    query GetPool($poolId: ID!) {
+  pool(id: $poolId) {
+    ...PoolFields
   }
-  ${PoolFieldsFragmentDoc}
-`;
+}
+    ${PoolFieldsFragmentDoc}`;
 
 /**
  * __useGetPoolQuery__
@@ -1857,56 +1692,39 @@ export const GetPoolDocument = gql`
  *   },
  * });
  */
-export function useGetPoolQuery(
-  baseOptions: Apollo.QueryHookOptions<GetPoolQuery, GetPoolQueryVariables> &
-    ({ variables: GetPoolQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
-}
-export function useGetPoolLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetPoolQuery, GetPoolQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
-}
-export function useGetPoolSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetPoolQuery, GetPoolQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
-}
+export function useGetPoolQuery(baseOptions: Apollo.QueryHookOptions<GetPoolQuery, GetPoolQueryVariables> & ({ variables: GetPoolQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
+      }
+export function useGetPoolLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPoolQuery, GetPoolQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
+        }
+export function useGetPoolSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetPoolQuery, GetPoolQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetPoolQuery, GetPoolQueryVariables>(GetPoolDocument, options);
+        }
 export type GetPoolQueryHookResult = ReturnType<typeof useGetPoolQuery>;
 export type GetPoolLazyQueryHookResult = ReturnType<typeof useGetPoolLazyQuery>;
 export type GetPoolSuspenseQueryHookResult = ReturnType<typeof useGetPoolSuspenseQuery>;
 export type GetPoolQueryResult = Apollo.QueryResult<GetPoolQuery, GetPoolQueryVariables>;
 export const GetBetsDocument = gql`
-  query GetBets(
-    $first: Int = 10
-    $filter: Bet_filter!
-    $orderBy: Bet_orderBy!
-    $orderDirection: OrderDirection!
-    $skip: Int = 0
+    query GetBets($first: Int = 10, $filter: Bet_filter!, $orderBy: Bet_orderBy!, $orderDirection: OrderDirection!, $skip: Int = 0) {
+  bets(
+    first: $first
+    where: $filter
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    skip: $skip
   ) {
-    bets(
-      first: $first
-      where: $filter
-      orderBy: $orderBy
-      orderDirection: $orderDirection
-      skip: $skip
-    ) {
-      ...BetFields
-      pool {
-        ...PoolFields
-      }
+    ...BetFields
+    pool {
+      ...PoolFields
     }
   }
-  ${BetFieldsFragmentDoc}
-  ${PoolFieldsFragmentDoc}
-`;
+}
+    ${BetFieldsFragmentDoc}
+${PoolFieldsFragmentDoc}`;
 
 /**
  * __useGetBetsQuery__
@@ -1928,57 +1746,41 @@ export const GetBetsDocument = gql`
  *   },
  * });
  */
-export function useGetBetsQuery(
-  baseOptions: Apollo.QueryHookOptions<GetBetsQuery, GetBetsQueryVariables> &
-    ({ variables: GetBetsQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
-}
-export function useGetBetsLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetBetsQuery, GetBetsQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
-}
-export function useGetBetsSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetBetsQuery, GetBetsQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
-}
+export function useGetBetsQuery(baseOptions: Apollo.QueryHookOptions<GetBetsQuery, GetBetsQueryVariables> & ({ variables: GetBetsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
+      }
+export function useGetBetsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBetsQuery, GetBetsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
+        }
+export function useGetBetsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetBetsQuery, GetBetsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetBetsQuery, GetBetsQueryVariables>(GetBetsDocument, options);
+        }
 export type GetBetsQueryHookResult = ReturnType<typeof useGetBetsQuery>;
 export type GetBetsLazyQueryHookResult = ReturnType<typeof useGetBetsLazyQuery>;
 export type GetBetsSuspenseQueryHookResult = ReturnType<typeof useGetBetsSuspenseQuery>;
 export type GetBetsQueryResult = Apollo.QueryResult<GetBetsQuery, GetBetsQueryVariables>;
 export const GetBetPlacedDocument = gql`
-  query GetBetPlaced(
-    $first: Int = 10
-    $filter: BetPlaced_filter!
-    $orderBy: BetPlaced_orderBy!
-    $orderDirection: OrderDirection!
-    $skip: Int = 0
+    query GetBetPlaced($first: Int = 10, $filter: BetPlaced_filter!, $orderBy: BetPlaced_orderBy!, $orderDirection: OrderDirection!, $skip: Int = 0) {
+  betPlaceds(
+    first: $first
+    where: $filter
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    skip: $skip
   ) {
-    betPlaceds(
-      first: $first
-      where: $filter
-      orderBy: $orderBy
-      orderDirection: $orderDirection
-      skip: $skip
-    ) {
-      id
-      betId
-      poolId
-      user
-      optionIndex
-      amount
-      tokenType
-    }
+    id
+    betId
+    poolId
+    user
+    optionIndex
+    amount
+    tokenType
   }
-`;
+}
+    `;
 
 /**
  * __useGetBetPlacedQuery__
@@ -2000,68 +1802,40 @@ export const GetBetPlacedDocument = gql`
  *   },
  * });
  */
-export function useGetBetPlacedQuery(
-  baseOptions: Apollo.QueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables> &
-    ({ variables: GetBetPlacedQueryVariables; skip?: boolean } | { skip: boolean })
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(
-    GetBetPlacedDocument,
-    options
-  );
-}
-export function useGetBetPlacedLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(
-    GetBetPlacedDocument,
-    options
-  );
-}
-export function useGetBetPlacedSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(
-    GetBetPlacedDocument,
-    options
-  );
-}
+export function useGetBetPlacedQuery(baseOptions: Apollo.QueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables> & ({ variables: GetBetPlacedQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(GetBetPlacedDocument, options);
+      }
+export function useGetBetPlacedLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(GetBetPlacedDocument, options);
+        }
+export function useGetBetPlacedSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetBetPlacedQuery, GetBetPlacedQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetBetPlacedQuery, GetBetPlacedQueryVariables>(GetBetPlacedDocument, options);
+        }
 export type GetBetPlacedQueryHookResult = ReturnType<typeof useGetBetPlacedQuery>;
 export type GetBetPlacedLazyQueryHookResult = ReturnType<typeof useGetBetPlacedLazyQuery>;
 export type GetBetPlacedSuspenseQueryHookResult = ReturnType<typeof useGetBetPlacedSuspenseQuery>;
-export type GetBetPlacedQueryResult = Apollo.QueryResult<
-  GetBetPlacedQuery,
-  GetBetPlacedQueryVariables
->;
+export type GetBetPlacedQueryResult = Apollo.QueryResult<GetBetPlacedQuery, GetBetPlacedQueryVariables>;
 export const GetPayoutClaimedDocument = gql`
-  query GetPayoutClaimed(
-    $first: Int = 100
-    $skip: Int = 0
-    $orderBy: PayoutClaimed_orderBy = id
-    $orderDirection: OrderDirection = desc
-    $where: PayoutClaimed_filter
+    query GetPayoutClaimed($first: Int = 100, $skip: Int = 0, $orderBy: PayoutClaimed_orderBy = id, $orderDirection: OrderDirection = desc, $where: PayoutClaimed_filter) {
+  payoutClaimeds(
+    first: $first
+    skip: $skip
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    where: $where
   ) {
-    payoutClaimeds(
-      first: $first
-      skip: $skip
-      orderBy: $orderBy
-      orderDirection: $orderDirection
-      where: $where
-    ) {
-      id
-      betId
-      poolId
-      user
-      amount
-      tokenType
-    }
+    id
+    betId
+    poolId
+    user
+    amount
+    tokenType
   }
-`;
+}
+    `;
 
 /**
  * __useGetPayoutClaimedQuery__
@@ -2083,42 +1857,19 @@ export const GetPayoutClaimedDocument = gql`
  *   },
  * });
  */
-export function useGetPayoutClaimedQuery(
-  baseOptions?: Apollo.QueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(
-    GetPayoutClaimedDocument,
-    options
-  );
-}
-export function useGetPayoutClaimedLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(
-    GetPayoutClaimedDocument,
-    options
-  );
-}
-export function useGetPayoutClaimedSuspenseQuery(
-  baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>
-) {
-  const options =
-    baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions };
-  return Apollo.useSuspenseQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(
-    GetPayoutClaimedDocument,
-    options
-  );
-}
+export function useGetPayoutClaimedQuery(baseOptions?: Apollo.QueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(GetPayoutClaimedDocument, options);
+      }
+export function useGetPayoutClaimedLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(GetPayoutClaimedDocument, options);
+        }
+export function useGetPayoutClaimedSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>(GetPayoutClaimedDocument, options);
+        }
 export type GetPayoutClaimedQueryHookResult = ReturnType<typeof useGetPayoutClaimedQuery>;
 export type GetPayoutClaimedLazyQueryHookResult = ReturnType<typeof useGetPayoutClaimedLazyQuery>;
-export type GetPayoutClaimedSuspenseQueryHookResult = ReturnType<
-  typeof useGetPayoutClaimedSuspenseQuery
->;
-export type GetPayoutClaimedQueryResult = Apollo.QueryResult<
-  GetPayoutClaimedQuery,
-  GetPayoutClaimedQueryVariables
->;
+export type GetPayoutClaimedSuspenseQueryHookResult = ReturnType<typeof useGetPayoutClaimedSuspenseQuery>;
+export type GetPayoutClaimedQueryResult = Apollo.QueryResult<GetPayoutClaimedQuery, GetPayoutClaimedQueryVariables>;

@@ -10,17 +10,13 @@ fragment PoolFields on Pool {
   creatorName
   decisionTime
   id
-  imageUrl
   isDraw
   options
-  originalTruthSocialPostId
-  pointsBetTotals
   pointsBetTotalsByOption
   poolIntId
   question
   status
   twitterPostId
-  usdcBetTotals
   usdcBetTotalsByOption
   winningOption
 }

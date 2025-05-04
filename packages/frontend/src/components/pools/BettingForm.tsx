@@ -2,13 +2,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
-import { TokenBalance } from '@/types';
-import { Pool } from '@trump-fun/common';
-
-import { ReactNode } from 'react';
+import { Pool } from '@/types';
+import { ExtendedPool } from '@/types/extended-types';
 
 interface BettingFormProps {
-  pool: Pool | Pool[][number]; // Replace with proper typing
+  pool: Pool | Pool[][number] | ExtendedPool; // Replace with proper typing
   handlePercentageClick: (percentage: number) => void;
   sliderValue: number[];
   setSliderValue: (value: number[]) => void;
@@ -20,6 +18,8 @@ interface BettingFormProps {
   authenticated: boolean;
   isPending: boolean;
   symbol: string;
+  tokenLogo: string;
+  balance?: { value: string; formatted: string; decimals: number };
   formattedBalance: string;
   setUserEnteredValue: (value: string) => void;
   userEnteredValue: string;
@@ -38,6 +38,8 @@ export const BettingForm = ({
   authenticated,
   isPending,
   symbol,
+  tokenLogo,
+  balance,
   formattedBalance,
   setUserEnteredValue,
   userEnteredValue,

@@ -1,110 +1,177 @@
 import { TokenType } from '@/types';
 import { useSolanaWallets } from '@privy-io/react-auth';
+import { getAssociatedTokenAddress } from '@solana/spl-token';
+import { useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
-import { useEmbeddedWallet } from '../components/EmbeddedWalletProvider';
 import { useNetwork } from './useNetwork';
 import { useTokenContext } from './useTokenContext';
 
 export const useBalance = () => {
   const { usdcMint, freedomMint } = useNetwork();
   const { tokenType } = useTokenContext();
-  const [balance, setBalance] = useState<string | null>(null);
+  const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
+  const [freedomBalance, setFreedomBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { embeddedWallet, isLoading: isWalletLoading } = useEmbeddedWallet();
-  const { ready: walletsReady } = useSolanaWallets();
+  const { ready: walletsReady, wallets } = useSolanaWallets();
+  const { connection } = useConnection();
 
-  const tokenAddress = tokenType === TokenType.Usdc ? usdcMint : freedomMint;
+  // Get the first wallet from the wallets array
+  const embeddedWallet = wallets && wallets.length > 0 ? wallets[0] : null;
 
-  const fetchUsdcBalance = useCallback(async () => {
+  // Helper function to fetch balance for a single token
+  const fetchSingleTokenBalance = useCallback(
+    async (
+      walletPublicKey: PublicKey,
+      tokenMintPublicKey: PublicKey,
+      setBalance: (balance: string) => void
+    ) => {
+      try {
+        // Find the associated token account address
+        const associatedTokenAccountAddress = await getAssociatedTokenAddress(
+          tokenMintPublicKey,
+          walletPublicKey
+        );
+
+        // Fetch the balance directly
+        const balanceResponse = await connection.getTokenAccountBalance(
+          associatedTokenAccountAddress
+        );
+
+        // Set the balance from the response
+        const balance = balanceResponse.value.uiAmountString || '0';
+        setBalance(balance);
+      } catch {
+        setBalance('0');
+      }
+    },
+    [connection]
+  );
+
+  const fetchTokenBalances = useCallback(async () => {
     // Reset state at the beginning of each fetch attempt
     setError(null);
 
     // Check if wallet is ready and chain has been initialized
-    if (!walletsReady || isWalletLoading) {
+    if (!walletsReady) {
       return;
     }
 
     if (!embeddedWallet) {
-      setBalance('0');
+      setUsdcBalance('0');
+      setFreedomBalance('0');
+      return;
+    }
+
+    if (!usdcMint || !freedomMint) {
+      setUsdcBalance('0');
+      setFreedomBalance('0');
+      return;
+    }
+
+    if (!connection) {
+      setUsdcBalance('0');
+      setFreedomBalance('0');
       return;
     }
 
     try {
       setIsLoadingBalance(true);
 
-      // Get the solana wallet connection
-      const connection = await embeddedWallet.getSolanaConnection();
-
       if (!embeddedWallet.address) {
         setError('No wallet address available');
-        setBalance('0');
+        setUsdcBalance('0');
+        setFreedomBalance('0');
         return;
       }
 
-      // Fetch token accounts for the user
-      const publicKey = new PublicKey(embeddedWallet.address);
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-        mint: new PublicKey(tokenAddress.toString()),
-      });
+      // Create the wallet public key
+      const walletPublicKey = new PublicKey(embeddedWallet.address);
 
-      // Get balance from token account
-      if (tokenAccounts.value.length > 0) {
-        // Get the token account with the largest balance
-        const tokenAccount = tokenAccounts.value.reduce((prev, current) => {
-          const prevAmount = prev.account.data.parsed.info.tokenAmount.uiAmount || 0;
-          const currentAmount = current.account.data.parsed.info.tokenAmount.uiAmount || 0;
-          return prevAmount > currentAmount ? prev : current;
-        });
+      // Safely convert mint addresses to PublicKey objects
+      let usdcMintPublicKey: PublicKey;
+      let freedomMintPublicKey: PublicKey;
 
-        const formattedBalance = tokenAccount.account.data.parsed.info.tokenAmount.uiAmountString;
-
-        // Remove all decimal places by parsing to float and then to integer
-        setBalance(Math.floor(parseFloat(formattedBalance)).toString());
-      } else {
-        // No token account found, set balance to 0
-        setBalance('0');
+      try {
+        usdcMintPublicKey = new PublicKey(
+          typeof usdcMint === 'string' ? usdcMint : usdcMint.toString()
+        );
+        freedomMintPublicKey = new PublicKey(
+          typeof freedomMint === 'string' ? freedomMint : freedomMint.toString()
+        );
+      } catch (error) {
+        console.error('Invalid mint address format:', error);
+        setError('Invalid token mint addresses');
+        setUsdcBalance('0');
+        setFreedomBalance('0');
+        setIsLoadingBalance(false);
+        return;
       }
+
+      // Fetch both token balances
+      await Promise.all([
+        fetchSingleTokenBalance(walletPublicKey, usdcMintPublicKey, setUsdcBalance),
+        fetchSingleTokenBalance(walletPublicKey, freedomMintPublicKey, setFreedomBalance),
+      ]);
     } catch (error) {
       // Handle specific error types
       if (error instanceof Error) {
-        if (error.message.includes('contract not deployed')) {
-          setError(`Token contract not deployed at address: ${tokenAddress}`);
-        } else if (error.message.includes('network changed')) {
-          setError('Network changed during balance fetch. Please try again.');
-        } else if (error.message.includes('user rejected')) {
-          setError('Request was rejected by the user');
+        if (
+          error.message.includes('account not found') ||
+          error.message.includes('could not find account')
+        ) {
+          // This is an expected error when a user has no token account
+          setUsdcBalance('0');
+          setFreedomBalance('0');
+          // Don't set an error for this case
         } else {
-          setError(`Error: ${error.message}`);
+          console.error('Error fetching token balances:', error);
+          setError(`Failed to fetch token balances: ${error.message}`);
+          setUsdcBalance('0');
+          setFreedomBalance('0');
         }
       } else {
         setError('An unknown error occurred');
+        setUsdcBalance('0');
+        setFreedomBalance('0');
       }
-
-      // Always ensure we have a balance value in case of errors
-      setBalance((current) => (current === null ? '0' : current));
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [walletsReady, isWalletLoading, embeddedWallet, tokenAddress]);
+  }, [walletsReady, embeddedWallet, usdcMint, freedomMint, connection, fetchSingleTokenBalance]);
 
   // Trigger a balance fetch when dependencies change
   useEffect(() => {
-    // Only fetch if wallets are ready and wallet loading is complete
-    if (walletsReady && !isWalletLoading) {
-      fetchUsdcBalance();
+    if (walletsReady && embeddedWallet && connection && usdcMint && freedomMint) {
+      fetchTokenBalances();
     }
-  }, [fetchUsdcBalance, walletsReady, isWalletLoading]);
+  }, [fetchTokenBalances, walletsReady, embeddedWallet, connection, usdcMint, freedomMint]);
 
   // Set up polling interval for balance updates
   useEffect(() => {
-    // Only set up polling if wallets are ready and wallet loading is complete
-    if (!walletsReady || isWalletLoading) return;
+    if (!walletsReady || !connection) {
+      return;
+    }
 
-    const intervalId = setInterval(fetchUsdcBalance, 5000);
-    return () => clearInterval(intervalId);
-  }, [fetchUsdcBalance, walletsReady, isWalletLoading]);
+    const intervalId = setInterval(() => {
+      fetchTokenBalances();
+    }, 5000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [fetchTokenBalances, walletsReady, connection]);
 
-  return { usdcBalance: balance, isLoadingBalance, error, refetch: fetchUsdcBalance };
+  // Return balance based on selected token type, plus both balances individually
+  const currentBalance = tokenType === TokenType.Usdc ? usdcBalance : freedomBalance;
+
+  return {
+    currentBalance: currentBalance || '0',
+    // Include both specific token balances
+    usdcBalance: usdcBalance || '0',
+    freedomBalance: freedomBalance || '0',
+    isLoadingBalance,
+    error,
+    refetch: fetchTokenBalances,
+  };
 };

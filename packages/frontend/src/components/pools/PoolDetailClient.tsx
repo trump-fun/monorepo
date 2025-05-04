@@ -1,8 +1,7 @@
 'use client';
 
-import { useApolloClient } from '@apollo/client';
 import { usePrivy } from '@privy-io/react-auth';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useSendTransaction } from '@privy-io/react-auth/solana';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
@@ -16,7 +15,6 @@ import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
 import { showSuccessToast } from '@/utils/toast';
-import { gql as apolloGql } from '@apollo/client';
 import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
 
 import { useAnchorProvider } from '@/components/AnchorProvider';
@@ -32,7 +30,20 @@ import { PoolHeader } from '@/components/pools/PoolHeader';
 import { PoolStats } from '@/components/pools/PoolStats';
 import { TabSwitcher } from '@/components/pools/TabSwitcher';
 import { UserBets } from '@/components/pools/UserBets';
-import { useGetPoolQuery } from '@/types';
+import { useNetwork } from '@/hooks/useNetwork';
+import {
+  Bet,
+  Bet_OrderBy,
+  BetPlaced,
+  BetPlaced_OrderBy,
+  OrderDirection,
+  PoolStatus,
+  useGetBetPlacedQuery,
+  useGetBetsQuery,
+  useGetPoolQuery,
+} from '@/types';
+import { asExtendedPool } from '@/types/extended-types';
+import { Connection, Transaction } from '@solana/web3.js';
 
 type PoolDetailClientProps = {
   id: string;
@@ -40,25 +51,44 @@ type PoolDetailClientProps = {
 };
 
 export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
-  const { tokenType, tokenMint } = useTokenContext();
-  const { isConnected, authenticated } = useWalletAddress();
-  const { login, ready } = usePrivy();
-  const apolloClient = useApolloClient();
+  const { tokenType } = useTokenContext();
+  const { isConnected, authenticated, publicKey } = useWalletAddress();
+  const { login } = usePrivy();
+  const { networkInfo } = useNetwork();
 
   // Solana specific hooks
-  const { connection } = useConnection();
-  const wallet = useWallet();
-  const { publicKey, connected, sendTransaction } = wallet;
   const { program } = useAnchorProvider();
   const { chainConfig } = useChainConfig();
+  const { sendTransaction } = useSendTransaction();
 
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
   const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, _setError] = useState<string | null>(null);
 
-  const { formattedBalance, symbol, isValid } = useTokenBalance();
+  const {
+    formattedBalance,
+    symbol,
+    tokenLogo: rawTokenLogo,
+    rawBalance,
+    tokenAddress,
+  } = useTokenBalance();
+
+  // Provide a default value for tokenLogo to avoid undefined errors
+  const tokenLogo = rawTokenLogo || '🪙'; // Default emoji as fallback
+
+  // Create a balance object that matches what BettingForm expects
+  const balance = {
+    value: rawBalance?.toString() || '0',
+    formatted: formattedBalance,
+    decimals: 6, // USDC typically has 6 decimals
+  };
+
+  // Create a connection to the Solana network
+  const connection = useMemo(() => {
+    return new Connection(networkInfo.endpoint, 'confirmed');
+  }, [networkInfo.endpoint]);
 
   // Use Apollo's useQuery hook to fetch pool data
   const {
@@ -71,7 +101,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     fetchPolicy: 'network-only',
   });
 
-  const pool = poolData?.pool || null;
+  const pool = poolData?.pool ? asExtendedPool(poolData.pool as any) : null;
 
   const {
     betAmount,
@@ -98,69 +128,70 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     handleFacts: handleFactsAction,
   } = usePoolFacts(id, authenticated);
 
-  const fetchUserBets = useCallback(async () => {
-    if (!publicKey) return;
-
-    try {
-      const { data } = await apolloClient.query({
-        query: apolloGql(GET_BETS_STRING),
-        variables: {
-          filter: {
-            user: publicKey.toBase58().toLowerCase(),
-            tokenType,
-            poolId: id,
-          },
-          orderDirection: OrderDirection.Desc,
-          orderBy: Bet_OrderBy.CreatedAt,
-        },
-        fetchPolicy: 'network-only',
-      });
-      if (data) {
-        setUserBetsData(data.bets);
+  // Use generated query hooks instead of manual Apollo queries
+  const { refetch: refetchUserBets } = useGetBetsQuery({
+    variables: {
+      filter: {
+        userAddress: publicKey ? publicKey.toBase58().toLowerCase() : '',
+        tokenType,
+        poolIntId: id, // Changed poolId to poolIntId which is the correct field name
+      },
+      orderDirection: OrderDirection.Desc,
+      orderBy: Bet_OrderBy.CreatedAt,
+      first: 100,
+    },
+    skip: !publicKey,
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      if (data && data.bets) {
+        // Cast the data to match Bet[] type
+        setUserBetsData(data.bets as Bet[]);
       }
-    } catch (error) {
-      console.error('Error fetching user bets:', error);
-    }
-  }, [publicKey, apolloClient, tokenType, id]);
+    },
+  });
 
-  const fetchBetPlaced = useCallback(async () => {
-    try {
-      const { data } = await apolloClient.query({
-        query: apolloGql(GET_BET_PLACED_STRING),
-        variables: {
-          filter: {
-            poolId: id,
-          },
-          orderDirection: OrderDirection.Desc,
-          orderBy: BetPlaced_OrderBy.CreatedAt,
-        },
-      });
-      if (data) {
-        setBetPlacedData(data.betPlaceds);
+  const { refetch: refetchBetPlaced } = useGetBetPlacedQuery({
+    variables: {
+      filter: {
+        poolId: id, // Using poolId which is the correct field name in BetPlaced_Filter
+      },
+      orderDirection: OrderDirection.Desc,
+      orderBy: BetPlaced_OrderBy.CreatedAt,
+      first: 100,
+    },
+    onCompleted: (data) => {
+      if (data && data.betPlaceds) {
+        // Cast the data to the correct BetPlaced[] type
+        setBetPlacedData(data.betPlaceds as BetPlaced[]);
       }
-    } catch (error) {
-      console.error('Error fetching bet placed:', error);
-    }
-  }, [apolloClient, id]);
+    },
+  });
 
   const refreshData = useCallback(() => {
     refetch();
-    fetchUserBets();
-    fetchBetPlaced();
-  }, [refetch, fetchUserBets, fetchBetPlaced]);
+    refetchUserBets();
+    refetchBetPlaced();
+  }, [refetch, refetchUserBets, refetchBetPlaced]);
 
   useEffect(() => {
-    fetchUserBets();
-    fetchBetPlaced();
+    // Initial load of bets data
+    refetchUserBets();
+    refetchBetPlaced();
 
-    const userBetsPollingInterval = setInterval(fetchUserBets, POLLING_INTERVALS['user-bets']);
-    const betPlacedPollingInterval = setInterval(fetchBetPlaced, POLLING_INTERVALS['user-bets']);
+    // Set up polling intervals for automatic updates
+    const userBetsPollingInterval = setInterval(() => {
+      refetchUserBets();
+    }, POLLING_INTERVALS['user-bets']);
+
+    const betPlacedPollingInterval = setInterval(() => {
+      refetchBetPlaced();
+    }, POLLING_INTERVALS['user-bets']);
 
     return () => {
       clearInterval(userBetsPollingInterval);
       clearInterval(betPlacedPollingInterval);
     };
-  }, [fetchUserBets, fetchBetPlaced]);
+  }, [refetchUserBets, refetchBetPlaced]);
 
   useEffect(() => {
     if (isSubmitting) {
@@ -220,14 +251,35 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   }, [formattedBalance, setBetAmount, setSelectedOption, setSliderValue]);
 
   const handleFacts = useCallback(() => {
-    handleFactsAction(connected, login);
-  }, [handleFactsAction, connected, login]);
+    handleFactsAction(isConnected, login);
+  }, [handleFactsAction, isConnected, login]);
+
+  // Create a transaction sender that uses Privy's sendTransaction hook
+  const solanaTransactionSender = useCallback(
+    async (transaction: Transaction) => {
+      if (!sendTransaction) {
+        throw new Error('Transaction sender not available');
+      }
+
+      // Use the Privy sendTransaction function to send the Solana transaction
+      const receipt = await sendTransaction({
+        transaction,
+        connection,
+      });
+
+      // Return signature as string
+      return receipt.signature;
+    },
+    [sendTransaction, connection]
+  );
+
+  console.log(program);
 
   const placeBet = usePlaceBet({
     program,
     connection,
     publicKey,
-    sendTransaction,
+    sendTransaction: solanaTransactionSender,
     tokenAddress,
     tokenType,
     chainConfig,
@@ -238,13 +290,18 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   const handleBet = useCallback(async () => {
     if (!pool?.id || !pool?.options) return;
 
-    await placeBet({
-      poolId: pool.id,
-      betAmount,
-      selectedOption,
-      options: pool.options,
-    });
-  }, [placeBet, pool, betAmount, selectedOption]);
+    setIsSubmitting(true);
+    try {
+      await placeBet({
+        poolId: pool.id,
+        betAmount,
+        selectedOption,
+        options: pool.options,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [placeBet, pool, betAmount, selectedOption, setIsSubmitting]);
 
   if (loading) {
     return (

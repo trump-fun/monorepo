@@ -1,7 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { PublicKey } from '@solana/web3.js';
+// import { BETTING_POOLS_SEED } from '@/consts';
+
+// Configuration constants
+const PROGRAM_ID = '5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ';
+const FREEDOM_MINT = 'F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5';
+const USDC_MINT = '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU';
+const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 
 interface ChainConfig {
   programId: PublicKey;
@@ -9,6 +16,7 @@ interface ChainConfig {
   usdcMint: PublicKey;
   cluster: string; // "devnet", "testnet", "mainnet-beta"
   chainType: string; // "solana"
+  programTokenAccount?: string;
 }
 
 interface ChainConfigContextType {
@@ -16,28 +24,29 @@ interface ChainConfigContextType {
   isLoading: boolean;
 }
 
+// Default configuration
+const defaultConfig: ChainConfig = {
+  programId: new PublicKey(PROGRAM_ID),
+  freedomMint: new PublicKey(FREEDOM_MINT),
+  usdcMint: new PublicKey(USDC_MINT),
+  cluster: 'devnet',
+  chainType: 'solana',
+  programTokenAccount: TOKEN_PROGRAM,
+  // appPda: PublicKey.findProgramAddressSync([BETTING_POOLS_SEED], PROGRAM_ID)[0],
+};
+
+// Create context with a meaningful default value
 const ChainConfigContext = createContext<ChainConfigContextType>({
-  chainConfig: null,
-  isLoading: true,
+  chainConfig: defaultConfig,
+  isLoading: false,
 });
 
 export function ChainConfigProvider({ children }: { children: React.ReactNode }) {
-  const [chainConfig, setChainConfig] = useState<ChainConfig | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [chainConfig] = useState<ChainConfig>(defaultConfig);
+  const [isLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    // Initialize with Solana devnet configuration
-    const solanaConfig: ChainConfig = {
-      programId: new PublicKey('5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ'),
-      freedomMint: new PublicKey('F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5'),
-      usdcMint: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
-      cluster: 'devnet',
-      chainType: 'solana',
-    };
-
-    setChainConfig(solanaConfig);
-    setIsLoading(false);
-  }, []);
+  // Additional configuration could be loaded here if needed in the future
+  // For now, we're using the default configuration directly
 
   return (
     <ChainConfigContext.Provider value={{ chainConfig, isLoading }}>

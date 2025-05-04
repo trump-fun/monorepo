@@ -1,18 +1,20 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BetPlaced, Pool, TokenType } from '@trump-fun/common';
 import { RefetchOptions } from '@tanstack/react-query';
-import { Tables, formatTokenAmount, getTokenName } from '@trump-fun/common';
+import { BetPlaced, Pool, TokenType } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
 import { Related } from '../Related';
+import { ExtendedPool } from '@/types/extended-types';
+import { Tables } from '@trump-fun/common';
+import { formatTokenAmount } from '@/utils/betsCalculations';
 
 interface TabSwitcherProps {
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
-  pool: Pool;
+  pool: Pool | ExtendedPool;
   bets: BetPlaced[];
   comments: Tables<'comments'>[];
   isCommentsLoading: boolean;
@@ -108,11 +110,11 @@ export const TabSwitcher = ({
                 <div className='font-medium'>
                   {formatTokenAmount(
                     bet.amount,
-                    bet.tokenType === TokenType.Usdc ? TokenType.Usdc : TokenType.Freedom
+                    bet.tokenType === TokenType.Usdc
+                      ? Number(TokenType.Usdc)
+                      : Number(TokenType.Freedom)
                   )}{' '}
-                  {getTokenName(
-                    bet.tokenType === TokenType.Usdc ? TokenType.Usdc : TokenType.Freedom
-                  )}
+                  {bet.tokenType === TokenType.Usdc ? 'USDC' : 'Freedom'}
                 </div>
               </div>
             ))}

@@ -5,12 +5,19 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 import { Cluster, PublicKey } from '@solana/web3.js';
 
 // Define the type for the embedded Solana wallet
-type EmbeddedSolanaWallet = WalletWithMetadata & {
+type EmbeddedSolanaWallet = {
   walletClientType: string;
   chainId?: string;
   address: string;
   publicKey?: PublicKey;
   cluster?: Cluster;
+  // Adding required properties from WalletWithMetadata but making them optional
+  verifiedAt?: string;
+  firstVerifiedAt?: string;
+  latestVerifiedAt?: string;
+  chainType?: string;
+  delegated?: boolean;
+  fund?: (fundWalletConfig?: any) => Promise<void>;
 };
 
 interface EmbeddedWalletContextType {
@@ -37,8 +44,9 @@ export const EmbeddedWalletProvider = ({ children }: { children: ReactNode }) =>
 
   // Find the embedded wallet when Solana wallets are ready
   useEffect(() => {
-    if (readySolanaWallets) {
-      const wallet = solanaWallets.find((wallet) => wallet.walletClientType === 'privy');
+    if (readySolanaWallets && solanaWallets.length > 0) {
+      // Use the first wallet in the array instead of searching by walletClientType
+      const wallet = solanaWallets[0];
 
       if (wallet) {
         // Convert string address to PublicKey if needed

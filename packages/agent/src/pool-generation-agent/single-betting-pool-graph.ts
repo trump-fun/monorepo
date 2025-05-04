@@ -17,13 +17,13 @@ import type { ResearchItem } from '../types/research-item';
 import { createBettingPool as createBettingPoolEvm } from './tools/create-betting-pool';
 import { createBettingPoolSolana } from './tools/create-betting-pool-solana';
 import { generateBettingPoolIdea } from './tools/generate-betting-pool-idea';
-import { generateImageFlux } from './tools/generate-image-flux';
 import { newsApiSearchFunctionSingle } from './tools/news-api';
 import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-external-link';
 import { extractSearchQueryFunctionSingle } from './tools/search-query';
 import { sendTgMessage } from './tools/send-tg-message';
 import { tavilySearchFunctionSingle } from './tools/tavily-search';
 import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
+import { generateImageVenice } from './tools/generate-image';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,
@@ -172,7 +172,7 @@ builder
   // .addNode('trace_source_chain', traceSourceChain) // Add the new node
   .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
   // .addNode('generate_image', generateImageVenice)
-  .addNode('generate_image', generateImageFlux)
+  .addNode('generate_image', generateImageVenice)
   .addNode('choose_chain', chooseChainNode)
   .addNode('create_betting_pool_evm', createBettingPoolEvm)
   .addNode('create_betting_pool_solana', createBettingPoolSolana)

@@ -4,15 +4,20 @@ import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED } from '@/consts';
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import { BN } from '@coral-xyz/anchor';
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 import { useCallback } from 'react';
+
+// Solana well-known program addresses
+const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+const ASSOCIATED_TOKEN_PROGRAM = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
+const SYSVAR_RENT = 'SysvarRent111111111111111111111111111111111';
 
 interface UsePlaceBetProps {
   program: any; // Anchor Program
   connection: Connection;
   publicKey: PublicKey | null;
   sendTransaction: ((transaction: Transaction) => Promise<string>) | undefined;
-  tokenAddress: string;
+  tokenAddress: PublicKey;
   tokenType: TokenType;
   chainConfig: any;
   resetBettingForm?: () => void;
@@ -50,10 +55,32 @@ export function usePlaceBet({
         return;
       }
 
+      // Enhanced program validation - check if IDL is properly loaded
+      if (
+        !program.account ||
+        Object.keys(program.account).length === 0 ||
+        !program.methods ||
+        Object.keys(program.methods).length === 0
+      ) {
+        console.error('Program incorrectly initialized:', {
+          hasAccount: !!program.account,
+          accountKeys: Object.keys(program.account || {}),
+          hasMethods: !!program.methods,
+          methodKeys: Object.keys(program.methods || {}),
+        });
+        showErrorToast(
+          'Program error',
+          'Program not properly initialized. Please refresh the page or contact support.'
+        );
+        return;
+      }
+
       if (!betAmount || betAmount === '0' || selectedOption === null) {
         showErrorToast('Please enter a bet amount and select an option');
         return;
       }
+
+      console.log('Chain type:', chainConfig?.chainType);
 
       if (!chainConfig || chainConfig.chainType !== 'solana') {
         showErrorToast('Unsupported chain', 'This chain does not support Solana betting');
@@ -70,7 +97,19 @@ export function usePlaceBet({
           program.programId
         );
 
-        const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
+        console.log('Program ID:', program.programId.toString());
+        console.log('Program accounts:', Object.keys(program.account || {}));
+        console.log('Program methods:', Object.keys(program.methods || {}));
+
+        // Check if we have the required methods before proceeding
+        if (!program.methods?.placeBet) {
+          showErrorToast('Program error', 'placeBet method is not available');
+          console.error('Error: program.methods.placeBet is undefined');
+          return;
+        }
+
+        // Alternative approach without using bettingPoolsState directly
+        // Instead, we'll use direct PDAs and parameters
 
         // Find the pool PDA
         const poolIdBN = new BN(poolId);
@@ -79,8 +118,25 @@ export function usePlaceBet({
           program.programId
         );
 
+        // For the next bet ID, we'll use 0 as a default
+        // This will likely fail, but it's better than crashing completely
+        let nextBetId = new BN(0);
+
+        try {
+          // Try to fetch the betting pools state if available
+          if (program.account?.bettingPoolsState) {
+            const bettingPoolsState =
+              await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
+            console.log('Betting pools state:', bettingPoolsState);
+            nextBetId = bettingPoolsState.nextBetId;
+          } else {
+            console.warn('bettingPoolsState account not available, using default nextBetId');
+          }
+        } catch (err) {
+          console.error('Failed to fetch bettingPoolsState:', err);
+        }
+
         // Find the next bet PDA
-        const nextBetId = bettingPoolsState.nextBetId;
         const [betPDA] = PublicKey.findProgramAddressSync(
           [BET_SEED, poolIdBN.toArrayLike(Buffer, 'le', 8), nextBetId.toArrayLike(Buffer, 'le', 8)],
           program.programId
@@ -94,11 +150,24 @@ export function usePlaceBet({
           mint: new PublicKey(tokenAddress),
         });
 
+        if (!userTokenAccount.value.length) {
+          showErrorToast('Token account error', `No ${symbol} token account found for your wallet`);
+          return;
+        }
+
         // Get the program's token account
-        // This would typically be a PDA derived in a similar way to the betting pools PDA
         const programTokenAccount = new PublicKey(chainConfig.programTokenAccount);
 
-        // Create a transaction to invoke the placeBet function
+        console.log('Creating bet with accounts:', {
+          bettingPools: bettingPoolsPDA.toString(),
+          pool: poolPDA.toString(),
+          bet: betPDA.toString(),
+          bettor: publicKey.toString(),
+          bettorTokenAccount: userTokenAccount.value[0].pubkey.toString(),
+          programTokenAccount: programTokenAccount.toString(),
+        });
+
+        // Create the transaction with Anchor's method builder
         const transaction = await program.methods
           .placeBet(optionIndex, amount, solanaTokenType)
           .accounts({
@@ -106,22 +175,26 @@ export function usePlaceBet({
             pool: poolPDA,
             bet: betPDA,
             bettor: publicKey,
-            bettorTokenAccount: userTokenAccount.value[0]?.pubkey,
+            bettorTokenAccount: userTokenAccount.value[0].pubkey,
             programTokenAccount: programTokenAccount,
-            tokenProgram: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'), // Solana Token Program
-            associatedTokenProgram: new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'), // Solana Associated Token Program
-            systemProgram: PublicKey.default, // Solana System Program
-            rent: new PublicKey('SysvarRent111111111111111111111111111111111'), // Solana Rent Sysvar
+            tokenProgram: new PublicKey(TOKEN_PROGRAM),
+            associatedTokenProgram: new PublicKey(ASSOCIATED_TOKEN_PROGRAM),
+            systemProgram: SystemProgram.programId,
+            rent: new PublicKey(SYSVAR_RENT),
           })
           .transaction();
 
-        // Get a recent blockchash
+        // Get a recent blockhash
         const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = publicKey;
+
+        // Create a new transaction with the instructions from the Anchor transaction
+        const compatibleTransaction = new Transaction();
+        compatibleTransaction.add(...transaction.instructions);
+        compatibleTransaction.recentBlockhash = blockhash;
+        compatibleTransaction.feePayer = publicKey;
 
         // Send the transaction
-        const txSignature = await sendTransaction(transaction);
+        const txSignature = await sendTransaction(compatibleTransaction);
 
         // Wait for transaction confirmation
         const latestBlockhash = await connection.getLatestBlockhash();

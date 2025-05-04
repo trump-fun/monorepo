@@ -92,9 +92,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Helper function to ensure data is serializable
+function toSerializableData(data: any) {
+  return JSON.parse(JSON.stringify(data));
+}
+
 export default async function PoolDetailPage({ params }: Props) {
   const id = (await params).id;
   const { comments } = await getPoolData(id);
 
-  return <PoolDetailClient id={id} initialComments={comments} />;
+  // Convert the data to a serializable format
+  const serializableComments = toSerializableData(comments);
+
+  return <PoolDetailClient id={id} initialComments={serializableComments} />;
 }

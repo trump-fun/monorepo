@@ -1,11 +1,13 @@
 'use client';
-import { Bet, formatTokenAmount, Pool, TokenType } from '@trump-fun/common';
+import { Bet, Pool, TokenType } from '@/types';
+import { ExtendedPool } from '@/types/extended-types';
+import { formatTokenAmount } from '@/utils/betsCalculations';
 import { format } from 'date-fns';
 import { ReactNode } from 'react';
 
 interface UserBetsProps {
   placedBets: Bet[];
-  pool: Pool;
+  pool: Pool | ExtendedPool;
   tokenLogo: ReactNode;
   symbol: string;
 }
@@ -39,7 +41,9 @@ export const UserBets = ({ placedBets, pool, tokenLogo }: UserBetsProps) => {
               <span className='font-medium'>
                 {formatTokenAmount(
                   bet.amount,
-                  bet.tokenType === TokenType.Usdc ? TokenType.Usdc : TokenType.Freedom
+                  bet.tokenType === TokenType.Usdc
+                    ? Number(TokenType.Usdc)
+                    : Number(TokenType.Freedom)
                 )}
               </span>
               {tokenLogo}
