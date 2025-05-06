@@ -1,120 +1,117 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  getAccount,
+  getAssociatedTokenAddress,
+  getMint,
+} from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
 import { useNetwork } from './useNetwork';
-import { useWalletAddress } from './useWalletAddress';
-import { useSolanaTransaction } from './useSolanaTransaction';
+import { useDynamicSolana } from './useDynamicSolana';
 
-/**
- * Interface for token balance information
- */
-interface TokenBalanceInfo {
-  mint: PublicKey;
-  balance: number;
-  decimals: number;
-  uiBalance: number;
-  symbol: string;
+interface TokenBalances {
+  usdcBalance: string;
+  freedomBalance: string;
+  isLoading: boolean;
+  error: Error | null;
 }
 
-/**
- * Hook for working with Solana tokens
- */
-export function useSolanaTokens() {
-  const { publicKey, isConnected } = useWalletAddress();
+export function useSolanaTokens(): {
+  balances: TokenBalances;
+  fetchBalances: () => Promise<void>;
+} {
+  const [balances, setBalances] = useState<TokenBalances>({
+    usdcBalance: '0',
+    freedomBalance: '0',
+    isLoading: false,
+    error: null,
+  });
+  const { publicKey, getConnection } = useDynamicSolana();
   const { usdcMint, freedomMint } = useNetwork();
-  const { getConnection } = useSolanaTransaction();
-  const [isLoading, setIsLoading] = useState(false);
-  const [tokenBalances, setTokenBalances] = useState<{ [key: string]: TokenBalanceInfo }>({});
 
-  /**
-   * Get token account address for specific mint
-   */
-  const getTokenAccount = useCallback(
-    async (walletAddress: PublicKey, mint: PublicKey): Promise<PublicKey | null> => {
-      try {
-        // Find associated token account address
-        return await getAssociatedTokenAddress(mint, walletAddress, false, TOKEN_PROGRAM_ID);
-      } catch (error) {
-        console.error('Error getting token account:', error);
-        return null;
-      }
-    },
-    []
-  );
-
-  /**
-   * Fetch balances for all tokens
-   */
   const fetchBalances = useCallback(async () => {
-    if (!isConnected || !publicKey) return;
+    if (!publicKey) {
+      return;
+    }
 
-    setIsLoading(true);
+    setBalances((prev) => ({ ...prev, isLoading: true, error: null }));
+
     try {
-      const connection = getConnection();
-      const results: { [key: string]: TokenBalanceInfo } = {};
+      const connection = await getConnection();
 
-      // Get USDC balance
-      const usdcAccount = await getTokenAccount(publicKey, usdcMint);
-      if (usdcAccount) {
-        try {
-          const usdcAccountInfo = await connection.getTokenAccountBalance(usdcAccount);
-          results.usdc = {
-            mint: usdcMint,
-            balance: Number(usdcAccountInfo.value.amount),
-            decimals: usdcAccountInfo.value.decimals,
-            uiBalance: Number(usdcAccountInfo.value.uiAmount || 0),
-            symbol: 'USDC',
-          };
-        } catch (e) {
-          // Likely account doesn't exist yet
-          results.usdc = {
-            mint: usdcMint,
-            balance: 0,
-            decimals: 6,
-            uiBalance: 0,
-            symbol: 'USDC',
-          };
-        }
-      }
+      // Convert mint addresses to PublicKeys if they are strings
+      const usdcMintPubkey = typeof usdcMint === 'string' ? new PublicKey(usdcMint) : usdcMint;
+      const freedomMintPubkey =
+        typeof freedomMint === 'string' ? new PublicKey(freedomMint) : freedomMint;
 
-      // Get FREEDOM balance
-      const freedomAccount = await getTokenAccount(publicKey, freedomMint);
-      if (freedomAccount) {
-        try {
-          const freedomAccountInfo = await connection.getTokenAccountBalance(freedomAccount);
-          results.freedom = {
-            mint: freedomMint,
-            balance: Number(freedomAccountInfo.value.amount),
-            decimals: freedomAccountInfo.value.decimals,
-            uiBalance: Number(freedomAccountInfo.value.uiAmount || 0),
-            symbol: 'FREEDOM',
-          };
-        } catch (e) {
-          // Likely account doesn't exist yet
-          results.freedom = {
-            mint: freedomMint,
-            balance: 0,
-            decimals: 9,
-            uiBalance: 0,
-            symbol: 'FREEDOM',
-          };
-        }
-      }
+      // Get the associated token accounts for both tokens
+      const usdcTokenAddress = await getAssociatedTokenAddress(
+        usdcMintPubkey,
+        publicKey,
+        false,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
 
-      setTokenBalances(results);
+      const freedomTokenAddress = await getAssociatedTokenAddress(
+        freedomMintPubkey,
+        publicKey,
+        false,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
+      // Fetch the token accounts in parallel
+      const [usdcAccount, freedomAccount, usdcMintInfo, freedomMintInfo] = await Promise.all([
+        getAccount(connection, usdcTokenAddress, 'confirmed', TOKEN_PROGRAM_ID).catch(() => null),
+        getAccount(connection, freedomTokenAddress, 'confirmed', TOKEN_PROGRAM_ID).catch(
+          () => null
+        ),
+        getMint(connection, usdcMintPubkey, 'confirmed', TOKEN_PROGRAM_ID),
+        getMint(connection, freedomMintPubkey, 'confirmed', TOKEN_PROGRAM_ID),
+      ]);
+
+      // Format the token balances with proper decimals
+      const usdcBalance = usdcAccount
+        ? (Number(usdcAccount.amount) / 10 ** usdcMintInfo.decimals).toString()
+        : '0';
+
+      const freedomBalance = freedomAccount
+        ? (Number(freedomAccount.amount) / 10 ** freedomMintInfo.decimals).toString()
+        : '0';
+
+      setBalances({
+        usdcBalance,
+        freedomBalance,
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
       console.error('Error fetching token balances:', error);
-    } finally {
-      setIsLoading(false);
+      setBalances((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error : new Error('Unknown error fetching balances'),
+      }));
     }
-  }, [isConnected, publicKey, getTokenAccount, usdcMint, freedomMint, getConnection]);
+  }, [publicKey, usdcMint, freedomMint, getConnection]);
 
-  return {
-    tokenBalances,
-    isLoading,
-    fetchBalances,
-    getTokenAccount,
-  };
+  // Fetch balances when the wallet changes
+  useEffect(() => {
+    if (publicKey) {
+      fetchBalances();
+    } else {
+      setBalances({
+        usdcBalance: '0',
+        freedomBalance: '0',
+        isLoading: false,
+        error: null,
+      });
+    }
+  }, [publicKey, fetchBalances]);
+
+  return { balances, fetchBalances };
 }

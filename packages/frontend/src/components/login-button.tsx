@@ -2,67 +2,63 @@
 
 import { Button } from '@/components/ui/button';
 import { useNetwork } from '@/hooks/useNetwork';
-import { useLogin, usePrivy } from '@privy-io/react-auth';
-import { useSolanaWallets } from '@privy-io/react-auth/solana';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { LogIn } from 'lucide-react';
 import { useEffect } from 'react';
 import { useSolanaTokens } from '../hooks/useSolanaTokens';
+import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 
-export const PrivyLogoutButton = () => {
-  const { logout } = usePrivy();
-  return <Button onClick={logout}>Log out</Button>;
+export const DynamicLogoutButton = () => {
+  const { handleLogOut } = useDynamicContext();
+  return <Button onClick={handleLogOut}>Log out</Button>;
 };
 
-type PrivyLoginButtonProps = {
+type DynamicLoginButtonProps = {
   className?: string;
   variant?: 'contained' | 'outlined';
 };
 
-export function PrivyLoginButton({
+export function DynamicLoginButton({
   className = 'bg-orange-500 text-white hover:bg-orange-600',
   variant = 'contained',
-}: PrivyLoginButtonProps) {
-  const { ready, authenticated } = usePrivy();
-  const { wallets } = useSolanaWallets();
-  const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
+}: DynamicLoginButtonProps) {
+  const { primaryWallet, setShowAuthFlow } = useDynamicContext();
   const { fetchBalances } = useSolanaTokens();
   const { cluster } = useNetwork();
 
   useEffect(() => {
-    if (!ready || !authenticated || !embeddedWallet) {
+    if (!primaryWallet) {
       return;
     }
 
     // When wallet is connected, fetch token balances
     fetchBalances();
-  }, [ready, authenticated, embeddedWallet, fetchBalances]);
+  }, [primaryWallet, fetchBalances]);
 
-  const { login } = useLogin({
-    onError: (error) => {
-      console.error('Login error:', error);
-    },
+  const disableLogin = !!primaryWallet;
 
-    onComplete: async ({ user }) => {
-      // Fetch token balances after successful login
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      fetchBalances();
-    },
-  });
+  // For custom style buttons
+  if (variant === 'outlined' || variant === 'contained') {
+    const buttonVariant = variant === 'outlined' ? 'outline' : 'default';
 
-  const disableLogin = !ready || (ready && authenticated);
+    return (
+      <Button
+        size='lg'
+        variant={buttonVariant}
+        disabled={disableLogin}
+        onClick={() => setShowAuthFlow(true)}
+        className={className}
+      >
+        <LogIn className='mr-2 h-4 w-4' />
+        Connect
+      </Button>
+    );
+  }
 
-  const buttonVariant = variant === 'outlined' ? 'outline' : 'default';
-
-  return (
-    <Button
-      size='lg'
-      variant={buttonVariant}
-      disabled={disableLogin}
-      onClick={() => login()}
-      className={className}
-    >
-      <LogIn className='mr-2 h-4 w-4' />
-      Connect
-    </Button>
-  );
+  // Use Dynamic's default widget
+  return <DynamicWidget variant='modal' buttonClassName={className} />;
 }
+
+// For backwards compatibility
+export const PrivyLoginButton = DynamicLoginButton;
+export const PrivyLogoutButton = DynamicLogoutButton;

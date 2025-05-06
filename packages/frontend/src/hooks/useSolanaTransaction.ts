@@ -1,9 +1,11 @@
 'use client';
 
-import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { isSolanaWallet } from '@dynamic-labs/solana';
 import { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { useCallback, useMemo } from 'react';
 import { useNetwork } from './useNetwork';
+import { useDynamicSolana } from './useDynamicSolana';
 
 interface TransactionResult {
   signature: string;
@@ -11,51 +13,36 @@ interface TransactionResult {
 }
 
 /**
- * Hook for handling Solana transactions with Privy
+ * Hook for handling Solana transactions with Dynamic
  */
 export function useSolanaTransaction() {
-  const { login, authenticated } = usePrivy();
-  const { wallets } = useSolanaWallets();
-  const { networkInfo } = useNetwork();
+  const { primaryWallet } = useDynamicContext();
+  const { signAndSendTransaction, isAuthenticated } = useDynamicSolana();
 
-  // Get the embedded wallet from Privy
-  const embeddedWallet = useMemo(() => {
-    return wallets?.find((wallet) => wallet.walletClientType === 'privy');
-  }, [wallets]);
+  const { networkInfo } = useNetwork();
 
   // Create a connection to the Solana network
   const getConnection = useCallback(() => {
     return new Connection(networkInfo.endpoint, 'confirmed');
   }, [networkInfo.endpoint]);
 
+  // Check if the connected wallet is a Solana wallet
+  const isSolanaWalletConnected = useMemo(() => {
+    return !!primaryWallet && isSolanaWallet(primaryWallet);
+  }, [primaryWallet]);
+
   /**
-   * Signs and sends a transaction using the Privy wallet
+   * Signs and sends a transaction using the Dynamic wallet
    */
   const signAndSend = useCallback(
     async (transaction: Transaction | VersionedTransaction): Promise<TransactionResult | null> => {
-      if (!authenticated) {
-        login();
-        return null;
-      }
-
-      if (!embeddedWallet) {
-        console.error('No embedded wallet found');
-        return null;
+      if (!isAuthenticated || !isSolanaWalletConnected) {
+        throw new Error('Please connect a Solana wallet first');
       }
 
       try {
         const connection = getConnection();
-
-        // Sign the transaction with the embedded wallet
-        const signedTx = await embeddedWallet.signTransaction({
-          transaction: Buffer.from(transaction.serialize({ verifySignatures: false })).toString(
-            'base64'
-          ),
-        });
-
-        const txSignature = await connection.sendRawTransaction(
-          Buffer.from(signedTx.transaction, 'base64')
-        );
+        const txSignature = await signAndSendTransaction(transaction);
 
         console.log(`Transaction sent with signature: ${txSignature}`);
 
@@ -80,12 +67,12 @@ export function useSolanaTransaction() {
         throw error;
       }
     },
-    [authenticated, embeddedWallet, getConnection, login]
+    [isAuthenticated, isSolanaWalletConnected, getConnection, signAndSendTransaction]
   );
 
   return {
     signAndSend,
     getConnection,
-    isPrivyWalletConnected: !!embeddedWallet,
+    isWalletConnected: isSolanaWalletConnected && isAuthenticated,
   };
 }

@@ -1,5 +1,5 @@
 import { TokenType } from '@/types';
-import { useSolanaWallets } from '@privy-io/react-auth';
+import { useDynamicSolana } from './useDynamicSolana';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
@@ -14,11 +14,8 @@ export const useBalance = () => {
   const [freedomBalance, setFreedomBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { ready: walletsReady, wallets } = useSolanaWallets();
+  const { isAuthenticated, publicKey } = useDynamicSolana();
   const { connection } = useConnection();
-
-  // Get the first wallet from the wallets array
-  const embeddedWallet = wallets && wallets.length > 0 ? wallets[0] : null;
 
   // Helper function to fetch balance for a single token
   const fetchSingleTokenBalance = useCallback(
@@ -54,11 +51,7 @@ export const useBalance = () => {
     setError(null);
 
     // Check if wallet is ready and chain has been initialized
-    if (!walletsReady) {
-      return;
-    }
-
-    if (!embeddedWallet) {
+    if (!isAuthenticated || !publicKey) {
       setUsdcBalance('0');
       setFreedomBalance('0');
       return;
@@ -78,16 +71,6 @@ export const useBalance = () => {
 
     try {
       setIsLoadingBalance(true);
-
-      if (!embeddedWallet.address) {
-        setError('No wallet address available');
-        setUsdcBalance('0');
-        setFreedomBalance('0');
-        return;
-      }
-
-      // Create the wallet public key
-      const walletPublicKey = new PublicKey(embeddedWallet.address);
 
       // Safely convert mint addresses to PublicKey objects
       let usdcMintPublicKey: PublicKey;
@@ -111,8 +94,8 @@ export const useBalance = () => {
 
       // Fetch both token balances
       await Promise.all([
-        fetchSingleTokenBalance(walletPublicKey, usdcMintPublicKey, setUsdcBalance),
-        fetchSingleTokenBalance(walletPublicKey, freedomMintPublicKey, setFreedomBalance),
+        fetchSingleTokenBalance(publicKey, usdcMintPublicKey, setUsdcBalance),
+        fetchSingleTokenBalance(publicKey, freedomMintPublicKey, setFreedomBalance),
       ]);
     } catch (error) {
       // Handle specific error types
@@ -139,18 +122,18 @@ export const useBalance = () => {
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [walletsReady, embeddedWallet, usdcMint, freedomMint, connection, fetchSingleTokenBalance]);
+  }, [isAuthenticated, publicKey, usdcMint, freedomMint, connection, fetchSingleTokenBalance]);
 
   // Trigger a balance fetch when dependencies change
   useEffect(() => {
-    if (walletsReady && embeddedWallet && connection && usdcMint && freedomMint) {
+    if (isAuthenticated && publicKey && connection && usdcMint && freedomMint) {
       fetchTokenBalances();
     }
-  }, [fetchTokenBalances, walletsReady, embeddedWallet, connection, usdcMint, freedomMint]);
+  }, [fetchTokenBalances, isAuthenticated, publicKey, connection, usdcMint, freedomMint]);
 
   // Set up polling interval for balance updates
   useEffect(() => {
-    if (!walletsReady || !connection) {
+    if (!isAuthenticated || !connection) {
       return;
     }
 
@@ -160,7 +143,7 @@ export const useBalance = () => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [fetchTokenBalances, walletsReady, connection]);
+  }, [fetchTokenBalances, isAuthenticated, connection]);
 
   // Return balance based on selected token type, plus both balances individually
   const currentBalance = tokenType === TokenType.Usdc ? usdcBalance : freedomBalance;

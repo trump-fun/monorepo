@@ -30,8 +30,6 @@ export function PoolList({ className = '' }: { className?: string }) {
     pollInterval: 15000,
   });
 
-  console.error('Error fetching pools:', error);
-
   const pools = useMemo(() => data?.pools || [], [data?.pools]);
 
   const isInitialLoading = useMemo(() => {

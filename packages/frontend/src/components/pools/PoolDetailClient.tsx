@@ -1,7 +1,7 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
-import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
@@ -43,7 +43,7 @@ import {
   useGetBetsQuery,
   useGetPoolQuery,
 } from '@/types';
-import { Connection, Transaction } from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
 
 type PoolDetailClientProps = {
   id: string;
@@ -52,14 +52,14 @@ type PoolDetailClientProps = {
 
 export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
   const { tokenType } = useTokenContext();
-  const { isConnected, authenticated, publicKey } = useWalletAddress();
-  const { login } = usePrivy();
+  const { isConnected, publicKey } = useWalletAddress();
+  const { isAuthenticated, handleLogin } = useDynamicContext();
+  const { signAndSendTransaction } = useDynamicSolana();
   const { networkInfo } = useNetwork();
 
   // Solana specific hooks
   const { program } = useAnchorProvider();
   const { chainConfig } = useChainConfig();
-  const { sendTransaction } = useSendTransaction();
 
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
@@ -84,11 +84,6 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     formatted: formattedBalance,
     decimals: 6, // USDC typically has 6 decimals
   };
-
-  // Create a connection to the Solana network
-  const connection = useMemo(() => {
-    return new Connection(networkInfo.endpoint, 'confirmed');
-  }, [networkInfo.endpoint]);
 
   // Use Apollo's useQuery hook to fetch pool data
   const {
@@ -126,7 +121,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     hasFactsed,
     isFactsProcessing,
     handleFacts: handleFactsAction,
-  } = usePoolFacts(id, authenticated);
+  } = usePoolFacts(id, isAuthenticated);
 
   // Use generated query hooks instead of manual Apollo queries
   const { refetch: refetchUserBets } = useGetBetsQuery({
@@ -251,33 +246,28 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   }, [formattedBalance, setBetAmount, setSelectedOption, setSliderValue]);
 
   const handleFacts = useCallback(() => {
-    handleFactsAction(isConnected, login);
-  }, [handleFactsAction, isConnected, login]);
+    handleFactsAction(isConnected, handleLogin);
+  }, [handleFactsAction, isConnected, handleLogin]);
 
-  // Create a transaction sender that uses Privy's sendTransaction hook
+  // Create a transaction sender that uses Dynamic's signAndSendTransaction
   const solanaTransactionSender = useCallback(
     async (transaction: Transaction) => {
-      if (!sendTransaction) {
+      if (!signAndSendTransaction) {
         throw new Error('Transaction sender not available');
       }
 
-      // Use the Privy sendTransaction function to send the Solana transaction
-      const receipt = await sendTransaction({
-        transaction,
-        connection,
-      });
+      // Use Dynamic's signAndSendTransaction to send the Solana transaction
+      const signature = await signAndSendTransaction(transaction);
 
       // Return signature as string
-      return receipt.signature;
+      return signature;
     },
-    [sendTransaction, connection]
+    [signAndSendTransaction]
   );
-
-  console.log(program);
 
   const placeBet = usePlaceBet({
     program,
-    connection,
+    connection: null, // We'll get connection from useDynamicSolana
     publicKey,
     sendTransaction: solanaTransactionSender,
     tokenAddress,
@@ -386,7 +376,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
                 selectedOption={selectedOption}
                 setSelectedOption={setSelectedOption}
                 handleBet={handleBet}
-                authenticated={authenticated}
+                authenticated={isAuthenticated}
                 isPending={isSubmitting}
                 symbol={symbol}
                 tokenLogo={tokenLogo}

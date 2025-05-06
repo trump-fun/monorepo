@@ -1,35 +1,31 @@
 'use client';
 
-import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { isSolanaWallet } from '@dynamic-labs/solana';
 import { PublicKey } from '@solana/web3.js';
 import { useMemo } from 'react';
 
 export function useWalletAddress() {
-  const { authenticated, ready, login } = usePrivy();
-  const { wallets, ready: walletsReady } = useSolanaWallets();
-
-  const embeddedWallet = useMemo(() => {
-    if (!authenticated || !walletsReady || !wallets?.length) return null;
-    return wallets.find((wallet) => wallet.walletClientType === 'privy');
-  }, [authenticated, walletsReady, wallets]);
+  const { primaryWallet, user, handleLogOut, setShowAuthFlow } = useDynamicContext();
 
   const publicKey = useMemo(() => {
-    if (!embeddedWallet?.address) return null;
+    if (!primaryWallet?.address || !isSolanaWallet(primaryWallet)) return null;
     try {
-      return new PublicKey(embeddedWallet.address);
+      return new PublicKey(primaryWallet.address);
     } catch (error) {
       console.error('Invalid Solana address:', error);
       return null;
     }
-  }, [embeddedWallet?.address]);
+  }, [primaryWallet]);
 
   return {
-    address: embeddedWallet?.address || null,
+    address: primaryWallet?.address || null,
     publicKey,
-    isConnected: !!embeddedWallet?.address && authenticated,
-    ready,
-    walletsReady,
-    authenticated,
-    login,
+    isConnected: !!primaryWallet?.address,
+    ready: true,
+    authenticated: !!primaryWallet,
+    login: () => setShowAuthFlow(true),
+    logout: handleLogOut,
+    userId: user?.userId,
   };
 }

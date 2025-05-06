@@ -75,6 +75,7 @@ export function ExploreClient() {
     fetchMore,
     refetch,
     networkStatus,
+    error,
   } = useGetPoolsQuery({
     variables: {
       filter: queryParams.filter,
@@ -87,6 +88,8 @@ export function ExploreClient() {
     pollInterval: 10000,
     context: { name: 'explore' },
   });
+
+  console.error(error);
 
   // Update initial load state
   useEffect(() => {

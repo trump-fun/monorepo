@@ -4,7 +4,6 @@ import { isPoolFactsd, savePoolFacts } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
 import { GetPoolQuery, GetPoolsQuery, PoolStatus, TokenType } from '@/types';
 import { getBetTotals, getVolumeForTokenType } from '@/utils/betsInfo';
-import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
 import { USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
@@ -17,6 +16,8 @@ import { CommentModal } from './dialogs/comment';
 import { PoolImage } from './pool-image';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 
 interface BettingPostProps {
   pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
@@ -29,12 +30,13 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
   const [modalOpen, setModalOpen] = useState(false);
   const [betModalOpen, setBetModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { authenticated, login } = usePrivy();
-  const { wallets } = useSolanaWallets();
-  const { signMessage } = useSignMessage();
+
+  const { openWallet } = useDynamicContext();
+  const { publicKey, signMessage, isAuthenticated } = useDynamicSolana();
+
   const [factsCount, setFactsCount] = useState(() => {
     if (typeof window !== 'undefined') {
-      return parseInt(localStorage.getItem(`pool_facts_${pool?.id}`) || '0', 10);
+      return parseInt(localStorage.getItem(`pool_facts_${pool?.id}`) || '0', 10) || 5;
     }
     return 5;
   });
@@ -47,7 +49,7 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
   });
 
   const isActive = pool?.status === PoolStatus.Pending || pool?.status === PoolStatus.None;
-  const isWalletConnected = authenticated && wallets && wallets.length > 0 && wallets[0]?.address;
+  const isWalletConnected = isAuthenticated && publicKey;
 
   const optionBets = useMemo(
     () => pool?.options.map((_, index) => getBetTotals(pool, tokenType, index)) ?? [],
@@ -85,7 +87,7 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
     };
   }, [optionBets]);
 
-  const currentUserAddress = '0x6bF08768995E7430184a48e96940B83C15c1653f';
+  const currentUserAddress = publicKey?.toString() || null;
 
   const userBetsByOption = useMemo(() => {
     if (!pool) return;
@@ -122,7 +124,7 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
   const handleFacts = async () => {
     if (!pool) return;
     if (!isWalletConnected) {
-      login();
+      openWallet();
       return;
     }
 
@@ -130,9 +132,7 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
     setIsSubmitting(true);
 
     try {
-      const wallet = wallets?.[0];
-
-      if (!wallet || !wallet.address) {
+      if (!publicKey) {
         setIsSubmitting(false);
         return;
       }
@@ -143,23 +143,13 @@ export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostPr
         poolId: pool.id,
         operation: isAdding ? 'add_facts' : 'remove_facts',
         timestamp: new Date().toISOString(),
-        account: wallet.address.toLowerCase(),
+        account: publicKey.toString().toLowerCase(),
       };
 
       const messageStr = JSON.stringify(messageObj);
-      await signMessage(
-        { message: messageStr },
-        {
-          uiOptions: {
-            title: isAdding ? 'Sign to FACTS' : 'Sign to remove FACTS',
-            description: 'Sign this message to verify your action',
-            buttonText: 'Sign',
-          },
-          address: wallet.address,
-        }
-      );
+      await signMessage(messageStr);
 
-      const newFactsCount = isAdding ? factsCount + 1 : factsCount - 1;
+      const newFactsCount = isAdding ? factsCount + 1 : Math.max(factsCount - 1, 0);
 
       setHasFactsed(isAdding);
       setFactsCount(newFactsCount);

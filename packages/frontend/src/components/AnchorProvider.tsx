@@ -1,52 +1,114 @@
 'use client';
 
-import { ReactNode, createContext, useContext, useMemo } from 'react';
-
+import { useNetwork } from '@/hooks/useNetwork';
+import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 import { AnchorProvider, Program } from '@coral-xyz/anchor';
-import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
+import { Connection, PublicKey } from '@solana/web3.js';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import IDL from '@/types/__generated__/trump_fun_idl.json';
 
-import idl from '../types/__generated__/trump_fun_idl.json';
-import { TrumpFun } from '../types/__generated__/trump_fun_idl';
-
-type AnchorProviderContextType = {
+interface AnchorProviderContextValue {
+  program: Program<any> | null;
+  connection: Connection | null;
   provider: AnchorProvider | null;
-  program: Program<TrumpFun> | null;
-};
+  publicKey: PublicKey | null;
+}
 
-const AnchorProviderContext = createContext<AnchorProviderContextType>({
-  provider: null,
+const AnchorProviderContext = createContext<AnchorProviderContextValue>({
   program: null,
+  connection: null,
+  provider: null,
+  publicKey: null,
 });
 
-export const useAnchorProvider = (): AnchorProviderContextType => {
+export function useAnchorProvider() {
   return useContext(AnchorProviderContext);
-};
+}
 
 interface AnchorProviderComponentProps {
   children: ReactNode;
 }
 
-export const AnchorProviderComponent = ({ children }: AnchorProviderComponentProps) => {
-  const { connection } = useConnection();
-  const wallet = useAnchorWallet();
+export default function AnchorProviderComponent({ children }: AnchorProviderComponentProps) {
+  const { publicKey, isConnected } = useDynamicSolana();
+  const { networkInfo } = useNetwork();
 
-  const { provider, program } = useMemo(() => {
-    if (!wallet) return { provider: null, program: null };
+  const [connection, setConnection] = useState<Connection | null>(null);
+  const [provider, setProvider] = useState<AnchorProvider | null>(null);
+  const [program, setProgram] = useState<Program<any> | null>(null);
 
-    const provider = new AnchorProvider(connection, wallet, {
-      commitment: 'confirmed',
-    });
+  // Initialize Anchor connection when wallet is authenticated
+  const initAnchor = useCallback(async () => {
+    if (!publicKey || !isConnected) {
+      setConnection(null);
+      setProvider(null);
+      setProgram(null);
+      return;
+    }
 
-    const program = new Program<TrumpFun>(idl, provider);
+    try {
+      // Create connection to the network
+      const newConnection = new Connection(networkInfo.endpoint, 'confirmed');
+      setConnection(newConnection);
 
-    return { provider, program };
-  }, [connection, wallet]);
+      // Create Anchor provider
+      const newProvider = new AnchorProvider(
+        newConnection,
+        {
+          publicKey,
+          signTransaction: async (tx) => tx,
+          signAllTransactions: async (txs) => txs,
+        },
+        { commitment: 'confirmed', skipPreflight: true }
+      );
+      setProvider(newProvider);
+
+      // Setup program
+      try {
+        const programId = new PublicKey(networkInfo.programId);
+
+        // Ensure the IDL is properly formatted before passing to Program constructor
+        const sanitizedIDL = JSON.parse(JSON.stringify(IDL));
+
+        // Create program with sanitized IDL
+        const newProgram = new Program(sanitizedIDL, programId, newProvider);
+
+        setProgram(newProgram);
+      } catch (err) {
+        console.error('Failed to initialize program:', err);
+        setProgram(null);
+      }
+    } catch (error) {
+      console.error('Error initializing Anchor provider:', error);
+      setConnection(null);
+      setProvider(null);
+      setProgram(null);
+    }
+  }, [publicKey, isConnected, networkInfo]);
+
+  useEffect(() => {
+    initAnchor();
+  }, [initAnchor]);
+
+  const contextValue = useMemo(
+    () => ({
+      program,
+      connection,
+      provider,
+      publicKey,
+    }),
+    [program, connection, provider, publicKey]
+  );
 
   return (
-    <AnchorProviderContext.Provider value={{ provider, program }}>
-      {children}
-    </AnchorProviderContext.Provider>
+    <AnchorProviderContext.Provider value={contextValue}>{children}</AnchorProviderContext.Provider>
   );
-};
-
-export default AnchorProviderComponent;
+}

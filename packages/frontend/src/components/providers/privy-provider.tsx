@@ -1,40 +1,30 @@
 'use client';
 
-import { PrivyProvider } from '@privy-io/react-auth';
-import { WagmiProvider, createConfig } from '@privy-io/wagmi';
+import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
+import { SolanaWalletConnectors } from '@dynamic-labs/solana';
+import { WagmiConnector } from '@dynamic-labs/wagmi-connector';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SUPABASE_BUCKET } from '@trump-fun/common';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import {
-  arbitrumSepolia as arbitrumSepoliaOriginal,
   baseSepolia as baseSepoliaOriginal,
+  arbitrumSepolia as arbitrumSepoliaOriginal,
 } from 'viem/chains';
-import { http } from 'wagmi';
 
 // Create compatible chain objects with type assertions to handle viem version differences
 const baseSepolia = baseSepoliaOriginal as any;
 const arbitrumSepolia = arbitrumSepoliaOriginal as any;
 
-// Create a Wagmi config - ensure we're importing createConfig from @privy-io/wagmi
-const wagmiConfig = createConfig({
-  chains: [baseSepolia, arbitrumSepolia], //Make sure this matches SupportedNetworks from common/consts
-  transports: {
-    //The first chain that appears below is the default chain
-    [baseSepolia.id]: http(),
-    [arbitrumSepolia.id]: http(),
-  },
-});
-
 // Create a QueryClient instance
 const queryClient = new QueryClient();
 
 export function PrivyAuthProvider({ children }: { children: React.ReactNode }) {
-  // Use the theme from next-themes to adapt Privy's theme
+  // Use the theme from next-themes to adapt Dynamic's theme
   const { resolvedTheme } = useTheme();
-  const [privyTheme, setPrivyTheme] = useState<'light' | 'dark'>('dark'); // Default to dark
+  const [dynamicTheme, setDynamicTheme] = useState<'light' | 'dark'>('dark'); // Default to dark
 
-  // Update Privy theme when system theme changes
+  // Update Dynamic theme when system theme changes
   useEffect(() => {
     const updateTheme = (e?: MediaQueryListEvent) => {
       const newTheme = e
@@ -44,7 +34,7 @@ export function PrivyAuthProvider({ children }: { children: React.ReactNode }) {
         : resolvedTheme === 'dark'
           ? 'dark'
           : 'light';
-      setPrivyTheme(newTheme);
+      setDynamicTheme(newTheme);
     };
 
     updateTheme(); // Initial call
@@ -58,48 +48,53 @@ export function PrivyAuthProvider({ children }: { children: React.ReactNode }) {
   }, [resolvedTheme]);
 
   return (
-    <PrivyProvider
-      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
-      config={{
-        loginMethods: [
-          'email',
-          'wallet',
-          'twitter',
-          'google',
-          'discord',
-          'apple',
-          'farcaster',
-          'passkey',
-        ],
-        appearance: {
-          theme: privyTheme, // Use our tracked theme state
-          accentColor: '#ff6d00',
-          logo: `${SUPABASE_BUCKET}/logo/trump.svg`,
-          walletList: ['phantom', 'backpack', 'metamask'],
-          walletChainType: 'solana-only', // Updated to support both
-          showWalletLoginFirst: true,
-        },
-        embeddedWallets: {
-          createOnLogin: 'all-users',
-        },
-        solanaClusters: [
-          {
-            name: 'devnet',
+    <QueryClientProvider client={queryClient}>
+      <DynamicContextProvider
+        settings={{
+          environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID || '',
+          walletConnectors: [SolanaWalletConnectors, WagmiConnector],
+          evmNetworks: [
+            {
+              chainId: baseSepolia.id,
+              name: baseSepolia.name,
+              vanityName: 'Base Sepolia',
+              chainName: baseSepolia.name,
+              rpcUrl: 'https://sepolia.base.org',
+              iconUrls: ['https://dynamic-static-assets.com/img/networks/basesepolia.svg'],
+              blockExplorerUrls: ['https://sepolia.basescan.org'],
+              nativeCurrency: baseSepolia.nativeCurrency,
+            },
+            {
+              chainId: arbitrumSepolia.id,
+              name: arbitrumSepolia.name,
+              vanityName: 'Arbitrum Sepolia',
+              chainName: arbitrumSepolia.name,
+              rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc',
+              iconUrls: ['https://dynamic-static-assets.com/img/networks/arbitrumsepolia.svg'],
+              blockExplorerUrls: ['https://sepolia.arbiscan.io'],
+              nativeCurrency: arbitrumSepolia.nativeCurrency,
+            },
+          ],
+          // Configure Solana network
+          solanaNetworks: [
+            {
+              name: 'devnet',
+              endpoint: 'https://api.devnet.solana.com',
+              networkType: 'devnet',
+            },
+          ],
+          appLogoUrl: `${SUPABASE_BUCKET}/logo/trump.svg`,
+          appName: 'Trump Fun',
+          theme: {
+            mode: dynamicTheme,
+            colors: {
+              primary: '#ff6d00',
+            },
           },
-        ],
-        loginMethodsAndOrder: {
-          primary: ['phantom', 'google', 'email'],
-        },
-
-        passkeys: {
-          shouldUnlinkOnUnenrollMfa: false,
-          shouldUnenrollMfaOnUnlink: false,
-        },
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
-      </QueryClientProvider>
-    </PrivyProvider>
+        }}
+      >
+        {children}
+      </DynamicContextProvider>
+    </QueryClientProvider>
   );
 }

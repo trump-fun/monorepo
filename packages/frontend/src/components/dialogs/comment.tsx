@@ -15,7 +15,8 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
 import { addComment } from '@/app/actions/comment-actions';
-import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 
 type MessageToSign = {
   action: string;
@@ -44,9 +45,9 @@ export const CommentModal: FC<CommentPostModalProps> = ({
 }) => {
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { wallets } = useSolanaWallets();
-  const { login, authenticated } = usePrivy();
-  const { signMessage } = useSignMessage();
+
+  const { primaryWallet, setShowAuthFlow } = useDynamicContext();
+  const { signMessage } = useDynamicSolana();
 
   const handleSubmit = async () => {
     if (!comment.trim()) {
@@ -69,13 +70,9 @@ export const CommentModal: FC<CommentPostModalProps> = ({
     }
 
     try {
-      const wallet = wallets?.[0];
-
-      if (!wallet || !wallet.address) {
+      if (!primaryWallet?.address) {
         setIsSubmitting(false);
-        if (!authenticated) {
-          login();
-        }
+        setShowAuthFlow(true); // Open the authentication flow
         return;
       }
 
@@ -84,22 +81,12 @@ export const CommentModal: FC<CommentPostModalProps> = ({
         poolId,
         comment,
         timestamp: new Date().toISOString(),
-        account: wallet.address.toLowerCase(),
+        account: primaryWallet.address.toLowerCase(),
       };
 
       const messageStr = JSON.stringify(messageObj);
 
-      const { signature } = await signMessage(
-        { message: messageStr },
-        {
-          uiOptions: {
-            title: 'Sign your comment',
-            description: 'Sign this message to verify you are the author of this comment',
-            buttonText: 'Sign Comment',
-          },
-          address: wallet.address,
-        }
-      );
+      const signature = await signMessage(messageStr);
 
       await addComment(poolId, comment, signature, messageStr);
 

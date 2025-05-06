@@ -36,7 +36,10 @@ export const getFormattedVolumeForTokenType = (pool: Pool, tokenType: TokenType,
   return Number(volume).toLocaleString();
 };
 
-export const calculateVolume = (pool: PoolsQueryResultTypeSingle, tokenType: TokenType): React.ReactNode => {
+export const calculateVolume = (
+  pool: PoolsQueryResultTypeSingle,
+  tokenType: TokenType
+): React.ReactNode => {
   if (!pool) return tokenType === TokenType.Usdc ? '0' : '0';
 
   try {
@@ -88,8 +91,9 @@ export const calculateOptionPercentages = (
 ): number[] => {
   if (!pool) return [];
 
-  const totalPoints = pool.pointsBetTotals;
-  const totalUsdc = pool.usdcBetTotals;
+  // Convert BigInt strings to BigInt safely
+  const totalPoints = BigInt(pool.pointsBetTotals || '0');
+  const totalUsdc = BigInt(pool.usdcBetTotals || '0');
 
   const pointsPercentages =
     totalPoints > BigInt(0)

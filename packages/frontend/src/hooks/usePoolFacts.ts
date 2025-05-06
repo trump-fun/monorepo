@@ -1,5 +1,5 @@
 import { togglePoolFacts } from '@/app/actions/pool-facts';
-import { usePrivy, useSignMessage, useSolanaWallets } from '@privy-io/react-auth';
+import { useDynamicSolana } from './useDynamicSolana';
 import { useEffect, useState } from 'react';
 
 export function usePoolFacts(poolId: string, authenticated: boolean) {
@@ -7,9 +7,7 @@ export function usePoolFacts(poolId: string, authenticated: boolean) {
   const [hasFactsed, setHasFactsed] = useState<boolean>(false);
   const [isFactsProcessing, setIsFactsProcessing] = useState<boolean>(false);
 
-  const { ready } = usePrivy();
-  const { wallets } = useSolanaWallets();
-  const { signMessage } = useSignMessage();
+  const { publicKey, signMessage, isAuthenticated } = useDynamicSolana();
 
   // Fetch initial FACTS count and status
   useEffect(() => {
@@ -23,10 +21,9 @@ export function usePoolFacts(poolId: string, authenticated: boolean) {
         setHasFactsed(localHasFactsed);
 
         // Then try to fetch from server for more accurate data
-        if (ready && poolId) {
+        if (isAuthenticated && poolId && publicKey) {
           try {
-            const walletAddress =
-              wallets && wallets[0]?.address ? wallets[0].address.toLowerCase() : '';
+            const walletAddress = publicKey ? publicKey.toString().toLowerCase() : '';
             const res = await fetch(`/api/pool-facts?poolId=${poolId}&address=${walletAddress}`);
 
             if (res.ok) {
@@ -50,7 +47,7 @@ export function usePoolFacts(poolId: string, authenticated: boolean) {
     };
 
     fetchInitialFacts();
-  }, [poolId, wallets, ready, authenticated]);
+  }, [poolId, publicKey, isAuthenticated, authenticated]);
 
   const handleFacts = async (isConnected: boolean, login: () => void) => {
     if (!isConnected) {
@@ -61,8 +58,7 @@ export function usePoolFacts(poolId: string, authenticated: boolean) {
     setIsFactsProcessing(true);
 
     try {
-      const wallet = wallets?.[0];
-      if (!wallet || !wallet.address) {
+      if (!publicKey) {
         setIsFactsProcessing(false);
         return;
       }
@@ -75,23 +71,13 @@ export function usePoolFacts(poolId: string, authenticated: boolean) {
         poolId: poolId,
         operation: newIsFactsed ? 'like' : 'unlike',
         timestamp: new Date().toISOString(),
-        account: wallet.address.toLowerCase(),
+        account: publicKey.toString().toLowerCase(),
       };
 
       const messageStr = JSON.stringify(messageObj);
 
       // Request signature from user
-      const { signature } = await signMessage(
-        { message: messageStr },
-        {
-          uiOptions: {
-            title: newIsFactsed ? 'Sign to FACTS' : 'Sign to remove FACTS',
-            description: 'Sign this message to verify your action',
-            buttonText: 'Sign',
-          },
-          address: wallet.address,
-        }
-      );
+      const signature = await signMessage(messageStr);
 
       // Call the server action
       const result = await togglePoolFacts(
