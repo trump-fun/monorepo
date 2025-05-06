@@ -17,13 +17,8 @@ import type { ResearchItem } from '../types/research-item';
 import { createBettingPool as createBettingPoolEvm } from './tools/create-betting-pool';
 import { createBettingPoolSolana } from './tools/create-betting-pool-solana';
 import { generateBettingPoolIdea } from './tools/generate-betting-pool-idea';
-import { newsApiSearchFunctionSingle } from './tools/news-api';
-import { extractAndScrapeExternalLink, hasExternalLink } from './tools/scrape-external-link';
-import { extractSearchQueryFunctionSingle } from './tools/search-query';
-import { sendTgMessage } from './tools/send-tg-message';
-import { tavilySearchFunctionSingle } from './tools/tavily-search';
-import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
 import { generateImageVenice } from './tools/generate-image';
+import { upsertTruthSocialPost } from './tools/upsert-truth-social-post';
 
 export const SingleResearchItemAnnotation = Annotation.Root({
   targetTruthSocialAccountId: Annotation<string>,
@@ -165,10 +160,10 @@ async function chooseChainNode(
 
 // Add nodes to the graph
 builder
-  .addNode('extract_search_query', extractSearchQueryFunctionSingle)
-  .addNode('check_external_link', extractAndScrapeExternalLink)
-  .addNode('news_api_search', newsApiSearchFunctionSingle)
-  .addNode('tavily_search', tavilySearchFunctionSingle)
+  // .addNode('extract_search_query', extractSearchQueryFunctionSingle)
+  // .addNode('check_external_link', extractAndScrapeExternalLink)
+  // .addNode('news_api_search', newsApiSearchFunctionSingle)
+  // .addNode('tavily_search', tavilySearchFunctionSingle)
   // .addNode('trace_source_chain', traceSourceChain) // Add the new node
   .addNode('generate_betting_pool_idea', generateBettingPoolIdea)
   // .addNode('generate_image', generateImageVenice)
@@ -177,26 +172,28 @@ builder
   .addNode('create_betting_pool_evm', createBettingPoolEvm)
   .addNode('create_betting_pool_solana', createBettingPoolSolana)
   .addNode('upsert_truth_social_post', upsertTruthSocialPost)
-  .addNode('send_tg_message', sendTgMessage)
-  .addEdge(START, 'extract_search_query')
-  .addConditionalEdges('extract_search_query', shouldContinueProcessing, {
-    continue: 'news_api_search',
-    stop: END,
-  })
+  // .addNode('send_tg_message', sendTgMessage)
+  .addEdge(START, 'generate_betting_pool_idea')
+  // .addEdge(START, 'extract_search_query')
+  // .addConditionalEdges('extract_search_query', shouldContinueProcessing, {
+  //   continue: 'news_api_search',
+  //   stop: END,
+  // })
+  // .addEdge('news_api_search', 'tavily_search')
   // Check if the post has an external link after news API search
-  .addConditionalEdges('news_api_search', hasExternalLink, {
-    scrape: 'check_external_link',
-    skip: 'tavily_search',
-  })
+  // .addConditionalEdges('news_api_search', hasExternalLink, {
+  //   scrape: 'check_external_link',
+  //   skip: 'tavily_search',
+  // })
   // After scraping external link, proceed to tavily search
-  .addEdge('check_external_link', 'tavily_search')
+  // .addEdge('check_external_link', 'tavily_search')
   // After tavily search, conditionally trace sources
   // .addConditionalEdges('tavily_search', shouldTraceSource, {
   //   trace: 'trace_source_chain',
   //   skip: 'generate_betting_pool_idea',
   // })
   // After source tracing, generate betting pool idea
-  .addEdge('tavily_search', 'generate_betting_pool_idea')
+  // .addEdge('tavily_search', 'generate_betting_pool_idea')
   .addConditionalEdges('generate_betting_pool_idea', shouldContinueProcessing, {
     continue: 'generate_image',
     stop: END,
@@ -212,8 +209,9 @@ builder
   })
   .addEdge('create_betting_pool_evm', 'upsert_truth_social_post')
   .addEdge('create_betting_pool_solana', 'upsert_truth_social_post')
-  .addEdge('upsert_truth_social_post', 'send_tg_message')
-  .addEdge('send_tg_message', END);
+  .addEdge('upsert_truth_social_post', END);
+// .addEdge('upsert_truth_social_post', 'send_tg_message')
+// .addEdge('send_tg_message', END);
 
 // Compile the graph
 export const singleBettingPoolGraph = builder.compile();

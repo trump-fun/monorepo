@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/common",
+    "packages/agent",
+    "packages/frontend",
+    "packages/tg-bot",
+    "packages/solana"
   ],
   "scripts": {
     "format": "prettier --log-level warn --ignore-path .gitignore '**/*.{js,ts,sol}' --write",

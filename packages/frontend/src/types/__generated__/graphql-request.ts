@@ -38,6 +38,7 @@ export type Bet = {
   createdAt: Scalars['BigInt']['output'];
   id: Scalars['ID']['output'];
   isPayedOut: Scalars['Boolean']['output'];
+  isWithdrawn: Scalars['Boolean']['output'];
   optionIndex: Scalars['BigInt']['output'];
   outcome: BetOutcome;
   pool: Pool;
@@ -219,6 +220,7 @@ export enum BetPlaced_OrderBy {
   BetBetIntId = 'bet__betIntId',
   BetCreatedAt = 'bet__createdAt',
   BetIsPayedOut = 'bet__isPayedOut',
+  BetIsWithdrawn = 'bet__isWithdrawn',
   BetOptionIndex = 'bet__optionIndex',
   BetOutcome = 'bet__outcome',
   BetPoolIntId = 'bet__poolIntId',
@@ -294,6 +296,10 @@ export type Bet_Filter = {
   isPayedOut_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
   isPayedOut_not?: InputMaybe<Scalars['Boolean']['input']>;
   isPayedOut_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  isWithdrawn?: InputMaybe<Scalars['Boolean']['input']>;
+  isWithdrawn_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  isWithdrawn_not?: InputMaybe<Scalars['Boolean']['input']>;
+  isWithdrawn_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
   optionIndex?: InputMaybe<Scalars['BigInt']['input']>;
   optionIndex_gt?: InputMaybe<Scalars['BigInt']['input']>;
   optionIndex_gte?: InputMaybe<Scalars['BigInt']['input']>;
@@ -388,6 +394,7 @@ export enum Bet_OrderBy {
   CreatedAt = 'createdAt',
   Id = 'id',
   IsPayedOut = 'isPayedOut',
+  IsWithdrawn = 'isWithdrawn',
   OptionIndex = 'optionIndex',
   Outcome = 'outcome',
   Pool = 'pool',

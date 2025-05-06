@@ -5,21 +5,21 @@ export type Database = {
     Tables: {
       agent_keys: {
         Row: {
-          agent_id: number;
+          agent_wallet_address: string;
           created_at: string;
           id: number;
           key_data: string;
           updated_at: string;
         };
         Insert: {
-          agent_id: number;
+          agent_wallet_address: string;
           created_at?: string;
           id?: number;
           key_data: string;
           updated_at?: string;
         };
         Update: {
-          agent_id?: number;
+          agent_wallet_address?: string;
           created_at?: string;
           id?: number;
           key_data?: string;
@@ -27,58 +27,58 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'agent_keys_agent_id_fkey';
-            columns: ['agent_id'];
+            foreignKeyName: 'agent_keys_agent_wallet_address_fkey';
+            columns: ['agent_wallet_address'];
             isOneToOne: false;
             referencedRelation: 'agents';
-            referencedColumns: ['id'];
+            referencedColumns: ['wallet_address'];
           },
         ];
       };
       agent_messages: {
         Row: {
-          agent_id: number;
+          agent_id: string;
           created_at: string;
           id: number;
           message: Json;
           message_type: string | null;
           pvp_status_effects: Json | null;
-          room_id: number;
+          room_id: string;
           round_number: number;
           updated_at: string;
         };
         Insert: {
-          agent_id: number;
+          agent_id: string;
           created_at?: string;
           id?: number;
           message: Json;
           message_type?: string | null;
           pvp_status_effects?: Json | null;
-          room_id: number;
+          room_id: string;
           round_number: number;
           updated_at?: string;
         };
         Update: {
-          agent_id?: number;
+          agent_id?: string;
           created_at?: string;
           id?: number;
           message?: Json;
           message_type?: string | null;
           pvp_status_effects?: Json | null;
-          room_id?: number;
+          room_id?: string;
           round_number?: number;
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'round_agent_messages_agent_id_fkey';
+            foreignKeyName: 'agent_messages_agent_id_fkey';
             columns: ['agent_id'];
             isOneToOne: false;
             referencedRelation: 'agents';
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'round_agent_messages_room_id_fkey';
+            foreignKeyName: 'agent_messages_room_id_fkey';
             columns: ['room_id'];
             isOneToOne: false;
             referencedRelation: 'rooms';
@@ -88,37 +88,28 @@ export type Database = {
       };
       agents: {
         Row: {
-          chain_name: Database['public']['Enums']['chain_name'];
           character_card: string | null;
           created_at: string;
-          id: number;
-          key: string;
+          id: string;
           last_health_check: string | null;
-          onchain_id: number;
           updated_at: string;
-          wallet_pubkey: string | null;
+          wallet_address: string;
         };
         Insert: {
-          chain_name: Database['public']['Enums']['chain_name'];
           character_card?: string | null;
           created_at?: string;
-          id?: number;
-          key: string;
+          id: string;
           last_health_check?: string | null;
-          onchain_id: number;
           updated_at?: string;
-          wallet_pubkey?: string | null;
+          wallet_address: string;
         };
         Update: {
-          chain_name?: Database['public']['Enums']['chain_name'];
           character_card?: string | null;
           created_at?: string;
-          id?: number;
-          key?: string;
+          id?: string;
           last_health_check?: string | null;
-          onchain_id?: number;
           updated_at?: string;
-          wallet_pubkey?: string | null;
+          wallet_address?: string;
         };
         Relationships: [];
       };
@@ -587,30 +578,27 @@ export type Database = {
       };
       rooms: {
         Row: {
-          chain_name: Database['public']['Enums']['chain_name'];
           created_at: string;
-          id: number;
-          key: string;
-          onchain_room_number: number;
+          id: string;
           participants: number;
+          program_id: string | null;
+          room_number: number | null;
           updated_at: string;
         };
         Insert: {
-          chain_name: Database['public']['Enums']['chain_name'];
           created_at?: string;
-          id: number;
-          key: string;
-          onchain_room_number: number;
+          id: string;
           participants?: number;
+          program_id?: string | null;
+          room_number?: number | null;
           updated_at?: string;
         };
         Update: {
-          chain_name?: Database['public']['Enums']['chain_name'];
           created_at?: string;
-          id?: number;
-          key?: string;
-          onchain_room_number?: number;
+          id?: string;
           participants?: number;
+          program_id?: string | null;
+          room_number?: number | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -678,8 +666,8 @@ export type Database = {
           created_at: string;
           id: number;
           message: Json | null;
-          room_id: number;
-          round_id: number;
+          room_id: string;
+          round_number: number;
           updated_at: string;
           user_pubkey: string | null;
         };
@@ -688,8 +676,8 @@ export type Database = {
           created_at?: string;
           id?: number;
           message?: Json | null;
-          room_id: number;
-          round_id: number;
+          room_id: string;
+          round_number: number;
           updated_at?: string;
           user_pubkey?: string | null;
         };
@@ -698,14 +686,14 @@ export type Database = {
           created_at?: string;
           id?: number;
           message?: Json | null;
-          room_id?: number;
-          round_id?: number;
+          room_id?: string;
+          round_number?: number;
           updated_at?: string;
           user_pubkey?: string | null;
         };
         Relationships: [
           {
-            foreignKeyName: 'round_user_messages_room_id_fkey';
+            foreignKeyName: 'user_messages_room_id_fkey';
             columns: ['room_id'];
             isOneToOne: false;
             referencedRelation: 'rooms';

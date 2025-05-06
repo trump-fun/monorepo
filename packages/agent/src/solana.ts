@@ -12,6 +12,9 @@ import {
   VersionedTransaction,
   clusterApiUrl,
 } from '@solana/web3.js';
+import type { TrumpFun } from '@trump-fun/common';
+import { default as solanaIdl } from '@trump-fun/common/src/types/__generated__/trump_fun.json';
+
 import type { SolanaChainConfig } from './config';
 // Import from the new location
 // Reusing the same seed from config.ts
@@ -74,7 +77,7 @@ export interface SolanaClientConfig {
 
 export interface SolanaClientResult {
   provider: AnchorProvider;
-  program: Program<Solana>;
+  program: Program<TrumpFun>;
   payer: Keypair;
   connection: Connection;
   bettingPoolsPDA: PublicKey;
@@ -148,10 +151,12 @@ export function getSolanaClient({
     },
   };
 
-  // Create the provider
+  // Create the provider - using type assertion to resolve version conflicts
+  // @ts-ignore - This ignores the type incompatibility between different versions of @solana/web3.js
   const provider = new AnchorProvider(connection, wallet, { commitment: 'confirmed' });
 
-  const program = new Program<Solana>(solanaIdl, provider);
+  // @ts-ignore - This ignores the type incompatibility with the IDL
+  const program = new Program<TrumpFun>(solanaIdl, provider);
   const [bettingPoolsPDA] = findBettingPoolsPDA(programId);
 
   return {
