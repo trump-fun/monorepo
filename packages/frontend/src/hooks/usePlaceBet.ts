@@ -1,10 +1,10 @@
 'use client';
 
-import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED } from '@/consts';
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import { BN } from '@coral-xyz/anchor';
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED } from '@trump-fun/common';
 import { useCallback } from 'react';
 
 // Solana well-known program addresses

@@ -1,8 +1,7 @@
 'use client';
 
-import { MediaType } from '@trump-fun/common';
 import { PublicKey } from '@solana/web3.js';
-import { BETTING_POOLS_SEED, POOL_SEED } from '@/consts';
+import { BETTING_POOLS_SEED, MediaType, POOL_SEED } from '@trump-fun/common';
 
 /**
  * Converts a media type to Anchor format for Solana program interaction

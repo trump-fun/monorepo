@@ -14,9 +14,6 @@ import {
 } from '@solana/web3.js';
 import type { SolanaChainConfig } from './config';
 // Import from the new location
-import { type Solana } from '@trump-fun/common/src/types/__generated__/solana';
-import solanaIdl from './types/__generated__/solana.json';
-
 // Reusing the same seed from config.ts
 const BETTING_POOLS_SEED = Buffer.from('betting_pools_v1');
 

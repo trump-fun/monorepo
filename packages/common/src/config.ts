@@ -44,7 +44,11 @@ export const CHAIN_CONFIG: Record<SupportedChainIds, ChainConfig> = {
 
 export const SOLANA_DEVNET_CONFIG = {
   rpcUrl: 'https://api.devnet.solana.com',
-  programId: new PublicKey('9Z3iCTvR4zzCxvPYYi9WYXD4DuPrMCajKtTjvQoZz8Ds'),
+  programId: new PublicKey('i6PRmGAi4rZrvAJeLCskWCE8gTnYmUeoJaHpsu1XUtK'),
   freedomMint: new PublicKey('F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5'),
   usdcMint: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
 };
+
+export const BETTING_POOLS_SEED = Buffer.from('betting_pools_v7');
+export const POOL_SEED = Buffer.from('pool_v3');
+export const BET_SEED = Buffer.from('bet_v1');

@@ -57,12 +57,12 @@ echo "IDL file updated in ../solana-substream/idls/program.json"
 
 # Copy the IDL to the fronend directory
 echo "Copying IDL file to ../frontend/lib/__generated__/idl.json..."
-cp "./target/idl/trump_fun.json" "./../frontend/src/types/__generated__/trump_fun_idl.json"
-echo "IDL file updated in ../frontend/src/types/__generated__/trump_fun_idl.json"
+cp "./target/idl/trump_fun.json" "./../frontend/src/types/__generated__/trump_fun.json"
+echo "IDL file updated in ../frontend/src/types/__generated__/trump_fun.json"
 
 echo "Copying generated types to ../frontend/lib/__generated__/idl.ts..."
-cp "./target/types/trump_fun.ts" "./../frontend/src/types/__generated__/trump_fun_idl.ts"
-echo "Generated types file updated in ../frontend/src/types/__generated__/trump_fun_idl.ts"
+cp "./target/types/trump_fun.ts" "./../frontend/src/types/__generated__/trump_fun.ts"
+echo "Generated types file updated in ../frontend/src/types/__generated__/trump_fun.ts"
 
 
 # Copy the IDL to the common directory
@@ -75,6 +75,11 @@ echo "Copying IDL file to ../common/src/types/__generated__/trump_fun.ts..."
 cp "./target/types/trump_fun.ts" "./../common/src/types/__generated__/trump_fun.ts"
 echo "IDL file updated in ../common/src/types/__generated__/trump_fun.ts"
 
+
+# Copy the IDL to the common directory
+echo "Copying IDL file to ../agent/src/types/__generated__..."
+cp "./target/idl/trump_fun.json" "./../agent/src/types/__generated__/trump_fun.json"
+echo "IDL file updated in ../agent/src/types/__generated__/trump_fun.json"
 
 
 echo "Program ID rotation complete!"
