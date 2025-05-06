@@ -1,5 +1,5 @@
-import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
+import { PublicKey } from '@solana/web3.js';
 import { MediaType } from './__generated__/graphql';
 
 /**
@@ -20,7 +20,8 @@ export interface SolanaBetData {
   amount: BN;
   option: number;
   timestamp: BN;
-  tokenType: { freedom: {} } | { usdc: {} };
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  tokenType: { freedom: {} } | { usdc: {} }; // This is how the data is stored in Solana, ignore the warning
 }
 
 /**
@@ -68,7 +69,8 @@ export interface SolanaUserData {
     poolId: BN;
     option: number;
     amount: BN;
-    tokenType: { freedom: {} } | { usdc: {} };
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    tokenType: { freedom: {} } | { usdc: {} }; // This is how the data is stored in Solana, ignore the warning
   }>;
 }
 

@@ -13,10 +13,11 @@ import {
   useMemo,
   useState,
 } from 'react';
-import IDL from '@/types/__generated__/trump_fun_idl.json';
+import trumpFunIdl from '@trump-fun/common/src/types/__generated__/trump_fun.json';
+import { TrumpFun } from '@trump-fun/common';
 
 interface AnchorProviderContextValue {
-  program: Program<any> | null;
+  program: Program<TrumpFun> | null;
   connection: Connection | null;
   provider: AnchorProvider | null;
   publicKey: PublicKey | null;
@@ -43,7 +44,7 @@ export default function AnchorProviderComponent({ children }: AnchorProviderComp
 
   const [connection, setConnection] = useState<Connection | null>(null);
   const [provider, setProvider] = useState<AnchorProvider | null>(null);
-  const [program, setProgram] = useState<Program<any> | null>(null);
+  const [program, setProgram] = useState<Program<TrumpFun> | null>(null);
 
   // Initialize Anchor connection when wallet is authenticated
   const initAnchor = useCallback(async () => {
@@ -76,10 +77,10 @@ export default function AnchorProviderComponent({ children }: AnchorProviderComp
         const programId = new PublicKey(networkInfo.programId);
 
         // Ensure the IDL is properly formatted before passing to Program constructor
-        const sanitizedIDL = JSON.parse(JSON.stringify(IDL));
+        const sanitizedIDL = JSON.parse(JSON.stringify(trumpFunIdl));
 
         // Create program with sanitized IDL
-        const newProgram = new Program(sanitizedIDL, programId, newProvider);
+        const newProgram = new Program<TrumpFun>(sanitizedIDL, programId, newProvider);
 
         setProgram(newProgram);
       } catch (err) {

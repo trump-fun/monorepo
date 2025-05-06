@@ -1,32 +1,7 @@
 'use client';
 
 import { PublicKey } from '@solana/web3.js';
-import { BETTING_POOLS_SEED, MediaType, POOL_SEED } from '@trump-fun/common';
-
-/**
- * Converts a media type to Anchor format for Solana program interaction
- * Each media type is mapped to its corresponding Anchor enum variant
- */
-export function getMediaTypeAnchorFormat(mediaType: MediaType | undefined): any {
-  switch (mediaType) {
-    case MediaType.Image:
-      return { image: {} };
-    case MediaType.Video:
-      return { video: {} };
-    case MediaType.ExternalLink:
-      return { externalLink: {} };
-    case MediaType.Facebook:
-      return { facebook: {} };
-    case MediaType.Instagram:
-      return { instagram: {} };
-    case MediaType.TikTok:
-      return { tiktok: {} };
-    case MediaType.X:
-      return { x: {} };
-    default:
-      return { none: {} };
-  }
-}
+import { BETTING_POOLS_SEED, POOL_SEED } from '@trump-fun/common';
 
 /**
  * Finds a token account by owner and mint

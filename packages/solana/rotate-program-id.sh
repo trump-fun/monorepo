@@ -76,10 +76,10 @@ cp "./target/types/trump_fun.ts" "./../common/src/types/__generated__/trump_fun.
 echo "IDL file updated in ../common/src/types/__generated__/trump_fun.ts"
 
 
-# Copy the IDL to the common directory
-echo "Copying IDL file to ../agent/src/types/__generated__..."
-cp "./target/idl/trump_fun.json" "./../agent/src/types/__generated__/trump_fun.json"
-echo "IDL file updated in ../agent/src/types/__generated__/trump_fun.json"
+# # Copy the IDL to the common directory
+# echo "Copying IDL file to ../agent/src/types/__generated__..."
+# cp "./target/idl/trump_fun.json" "./../agent/src/types/__generated__/trump_fun.json"
+# echo "IDL file updated in ../agent/src/types/__generated__/trump_fun.json"
 
 
 echo "Program ID rotation complete!"
