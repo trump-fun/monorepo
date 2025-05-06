@@ -5,26 +5,30 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
-export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
+  [_ in K]?: never;
+};
+export type Incremental<T> =
+  | T
+  | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 type GraphQLClientRequestHeaders = RequestOptions['requestHeaders'];
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
-  BigDecimal: { input: any; output: any; }
-  BigInt: { input: any; output: any; }
-  Bytes: { input: any; output: any; }
-  Int8: { input: any; output: any; }
-  Timestamp: { input: any; output: any; }
+  ID: { input: string; output: string };
+  String: { input: string; output: string };
+  Boolean: { input: boolean; output: boolean };
+  Int: { input: number; output: number };
+  Float: { input: number; output: number };
+  BigDecimal: { input: any; output: any };
+  BigInt: { input: any; output: any };
+  Bytes: { input: any; output: any };
+  Int8: { input: any; output: any };
+  Timestamp: { input: any; output: any };
 };
 
 export enum Aggregation_Interval {
   Day = 'day',
-  Hour = 'hour'
+  Hour = 'hour',
 }
 
 export type Bet = {
@@ -48,7 +52,7 @@ export enum BetOutcome {
   Lost = 'Lost',
   None = 'None',
   Voided = 'Voided',
-  Won = 'Won'
+  Won = 'Won',
 }
 
 export type BetPlaced = {
@@ -247,7 +251,7 @@ export enum BetPlaced_OrderBy {
   PoolWinningOption = 'pool__winningOption',
   TokenType = 'tokenType',
   TxHash = 'txHash',
-  User = 'user'
+  User = 'user',
 }
 
 export type Bet_Filter = {
@@ -409,7 +413,7 @@ export enum Bet_OrderBy {
   PoolWinningOption = 'pool__winningOption',
   TokenType = 'tokenType',
   TxHash = 'txHash',
-  UserAddress = 'userAddress'
+  UserAddress = 'userAddress',
 }
 
 export type BlockChangedFilter = {
@@ -429,13 +433,13 @@ export enum MediaType {
   Instagram = 'Instagram',
   TikTok = 'TikTok',
   Video = 'Video',
-  X = 'X'
+  X = 'X',
 }
 
 /** Defines the order direction, either ascending or descending */
 export enum OrderDirection {
   Asc = 'asc',
-  Desc = 'desc'
+  Desc = 'desc',
 }
 
 export type PayoutClaimed = {
@@ -539,7 +543,7 @@ export enum PayoutClaimed_OrderBy {
   PoolId = 'poolId',
   TokenType = 'tokenType',
   TxHash = 'txHash',
-  User = 'user'
+  User = 'user',
 }
 
 export type Pool = {
@@ -642,7 +646,7 @@ export enum PoolClosed_OrderBy {
   Id = 'id',
   PoolId = 'poolId',
   SelectedOption = 'selectedOption',
-  TxHash = 'txHash'
+  TxHash = 'txHash',
 }
 
 export type PoolCreated = {
@@ -880,7 +884,7 @@ export enum PoolCreated_OrderBy {
   Options = 'options',
   PoolId = 'poolId',
   Question = 'question',
-  TxHash = 'txHash'
+  TxHash = 'txHash',
 }
 
 export type PoolMediaSet = {
@@ -1000,14 +1004,14 @@ export enum PoolMediaSet_OrderBy {
   PoolTwitterPostId = 'pool__twitterPostId',
   PoolUsdcBetTotals = 'pool__usdcBetTotals',
   PoolWinningOption = 'pool__winningOption',
-  TxHash = 'txHash'
+  TxHash = 'txHash',
 }
 
 export enum PoolStatus {
   Graded = 'Graded',
   None = 'None',
   Pending = 'Pending',
-  Regraded = 'Regraded'
+  Regraded = 'Regraded',
 }
 
 export type Pool_Filter = {
@@ -1330,7 +1334,7 @@ export enum Pool_OrderBy {
   TwitterPostId = 'twitterPostId',
   UsdcBetTotals = 'usdcBetTotals',
   UsdcBetTotalsByOption = 'usdcBetTotalsByOption',
-  WinningOption = 'winningOption'
+  WinningOption = 'winningOption',
 }
 
 export type Query = {
@@ -1353,11 +1357,9 @@ export type Query = {
   pools: Array<Pool>;
 };
 
-
 export type Query_MetaArgs = {
   block?: InputMaybe<Block_Height>;
 };
-
 
 export type QueryBetArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1365,13 +1367,11 @@ export type QueryBetArgs = {
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-
 export type QueryBetPlacedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
-
 
 export type QueryBetPlacedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1383,7 +1383,6 @@ export type QueryBetPlacedsArgs = {
   where?: InputMaybe<BetPlaced_Filter>;
 };
 
-
 export type QueryBetsArgs = {
   block?: InputMaybe<Block_Height>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1394,13 +1393,11 @@ export type QueryBetsArgs = {
   where?: InputMaybe<Bet_Filter>;
 };
 
-
 export type QueryPayoutClaimedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
-
 
 export type QueryPayoutClaimedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1412,20 +1409,17 @@ export type QueryPayoutClaimedsArgs = {
   where?: InputMaybe<PayoutClaimed_Filter>;
 };
 
-
 export type QueryPoolArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
-
 export type QueryPoolClosedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
-
 
 export type QueryPoolClosedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1437,13 +1431,11 @@ export type QueryPoolClosedsArgs = {
   where?: InputMaybe<PoolClosed_Filter>;
 };
 
-
 export type QueryPoolCreatedArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
-
 
 export type QueryPoolCreatedsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1455,13 +1447,11 @@ export type QueryPoolCreatedsArgs = {
   where?: InputMaybe<PoolCreated_Filter>;
 };
 
-
 export type QueryPoolMediaSetArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID']['input'];
   subgraphError?: _SubgraphErrorPolicy_;
 };
-
 
 export type QueryPoolMediaSetsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1472,7 +1462,6 @@ export type QueryPoolMediaSetsArgs = {
   subgraphError?: _SubgraphErrorPolicy_;
   where?: InputMaybe<PoolMediaSet_Filter>;
 };
-
 
 export type QueryPoolsArgs = {
   block?: InputMaybe<Block_Height>;
@@ -1486,7 +1475,7 @@ export type QueryPoolsArgs = {
 
 export enum TokenType {
   Freedom = 'Freedom',
-  Usdc = 'USDC'
+  Usdc = 'USDC',
 }
 
 export type _Block_ = {
@@ -1522,12 +1511,50 @@ export enum _SubgraphErrorPolicy_ {
   /** Data will be returned even if the subgraph has indexing errors */
   Allow = 'allow',
   /** If the subgraph has indexing errors, data will be omitted. The default. */
-  Deny = 'deny'
+  Deny = 'deny',
 }
 
-export type PoolFieldsFragment = { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any };
+export type PoolFieldsFragment = {
+  __typename?: 'Pool';
+  betsCloseAt: any;
+  category: string;
+  closureCriteria: string;
+  closureInstructions: string;
+  createdAt: any;
+  creationTxHash: string;
+  creatorId: string;
+  creatorName: string;
+  decisionTime: any;
+  id: string;
+  isDraw: boolean;
+  options: Array<string>;
+  pointsBetTotalsByOption: Array<any>;
+  poolIntId: any;
+  question: string;
+  status: PoolStatus;
+  twitterPostId: string;
+  usdcBetTotalsByOption: Array<any>;
+  winningOption: any;
+  imageUrl: string;
+  originalTruthSocialPostId: string;
+  usdcBetTotals: any;
+  pointsBetTotals: any;
+};
 
-export type BetFieldsFragment = { __typename?: 'Bet', amount: any, betIntId: any, createdAt: any, id: string, isPayedOut: boolean, optionIndex: any, outcome: BetOutcome, poolIntId: any, tokenType: TokenType, txHash: string, userAddress: string };
+export type BetFieldsFragment = {
+  __typename?: 'Bet';
+  amount: any;
+  betIntId: any;
+  createdAt: any;
+  id: string;
+  isPayedOut: boolean;
+  optionIndex: any;
+  outcome: BetOutcome;
+  poolIntId: any;
+  tokenType: TokenType;
+  txHash: string;
+  userAddress: string;
+};
 
 export type GetPoolsQueryVariables = Exact<{
   filter: Pool_Filter;
@@ -1537,15 +1564,69 @@ export type GetPoolsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-
-export type GetPoolsQuery = { __typename?: 'Query', pools: Array<{ __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any }> };
+export type GetPoolsQuery = {
+  __typename?: 'Query';
+  pools: Array<{
+    __typename?: 'Pool';
+    betsCloseAt: any;
+    category: string;
+    closureCriteria: string;
+    closureInstructions: string;
+    createdAt: any;
+    creationTxHash: string;
+    creatorId: string;
+    creatorName: string;
+    decisionTime: any;
+    id: string;
+    isDraw: boolean;
+    options: Array<string>;
+    pointsBetTotalsByOption: Array<any>;
+    poolIntId: any;
+    question: string;
+    status: PoolStatus;
+    twitterPostId: string;
+    usdcBetTotalsByOption: Array<any>;
+    winningOption: any;
+    imageUrl: string;
+    originalTruthSocialPostId: string;
+    usdcBetTotals: any;
+    pointsBetTotals: any;
+  }>;
+};
 
 export type GetPoolQueryVariables = Exact<{
   poolId: Scalars['ID']['input'];
 }>;
 
-
-export type GetPoolQuery = { __typename?: 'Query', pool?: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any } | null };
+export type GetPoolQuery = {
+  __typename?: 'Query';
+  pool?: {
+    __typename?: 'Pool';
+    betsCloseAt: any;
+    category: string;
+    closureCriteria: string;
+    closureInstructions: string;
+    createdAt: any;
+    creationTxHash: string;
+    creatorId: string;
+    creatorName: string;
+    decisionTime: any;
+    id: string;
+    isDraw: boolean;
+    options: Array<string>;
+    pointsBetTotalsByOption: Array<any>;
+    poolIntId: any;
+    question: string;
+    status: PoolStatus;
+    twitterPostId: string;
+    usdcBetTotalsByOption: Array<any>;
+    winningOption: any;
+    imageUrl: string;
+    originalTruthSocialPostId: string;
+    usdcBetTotals: any;
+    pointsBetTotals: any;
+  } | null;
+};
 
 export type GetBetsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1555,8 +1636,49 @@ export type GetBetsQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-
-export type GetBetsQuery = { __typename?: 'Query', bets: Array<{ __typename?: 'Bet', amount: any, betIntId: any, createdAt: any, id: string, isPayedOut: boolean, optionIndex: any, outcome: BetOutcome, poolIntId: any, tokenType: TokenType, txHash: string, userAddress: string, pool: { __typename?: 'Pool', betsCloseAt: any, category: string, closureCriteria: string, closureInstructions: string, createdAt: any, creationTxHash: string, creatorId: string, creatorName: string, decisionTime: any, id: string, isDraw: boolean, options: Array<string>, pointsBetTotalsByOption: Array<any>, poolIntId: any, question: string, status: PoolStatus, twitterPostId: string, usdcBetTotalsByOption: Array<any>, winningOption: any, imageUrl: string, originalTruthSocialPostId: string, usdcBetTotals: any, pointsBetTotals: any } }> };
+export type GetBetsQuery = {
+  __typename?: 'Query';
+  bets: Array<{
+    __typename?: 'Bet';
+    amount: any;
+    betIntId: any;
+    createdAt: any;
+    id: string;
+    isPayedOut: boolean;
+    optionIndex: any;
+    outcome: BetOutcome;
+    poolIntId: any;
+    tokenType: TokenType;
+    txHash: string;
+    userAddress: string;
+    pool: {
+      __typename?: 'Pool';
+      betsCloseAt: any;
+      category: string;
+      closureCriteria: string;
+      closureInstructions: string;
+      createdAt: any;
+      creationTxHash: string;
+      creatorId: string;
+      creatorName: string;
+      decisionTime: any;
+      id: string;
+      isDraw: boolean;
+      options: Array<string>;
+      pointsBetTotalsByOption: Array<any>;
+      poolIntId: any;
+      question: string;
+      status: PoolStatus;
+      twitterPostId: string;
+      usdcBetTotalsByOption: Array<any>;
+      winningOption: any;
+      imageUrl: string;
+      originalTruthSocialPostId: string;
+      usdcBetTotals: any;
+      pointsBetTotals: any;
+    };
+  }>;
+};
 
 export type GetBetPlacedQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1566,8 +1688,19 @@ export type GetBetPlacedQueryVariables = Exact<{
   skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
-
-export type GetBetPlacedQuery = { __typename?: 'Query', betPlaceds: Array<{ __typename?: 'BetPlaced', id: string, betId: any, poolId: any, user: string, optionIndex: any, amount: any, tokenType: TokenType }> };
+export type GetBetPlacedQuery = {
+  __typename?: 'Query';
+  betPlaceds: Array<{
+    __typename?: 'BetPlaced';
+    id: string;
+    betId: any;
+    poolId: any;
+    user: string;
+    optionIndex: any;
+    amount: any;
+    tokenType: TokenType;
+  }>;
+};
 
 export type GetPayoutClaimedQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1577,148 +1710,250 @@ export type GetPayoutClaimedQueryVariables = Exact<{
   where?: InputMaybe<PayoutClaimed_Filter>;
 }>;
 
-
-export type GetPayoutClaimedQuery = { __typename?: 'Query', payoutClaimeds: Array<{ __typename?: 'PayoutClaimed', id: string, betId: any, poolId: any, user: string, amount: any, tokenType: TokenType }> };
+export type GetPayoutClaimedQuery = {
+  __typename?: 'Query';
+  payoutClaimeds: Array<{
+    __typename?: 'PayoutClaimed';
+    id: string;
+    betId: any;
+    poolId: any;
+    user: string;
+    amount: any;
+    tokenType: TokenType;
+  }>;
+};
 
 export const PoolFieldsFragmentDoc = gql`
-    fragment PoolFields on Pool {
-  betsCloseAt
-  category
-  closureCriteria
-  closureInstructions
-  createdAt
-  creationTxHash
-  creatorId
-  creatorName
-  decisionTime
-  id
-  isDraw
-  options
-  pointsBetTotalsByOption
-  poolIntId
-  question
-  status
-  twitterPostId
-  usdcBetTotalsByOption
-  winningOption
-  imageUrl
-  originalTruthSocialPostId
-  usdcBetTotals
-  pointsBetTotals
-}
-    `;
+  fragment PoolFields on Pool {
+    betsCloseAt
+    category
+    closureCriteria
+    closureInstructions
+    createdAt
+    creationTxHash
+    creatorId
+    creatorName
+    decisionTime
+    id
+    isDraw
+    options
+    pointsBetTotalsByOption
+    poolIntId
+    question
+    status
+    twitterPostId
+    usdcBetTotalsByOption
+    winningOption
+    imageUrl
+    originalTruthSocialPostId
+    usdcBetTotals
+    pointsBetTotals
+  }
+`;
 export const BetFieldsFragmentDoc = gql`
-    fragment BetFields on Bet {
-  amount
-  betIntId
-  createdAt
-  id
-  isPayedOut
-  optionIndex
-  outcome
-  poolIntId
-  tokenType
-  txHash
-  userAddress
-}
-    `;
+  fragment BetFields on Bet {
+    amount
+    betIntId
+    createdAt
+    id
+    isPayedOut
+    optionIndex
+    outcome
+    poolIntId
+    tokenType
+    txHash
+    userAddress
+  }
+`;
 export const GetPoolsDocument = gql`
-    query GetPools($filter: Pool_filter!, $orderBy: Pool_orderBy!, $orderDirection: OrderDirection!, $first: Int, $skip: Int) {
-  pools(
-    where: $filter
-    orderBy: $orderBy
-    orderDirection: $orderDirection
-    first: $first
-    skip: $skip
+  query GetPools(
+    $filter: Pool_filter!
+    $orderBy: Pool_orderBy!
+    $orderDirection: OrderDirection!
+    $first: Int
+    $skip: Int
   ) {
-    ...PoolFields
-  }
-}
-    ${PoolFieldsFragmentDoc}`;
-export const GetPoolDocument = gql`
-    query GetPool($poolId: ID!) {
-  pool(id: $poolId) {
-    ...PoolFields
-  }
-}
-    ${PoolFieldsFragmentDoc}`;
-export const GetBetsDocument = gql`
-    query GetBets($first: Int = 10, $filter: Bet_filter!, $orderBy: Bet_orderBy!, $orderDirection: OrderDirection!, $skip: Int = 0) {
-  bets(
-    first: $first
-    where: $filter
-    orderBy: $orderBy
-    orderDirection: $orderDirection
-    skip: $skip
-  ) {
-    ...BetFields
-    pool {
+    pools(
+      where: $filter
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+      first: $first
+      skip: $skip
+    ) {
       ...PoolFields
     }
   }
-}
-    ${BetFieldsFragmentDoc}
-${PoolFieldsFragmentDoc}`;
+  ${PoolFieldsFragmentDoc}
+`;
+export const GetPoolDocument = gql`
+  query GetPool($poolId: ID!) {
+    pool(id: $poolId) {
+      ...PoolFields
+    }
+  }
+  ${PoolFieldsFragmentDoc}
+`;
+export const GetBetsDocument = gql`
+  query GetBets(
+    $first: Int = 10
+    $filter: Bet_filter!
+    $orderBy: Bet_orderBy!
+    $orderDirection: OrderDirection!
+    $skip: Int = 0
+  ) {
+    bets(
+      first: $first
+      where: $filter
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+      skip: $skip
+    ) {
+      ...BetFields
+      pool {
+        ...PoolFields
+      }
+    }
+  }
+  ${BetFieldsFragmentDoc}
+  ${PoolFieldsFragmentDoc}
+`;
 export const GetBetPlacedDocument = gql`
-    query GetBetPlaced($first: Int = 10, $filter: BetPlaced_filter!, $orderBy: BetPlaced_orderBy!, $orderDirection: OrderDirection!, $skip: Int = 0) {
-  betPlaceds(
-    first: $first
-    where: $filter
-    orderBy: $orderBy
-    orderDirection: $orderDirection
-    skip: $skip
+  query GetBetPlaced(
+    $first: Int = 10
+    $filter: BetPlaced_filter!
+    $orderBy: BetPlaced_orderBy!
+    $orderDirection: OrderDirection!
+    $skip: Int = 0
   ) {
-    id
-    betId
-    poolId
-    user
-    optionIndex
-    amount
-    tokenType
+    betPlaceds(
+      first: $first
+      where: $filter
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+      skip: $skip
+    ) {
+      id
+      betId
+      poolId
+      user
+      optionIndex
+      amount
+      tokenType
+    }
   }
-}
-    `;
+`;
 export const GetPayoutClaimedDocument = gql`
-    query GetPayoutClaimed($first: Int = 100, $skip: Int = 0, $orderBy: PayoutClaimed_orderBy = id, $orderDirection: OrderDirection = desc, $where: PayoutClaimed_filter) {
-  payoutClaimeds(
-    first: $first
-    skip: $skip
-    orderBy: $orderBy
-    orderDirection: $orderDirection
-    where: $where
+  query GetPayoutClaimed(
+    $first: Int = 100
+    $skip: Int = 0
+    $orderBy: PayoutClaimed_orderBy = id
+    $orderDirection: OrderDirection = desc
+    $where: PayoutClaimed_filter
   ) {
-    id
-    betId
-    poolId
-    user
-    amount
-    tokenType
+    payoutClaimeds(
+      first: $first
+      skip: $skip
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+      where: $where
+    ) {
+      id
+      betId
+      poolId
+      user
+      amount
+      tokenType
+    }
   }
-}
-    `;
+`;
 
-export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
+export type SdkFunctionWrapper = <T>(
+  action: (requestHeaders?: Record<string, string>) => Promise<T>,
+  operationName: string,
+  operationType?: string,
+  variables?: any
+) => Promise<T>;
 
-
-const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType, _variables) => action();
+const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType, _variables) =>
+  action();
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    GetPools(variables: GetPoolsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<GetPoolsQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<GetPoolsQuery>(GetPoolsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetPools', 'query', variables);
+    GetPools(
+      variables: GetPoolsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPoolsQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetPoolsQuery>(GetPoolsDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetPools',
+        'query',
+        variables
+      );
     },
-    GetPool(variables: GetPoolQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<GetPoolQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<GetPoolQuery>(GetPoolDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetPool', 'query', variables);
+    GetPool(
+      variables: GetPoolQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPoolQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetPoolQuery>(GetPoolDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetPool',
+        'query',
+        variables
+      );
     },
-    GetBets(variables: GetBetsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<GetBetsQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<GetBetsQuery>(GetBetsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetBets', 'query', variables);
+    GetBets(
+      variables: GetBetsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetBetsQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetBetsQuery>(GetBetsDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetBets',
+        'query',
+        variables
+      );
     },
-    GetBetPlaced(variables: GetBetPlacedQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<GetBetPlacedQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<GetBetPlacedQuery>(GetBetPlacedDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetBetPlaced', 'query', variables);
+    GetBetPlaced(
+      variables: GetBetPlacedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetBetPlacedQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetBetPlacedQuery>(GetBetPlacedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetBetPlaced',
+        'query',
+        variables
+      );
     },
-    GetPayoutClaimed(variables?: GetPayoutClaimedQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<GetPayoutClaimedQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<GetPayoutClaimedQuery>(GetPayoutClaimedDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetPayoutClaimed', 'query', variables);
-    }
+    GetPayoutClaimed(
+      variables?: GetPayoutClaimedQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders
+    ): Promise<GetPayoutClaimedQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetPayoutClaimedQuery>(GetPayoutClaimedDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        'GetPayoutClaimed',
+        'query',
+        variables
+      );
+    },
   };
 }
 export type Sdk = ReturnType<typeof getSdk>;

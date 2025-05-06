@@ -37,7 +37,6 @@ fragment BetFields on Bet {
   tokenType
   txHash
   userAddress
-  isWithdrawn
 }
 
 # Queries

@@ -5,11 +5,12 @@ import { ReactNode, createContext, useContext, useMemo } from 'react';
 import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
 
-import idl from '../types/__generated__/idl.json';
-import { Solana } from '../types/__generated__/solana';
+import idl from '../types/__generated__/trump_fun_idl.json';
+import { TrumpFun } from '../types/__generated__/trump_fun_idl';
+
 type AnchorProviderContextType = {
   provider: AnchorProvider | null;
-  program: Program<Solana> | null;
+  program: Program<TrumpFun> | null;
 };
 
 const AnchorProviderContext = createContext<AnchorProviderContextType>({
@@ -36,7 +37,7 @@ export const AnchorProviderComponent = ({ children }: AnchorProviderComponentPro
       commitment: 'confirmed',
     });
 
-    const program = new Program<Solana>(idl, provider);
+    const program = new Program<TrumpFun>(idl, provider);
 
     return { provider, program };
   }, [connection, wallet]);
