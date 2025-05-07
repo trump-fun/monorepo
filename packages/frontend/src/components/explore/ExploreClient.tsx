@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useInView } from 'react-intersection-observer';
 import { FilterSidebar } from '@/components/explore/filter-sidebar';
 import { MobileFilters } from '@/components/explore/mobile-filters';
 import { PoolList } from '@/components/explore/pool-list';
 import { RightSidebar } from '@/components/explore/right-sidebar';
 import { SearchBar } from '@/components/explore/search-bar';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { NetworkStatus } from '@apollo/client';
 import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType, useGetPoolsQuery } from '@/types';
+import { NetworkStatus } from '@apollo/client';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 
 // Define filter types to match the sidebar
 type FilterType = 'newest' | 'highest' | 'ending_soon' | 'recently_closed';
@@ -75,7 +75,7 @@ export function ExploreClient() {
     fetchMore,
     refetch,
     networkStatus,
-    error,
+    error: getPoolsError,
   } = useGetPoolsQuery({
     variables: {
       filter: queryParams.filter,
@@ -89,8 +89,9 @@ export function ExploreClient() {
     context: { name: 'explore' },
   });
 
-  console.error(error);
-
+  if (getPoolsError) {
+    console.error('getPoolsError:', getPoolsError);
+  }
   // Update initial load state
   useEffect(() => {
     if (data?.pools && data.pools.length > 0 && initialLoad) {
