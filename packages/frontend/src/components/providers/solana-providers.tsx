@@ -3,8 +3,8 @@
 import { TokenProvider } from '@/hooks/useTokenContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useEffect, useState } from 'react';
-import { DynamicAuthProvider } from './DynamicAuthProvider';
-import AnchorProviderComponent from './AnchorProvider';
+import AnchorProviderComponent from './anchor-provider';
+import { DynamicAuthProvider } from './dynamic-auth-provider';
 
 interface SolanaProvidersProps {
   children: ReactNode;

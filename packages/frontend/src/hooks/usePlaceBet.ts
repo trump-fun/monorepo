@@ -1,11 +1,17 @@
 'use client';
 
+import { useAnchorProvider } from '@/components/providers/anchor-provider';
+import { useChainConfig } from '@/components/providers/chain-config-provider';
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import { BN } from '@coral-xyz/anchor';
-import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { useConnection } from '@solana/wallet-adapter-react';
+import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED } from '@trump-fun/common';
 import { useCallback } from 'react';
+import { useDynamicSolana } from './useDynamicSolana';
+import { useSolanaTokenBalance } from './useSolanaTokenBalance';
+import { useTokenContext } from './useTokenContext';
 
 // Solana well-known program addresses
 const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
@@ -13,15 +19,8 @@ const ASSOCIATED_TOKEN_PROGRAM = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 const SYSVAR_RENT = 'SysvarRent111111111111111111111111111111111';
 
 interface UsePlaceBetProps {
-  program: any; // Anchor Program
-  connection: Connection;
-  publicKey: PublicKey | null;
   sendTransaction: ((transaction: Transaction) => Promise<string>) | undefined;
-  tokenAddress: PublicKey;
-  tokenType: TokenType;
-  chainConfig: any;
   resetBettingForm?: () => void;
-  symbol: string;
 }
 
 interface PlaceBetParams {
@@ -31,17 +30,19 @@ interface PlaceBetParams {
   options?: string[];
 }
 
-export function usePlaceBet({
-  program,
-  connection,
-  publicKey,
-  sendTransaction,
-  tokenAddress,
-  tokenType,
-  chainConfig,
-  resetBettingForm,
-  symbol,
-}: UsePlaceBetProps) {
+export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetProps) {
+  const { program } = useAnchorProvider();
+  const { chainConfig } = useChainConfig();
+  const { connection } = useConnection();
+  const { tokenMint, tokenType, tokenSymbol } = useTokenContext();
+  const { publicKey, isAuthenticated } = useDynamicSolana();
+
+  const { tokenBalance } = useSolanaTokenBalance({
+    connection,
+    walletPublicKey: publicKey,
+    tokenMint: tokenMint,
+  });
+
   const placeBet = useCallback(
     async ({ poolId, betAmount, selectedOption, options }: PlaceBetParams) => {
       // Early checks for wallet connection and support
@@ -147,11 +148,14 @@ export function usePlaceBet({
 
         // Get the user's token account
         const userTokenAccount = await connection.getTokenAccountsByOwner(publicKey, {
-          mint: new PublicKey(tokenAddress),
+          mint: new PublicKey(tokenMint),
         });
 
         if (!userTokenAccount.value.length) {
-          showErrorToast('Token account error', `No ${symbol} token account found for your wallet`);
+          showErrorToast(
+            'Token account error',
+            `No ${tokenSymbol} token account found for your wallet`
+          );
           return;
         }
 
@@ -232,15 +236,15 @@ export function usePlaceBet({
       }
     },
     [
-      program,
-      connection,
       publicKey,
       sendTransaction,
-      tokenAddress,
-      tokenType,
+      program,
       chainConfig,
+      tokenType,
+      connection,
+      tokenMint,
       resetBettingForm,
-      symbol,
+      tokenSymbol,
     ]
   );
 

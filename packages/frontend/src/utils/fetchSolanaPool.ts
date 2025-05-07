@@ -37,7 +37,7 @@ export async function fetchSolanaPool(
 
     // In a full implementation, you would use the Anchor program to fetch and deserialize the account
     // For this example, we'll construct a placeholder response with some basic data
-    const placeholderPool: SolanaPoolData = {
+    const placeholderPool = {
       id: new BN(poolIdNum),
       creator: new PublicKey('11111111111111111111111111111111'),
       authority: new PublicKey('11111111111111111111111111111111'),

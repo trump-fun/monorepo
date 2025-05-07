@@ -1,7 +1,9 @@
+import { MobileNav } from '@/components/common/mobile-nav';
+import Nav from '@/components/common/nav';
 import { Footer } from '@/components/footer';
 import { ApolloClientProvider } from '@/components/providers/apollo-provider';
+import { SolanaProviders } from '@/components/providers/solana-providers';
 import { ThemeProvider } from '@/components/providers/theme-provider';
-import { SolanaProviders } from '@/components/SolanaProviders';
 import { Toaster } from '@/components/ui/sonner';
 import { SUPABASE_BUCKET } from '@trump-fun/common';
 import { Analytics } from '@vercel/analytics/react';
@@ -9,8 +11,6 @@ import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
 import './globals.css';
-import { MobileNav } from '@/components/common/mobile-nav';
-import Nav from '@/components/common/nav';
 
 export const metadata: Metadata = {
   title: "Trump.fun - Predict The Donald's Next Move",

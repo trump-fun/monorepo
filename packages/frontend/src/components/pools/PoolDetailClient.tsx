@@ -1,6 +1,5 @@
 'use client';
 
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -17,8 +16,6 @@ import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsI
 import { showSuccessToast } from '@/utils/toast';
 import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
 
-import { useAnchorProvider } from '@/components/AnchorProvider';
-import { useChainConfig } from '@/components/ChainConfigProvider';
 import { useBettingForm } from '@/hooks/useBettingForm';
 import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { usePoolFacts } from '@/hooks/usePoolFacts';
@@ -30,7 +27,6 @@ import { PoolHeader } from '@/components/pools/PoolHeader';
 import { PoolStats } from '@/components/pools/PoolStats';
 import { TabSwitcher } from '@/components/pools/TabSwitcher';
 import { UserBets } from '@/components/pools/UserBets';
-import { useNetwork } from '@/hooks/useNetwork';
 import {
   Bet,
   Bet_OrderBy,
@@ -52,14 +48,8 @@ type PoolDetailClientProps = {
 
 export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
   const { tokenType } = useTokenContext();
-  const { isConnected, publicKey } = useWalletAddress();
-  const { isAuthenticated, handleLogin } = useDynamicContext();
+  const { isConnected, publicKey, authenticated } = useWalletAddress();
   const { signAndSendTransaction } = useDynamicSolana();
-  const { networkInfo } = useNetwork();
-
-  // Solana specific hooks
-  const { program } = useAnchorProvider();
-  const { chainConfig } = useChainConfig();
 
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
@@ -121,7 +111,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     hasFactsed,
     isFactsProcessing,
     handleFacts: handleFactsAction,
-  } = usePoolFacts(id, isAuthenticated);
+  } = usePoolFacts(id, authenticated);
 
   // Use generated query hooks instead of manual Apollo queries
   const { refetch: refetchUserBets } = useGetBetsQuery({
@@ -247,7 +237,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
 
   const handleFacts = useCallback(() => {
     handleFactsAction(isConnected, handleLogin);
-  }, [handleFactsAction, isConnected, handleLogin]);
+  }, [handleFactsAction, isConnected]);
 
   // Create a transaction sender that uses Dynamic's signAndSendTransaction
   const solanaTransactionSender = useCallback(
@@ -266,15 +256,8 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   );
 
   const placeBet = usePlaceBet({
-    program,
-    connection: null, // We'll get connection from useDynamicSolana
-    publicKey,
     sendTransaction: solanaTransactionSender,
-    tokenAddress,
-    tokenType,
-    chainConfig,
     resetBettingForm,
-    symbol,
   });
 
   const handleBet = useCallback(async () => {

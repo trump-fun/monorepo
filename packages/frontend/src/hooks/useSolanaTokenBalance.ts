@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import { Connection, PublicKey, TokenAmount } from '@solana/web3.js';
+import { useCallback, useEffect, useState } from 'react';
 import { useTokenContext } from './useTokenContext';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 
 // Create empty token amount object
 const emptyTokenAmount: TokenAmount = {
@@ -16,9 +15,15 @@ const emptyTokenAmount: TokenAmount = {
 /**
  * Custom hook to fetch token balance for a connected Solana wallet
  */
-export const useSolanaTokenBalance = () => {
-  const { connection } = useConnection();
-  const { publicKey, connecting } = useWallet();
+export const useSolanaTokenBalance = ({
+  connection,
+  connecting,
+  walletPublicKey,
+}: {
+  connection: Connection;
+  connecting: boolean;
+  walletPublicKey: PublicKey;
+}) => {
   const { tokenMint } = useTokenContext();
   const [tokenBalance, setTokenBalance] = useState<TokenAmount | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
@@ -48,7 +53,7 @@ export const useSolanaTokenBalance = () => {
       return;
     }
 
-    if (!publicKey) {
+    if (!walletPublicKey) {
       console.debug('No wallet public key found when fetching Solana token balance');
       setTokenBalance(emptyTokenAmount);
       return;
@@ -61,7 +66,7 @@ export const useSolanaTokenBalance = () => {
       const tokenMintAddress = typeof tokenMint === 'string' ? new PublicKey(tokenMint) : tokenMint;
 
       // Find all token accounts owned by the wallet
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(walletPublicKey, {
         mint: tokenMintAddress,
       });
 
@@ -87,25 +92,25 @@ export const useSolanaTokenBalance = () => {
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [connection, connecting, publicKey, tokenMint]);
+  }, [tokenMint, connecting, connection, walletPublicKey]);
 
   // Trigger a balance fetch when dependencies change
   useEffect(() => {
-    if (connection && !connecting && publicKey && tokenMint) {
+    if (connection && !connecting && walletPublicKey && tokenMint) {
       fetchTokenBalance();
     }
-  }, [connection, connecting, publicKey, tokenMint, fetchTokenBalance]);
+  }, [connection, connecting, walletPublicKey, tokenMint, fetchTokenBalance]);
 
   // Poll for balance updates
   useEffect(() => {
-    if (!connection || !publicKey || !tokenMint) return;
+    if (!connection || !walletPublicKey || !tokenMint) return;
 
     const intervalId = setInterval(fetchTokenBalance, 10000); // Poll every 10 seconds
 
     return () => {
       clearInterval(intervalId);
     };
-  }, [connection, publicKey, tokenMint, fetchTokenBalance]);
+  }, [connection, tokenMint, fetchTokenBalance, walletPublicKey]);
 
   return {
     tokenBalance,
