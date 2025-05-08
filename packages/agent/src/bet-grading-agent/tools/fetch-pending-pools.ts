@@ -1,6 +1,6 @@
-import type { Pool } from '@trump-fun/common';
 import { gql, request } from 'graphql-request';
 import config from '../../config';
+import { type Pool } from '../../types/__generated__/graphql-request';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 /**
  * Fetches pools with "PENDING" status from the GraphQL endpoint

@@ -13,7 +13,7 @@
     "generate-noise": "bun run generate-noise.ts",
     "generate-pool": "bun run run-single-pool-creation.ts",
     "reply-to-trump": "bun run run-trump-reply.ts",
-    "build": "bun build index.ts --target=bun --outdir=dist",
+    "build": "tsc",
     "bet-grading": "bun run-bet-grading-agent.ts",
     "pool-creation": "bun run-pool-creation-agent.ts",
     "source-tracing": "bun run run-source-tracing.ts",
@@ -22,7 +22,8 @@
     "find-predictions": "bun run run-prediction-market-tools.ts find-predictions",
     "build-profile": "bun run run-prediction-market-tools.ts build-profile",
     "verify-prediction": "bun run run-prediction-market-tools.ts verify-prediction",
-    "server": "bun run server.ts"
+    "server": "bun run server.ts",
+    "codegen": "bash generate-types.sh"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -30,7 +31,11 @@
     "@types/bun": "latest",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "@graphql-codegen/cli": "5.0.5",
+    "@graphql-codegen/introspection": "4.0.3",
+    "@graphql-codegen/typescript-graphql-request": "^6.2.0",
+    "@graphql-codegen/typescript-operations": "^4.6.0"
   },
   "peerDependencies": {
     "typescript": "^5"

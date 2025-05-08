@@ -16,13 +16,13 @@ import { getSolanaClient, type SolanaClientResult } from './solana';
 export const DEFAULT_CHAIN_ID = process.env.CHAIN_ID || 'solana-devnet';
 
 export type CommonChainConfig = {
-  chain: Chain;
   rpcUrl: string;
   subgraphUrl: string;
   subgraphApiKey: string;
 };
 
 export type EvmChainConfig = CommonChainConfig & {
+  chain: Chain;
   chainType: 'evm';
   subgraphUrl: string;
   subgraphApiKey: string;

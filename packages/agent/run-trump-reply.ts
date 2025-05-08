@@ -1,6 +1,5 @@
 import request, { gql } from 'graphql-request';
 import OpenAI from 'openai';
-import { baseSepolia } from 'viem/chains';
 import config, { supabase } from './src/config';
 
 // Initialize OpenAI client
@@ -11,6 +10,13 @@ const openai = new OpenAI({
 // Function to run as a cron job
 export async function processTrumpReplies() {
   try {
+    const REPLY_CHAIN_ID = process.env.CHAIN_ID || 'solana-devnet';
+
+    const chainConfig = config.chainConfig[REPLY_CHAIN_ID];
+    if (!chainConfig) {
+      throw new Error(`Chain config not found for chain ID: ${REPLY_CHAIN_ID}`);
+    }
+
     console.log('Starting Trump reply process...');
 
     // Query for comments mentioning @realTrumpFun and haven't been responded to
@@ -64,10 +70,10 @@ export async function processTrumpReplies() {
           `;
 
           const response = await request({
-            url: config.chainConfig[baseSepolia.id].subgraphUrl,
+            url: chainConfig.subgraphUrl,
             document: fetchPendingPoolsQuery,
             requestHeaders: {
-              Authorization: `Bearer ${config.chainConfig[baseSepolia.id].subgraphApiKey}`,
+              Authorization: `Bearer ${chainConfig.subgraphApiKey}`,
             },
           });
 

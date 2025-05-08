@@ -1,7 +1,7 @@
 import { BaseMessage } from '@langchain/core/messages';
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
-import { type Pool } from '@trump-fun/common';
 import config, { DEFAULT_CHAIN_ID } from '../config';
+import { type Pool } from '../types/__generated__/graphql-request';
 import { callGradePoolContract } from './tools/call-grade-pool-contract';
 import { callGradePoolContractSolana } from './tools/call-grade-pool-contract-solana';
 import { fetchPendingPools } from './tools/fetch-pending-pools';

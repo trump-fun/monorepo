@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import config from '../../config';
+import { PredictionSentiment, PredictionTimeframe } from '../../prediction-finder-agent/types';
 import { predictionIdentificationPrompt } from '../prompts/profile-analysis';
 import type { PredictionResult } from '../types';
-import { PredictionTimeframe, PredictionSentiment } from '../../prediction-finder-agent/types';
 
 /**
  * Identifies predictions in user posts
@@ -142,6 +142,7 @@ export async function identifyPredictionInPost(post: any): Promise<PredictionRes
     return {
       is_prediction: true,
       prediction_text: postText.substring(0, 150), // Use the first 150 chars of post as prediction text
+      source_text: postText,
       implicit: isImplicit,
       confidence_score: confidence,
       timeframe: timeframe,
@@ -172,6 +173,7 @@ export async function identifyPredictionInPost(post: any): Promise<PredictionRes
       return {
         is_prediction: true,
         prediction_text: postText.substring(0, 100),
+        source_text: postText,
         implicit: false,
         confidence_score: 0.6,
         timeframe: PredictionTimeframe.UNCERTAIN,

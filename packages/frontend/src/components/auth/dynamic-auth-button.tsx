@@ -17,7 +17,7 @@ export function DynamicAuthButton({
   className,
   showAddress = false,
 }: DynamicAuthButtonProps) {
-  const { user, primaryWallet, handleLogOut, isAuthenticated } = useDynamicContext();
+  const { user, primaryWallet, handleLogOut } = useDynamicContext();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Format address for display with ellipsis
