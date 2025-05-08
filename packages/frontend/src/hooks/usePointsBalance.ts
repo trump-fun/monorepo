@@ -40,6 +40,10 @@ export const useBalance = () => {
       // Get connection
       const conn = await getConnection();
 
+      if (!conn) {
+        throw new Error('Connection not available');
+      }
+
       // Find all token accounts owned by the wallet
       const tokenAccounts = await conn.getParsedTokenAccountsByOwner(publicKey, {
         programId: TOKEN_PROGRAM_ID,

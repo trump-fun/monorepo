@@ -67,12 +67,6 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           program.programId
         );
 
-        // what was the output over here?
-        // bettingPoolsPDA HDBy1YTm8yY2SZbjYSPrsbYTsWwgFkfnZxqvfm8hccfo
-        // the correct betting pools starts with i something right?
-        // wait lemme check discord
-        // see the config wait
-        // no it is D25G...
         console.log('bettingPoolsPDA', bettingPoolsPDA.toString());
 
         try {
@@ -148,6 +142,28 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             return;
           }
           const programTokenAccount = new PublicKey(chainConfig.programTokenAccount);
+
+          // Verify the program token account exists and has the correct ownership
+          try {
+            const programTokenInfo = await connection.getAccountInfo(programTokenAccount);
+            if (!programTokenInfo) {
+              showErrorToast('Configuration error', 'Program token account does not exist');
+              return;
+            }
+
+            // Verify the token account is owned by the TOKEN_PROGRAM
+            if (!programTokenInfo.owner.equals(new PublicKey(TOKEN_PROGRAM))) {
+              showErrorToast(
+                'Configuration error',
+                'Program token account is owned by wrong program'
+              );
+              return;
+            }
+          } catch (error) {
+            console.error('Error verifying program token account:', error);
+            showErrorToast('Configuration error', 'Failed to verify program token account');
+            return;
+          }
 
           // Create instructions
           const instructions = [];
