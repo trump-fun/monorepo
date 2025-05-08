@@ -16,7 +16,6 @@ import { Slider } from '../ui/slider';
 
 import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
-import { USDC_DECIMALS } from '@/utils/utils';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { HandCoins, Loader2 } from 'lucide-react';
 
@@ -52,35 +51,7 @@ export const BetModal: FC<BetModalProps> = ({
   const { primaryWallet, setShowAuthFlow } = useDynamicContext();
   const { publicKey, getConnection } = useDynamicSolana();
 
-  const {
-    formattedBalance,
-    symbol,
-    tokenLogo,
-    tokenMint,
-    tokenDecimals,
-    tokenAddress,
-    rawBalance,
-  } = useTokenBalance();
-
-  // Fetch approved amount when component mounts or account changes
-  useEffect(() => {
-    const fetchApprovedAmount = async () => {
-      if (!publicKey || !tokenAddress) return;
-
-      try {
-        const connection = await getConnection();
-        const tokenAccountInfo = await connection.getTokenAccountBalance(tokenAddress);
-
-        const formattedAllowance = Number(tokenAccountInfo.value.amount) / 10 ** USDC_DECIMALS;
-        setApprovedAmount(formattedAllowance.toString());
-      } catch (error) {
-        setApprovedAmount('0');
-        console.error('Error fetching approved amount:', error);
-      }
-    };
-
-    // fetchApprovedAmount();
-  }, [publicKey, getConnection, tokenAddress]);
+  const { formattedBalance, symbol, tokenDecimals, tokenAddress, rawBalance } = useTokenBalance();
 
   // Update bet amount when slider changes
   useEffect(() => {
@@ -295,10 +266,11 @@ export const BetModal: FC<BetModalProps> = ({
 
                     if (balance) {
                       const inputNum = parseInt(value, 10);
-                      const balanceNum = Number(balance.value) / Math.pow(10, balance.decimals);
+                      const balanceNum = Number(formattedBalance);
 
                       if (inputNum > 0 && balanceNum > 0) {
-                        const percentage = Math.min(100, Math.ceil((inputNum / balanceNum) * 100));
+                        // Calculate percentage of balance (inputNum / balanceNum) * 100
+                        const percentage = Math.min(100, Math.floor((inputNum / balanceNum) * 100));
                         setSliderValue([percentage]);
                       }
                     } else {

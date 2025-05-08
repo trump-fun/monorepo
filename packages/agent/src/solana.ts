@@ -12,13 +12,11 @@ import {
   VersionedTransaction,
   clusterApiUrl,
 } from '@solana/web3.js';
-import type { TrumpFun } from '@trump-fun/common';
+import { BETTING_POOLS_SEED, type TrumpFun } from '@trump-fun/common';
 import { default as solanaIdl } from '@trump-fun/common/src/types/__generated__/trump_fun.json';
 
 import type { SolanaChainConfig } from './config';
 // Import from the new location
-// Reusing the same seed from config.ts
-const BETTING_POOLS_SEED = Buffer.from('betting_pools_v1');
 
 /**
  * Get the balance of a token for a specific wallet

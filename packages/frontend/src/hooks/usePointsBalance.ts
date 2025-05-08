@@ -1,9 +1,9 @@
+'use client';
+
 import { TokenType } from '@/types';
-import { useDynamicSolana } from './useDynamicSolana';
-import { getAssociatedTokenAddress } from '@solana/spl-token';
-import { useConnection } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { useCallback, useEffect, useState } from 'react';
+import { useDynamicSolana } from './useDynamicSolana';
 import { useNetwork } from './useNetwork';
 import { useTokenContext } from './useTokenContext';
 
@@ -14,43 +14,14 @@ export const useBalance = () => {
   const [freedomBalance, setFreedomBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, publicKey } = useDynamicSolana();
-  const { connection } = useConnection();
+  const { isAuthenticated, publicKey, getConnection } = useDynamicSolana();
 
-  // Helper function to fetch balance for a single token
-  const fetchSingleTokenBalance = useCallback(
-    async (
-      walletPublicKey: PublicKey,
-      tokenMintPublicKey: PublicKey,
-      setBalance: (balance: string) => void
-    ) => {
-      try {
-        // Find the associated token account address
-        const associatedTokenAccountAddress = await getAssociatedTokenAddress(
-          tokenMintPublicKey,
-          walletPublicKey
-        );
-
-        // Fetch the balance directly
-        const balanceResponse = await connection.getTokenAccountBalance(
-          associatedTokenAccountAddress
-        );
-
-        // Set the balance from the response
-        const balance = balanceResponse.value.uiAmountString || '0';
-        setBalance(balance);
-      } catch {
-        setBalance('0');
-      }
-    },
-    [connection]
-  );
-
+  // Fetch both USDC and Freedom token balances
   const fetchTokenBalances = useCallback(async () => {
     // Reset state at the beginning of each fetch attempt
     setError(null);
 
-    // Check if wallet is ready and chain has been initialized
+    // Check if wallet is ready
     if (!isAuthenticated || !publicKey) {
       setUsdcBalance('0');
       setFreedomBalance('0');
@@ -63,94 +34,79 @@ export const useBalance = () => {
       return;
     }
 
-    if (!connection) {
-      setUsdcBalance('0');
-      setFreedomBalance('0');
-      return;
-    }
-
     try {
       setIsLoadingBalance(true);
 
-      // Safely convert mint addresses to PublicKey objects
-      let usdcMintPublicKey: PublicKey;
-      let freedomMintPublicKey: PublicKey;
+      // Get connection
+      const conn = await getConnection();
 
-      try {
-        usdcMintPublicKey = new PublicKey(
-          typeof usdcMint === 'string' ? usdcMint : usdcMint.toString()
-        );
-        freedomMintPublicKey = new PublicKey(
-          typeof freedomMint === 'string' ? freedomMint : freedomMint.toString()
-        );
-      } catch (error) {
-        console.error('Invalid mint address format:', error);
-        setError('Invalid token mint addresses');
-        setUsdcBalance('0');
-        setFreedomBalance('0');
-        setIsLoadingBalance(false);
-        return;
-      }
+      // Find all token accounts owned by the wallet
+      const tokenAccounts = await conn.getParsedTokenAccountsByOwner(publicKey, {
+        programId: TOKEN_PROGRAM_ID,
+      });
 
-      // Fetch both token balances
-      await Promise.all([
-        fetchSingleTokenBalance(publicKey, usdcMintPublicKey, setUsdcBalance),
-        fetchSingleTokenBalance(publicKey, freedomMintPublicKey, setFreedomBalance),
-      ]);
-    } catch (error) {
-      // Handle specific error types
-      if (error instanceof Error) {
-        if (
-          error.message.includes('account not found') ||
-          error.message.includes('could not find account')
-        ) {
-          // This is an expected error when a user has no token account
-          setUsdcBalance('0');
-          setFreedomBalance('0');
-          // Don't set an error for this case
-        } else {
-          console.error('Error fetching token balances:', error);
-          setError(`Failed to fetch token balances: ${error.message}`);
-          setUsdcBalance('0');
-          setFreedomBalance('0');
+      // Convert mint addresses to string format for comparison
+      const usdcMintStr = typeof usdcMint === 'string' ? usdcMint : usdcMint.toString();
+      const freedomMintStr = typeof freedomMint === 'string' ? freedomMint : freedomMint.toString();
+
+      // Initialize with zero balances
+      let usdcAmount = '0';
+      let freedomAmount = '0';
+
+      // Find the specific token accounts that match our mint addresses
+      for (const tokenAccount of tokenAccounts.value) {
+        const accountData = tokenAccount.account.data.parsed.info;
+        const mintAddress = accountData.mint;
+        const tokenAmount = accountData.tokenAmount;
+
+        if (mintAddress === usdcMintStr) {
+          usdcAmount = parseFloat(tokenAmount.uiAmountString || '0').toString();
+        } else if (mintAddress === freedomMintStr) {
+          freedomAmount = parseFloat(tokenAmount.uiAmountString || '0').toString();
         }
-      } else {
-        setError('An unknown error occurred');
-        setUsdcBalance('0');
-        setFreedomBalance('0');
       }
+
+      // Set balances based on what we found
+      setUsdcBalance(usdcAmount);
+      setFreedomBalance(freedomAmount);
+    } catch (error) {
+      console.error('[DEBUG] Error fetching token balances:', error);
+      setError(
+        `Failed to fetch token balances: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      // Don't reset balances on error, keep previous values
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [isAuthenticated, publicKey, usdcMint, freedomMint, connection, fetchSingleTokenBalance]);
+  }, [isAuthenticated, publicKey, getConnection, usdcMint, freedomMint]);
 
   // Trigger a balance fetch when dependencies change
   useEffect(() => {
-    if (isAuthenticated && publicKey && connection && usdcMint && freedomMint) {
+    if (isAuthenticated && publicKey) {
       fetchTokenBalances();
     }
-  }, [fetchTokenBalances, isAuthenticated, publicKey, connection, usdcMint, freedomMint]);
+  }, [fetchTokenBalances, isAuthenticated, publicKey]);
 
   // Set up polling interval for balance updates
   useEffect(() => {
-    if (!isAuthenticated || !connection) {
+    if (!isAuthenticated || !publicKey) {
       return;
     }
 
     const intervalId = setInterval(() => {
       fetchTokenBalances();
-    }, 5000);
+    }, 10000); // Poll every 10 seconds
+
     return () => {
       clearInterval(intervalId);
     };
-  }, [fetchTokenBalances, isAuthenticated, connection]);
+  }, [fetchTokenBalances, isAuthenticated, publicKey]);
 
   // Return balance based on selected token type, plus both balances individually
   const currentBalance = tokenType === TokenType.Usdc ? usdcBalance : freedomBalance;
 
   return {
     currentBalance: currentBalance || '0',
-    // Include both specific token balances
     usdcBalance: usdcBalance || '0',
     freedomBalance: freedomBalance || '0',
     isLoadingBalance,

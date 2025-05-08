@@ -53,7 +53,7 @@ export function DynamicAuthProvider({ children }: DynamicAuthProviderProps) {
           //   solanaNetworks: [
           //     {
           //       name: 'devnet',
-          //       endpoint: 'https://api.devnet.solana.com',
+          //       endpoint: 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af',
           //       networkType: 'devnet',
           //     },
           //   ],

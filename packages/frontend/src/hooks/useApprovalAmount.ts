@@ -1,24 +1,18 @@
-import { useEffect, useState } from 'react';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
-import { useNetwork } from './useNetwork';
+import { useEffect, useState } from 'react';
+import { useDynamicSolana } from './useDynamicSolana';
 
 export function useApprovalAmount(tokenAddress: string, txSignature?: string) {
-  const { appAddress } = useNetwork();
   const [approvedAmount, setApprovedAmount] = useState<bigint>(BigInt(0));
-  const { publicKey } = useWallet();
-  const { connection } = useConnection();
+  const { publicKey, getConnection } = useDynamicSolana();
 
   useEffect(() => {
     const fetchApprovedAmount = async () => {
-      if (!publicKey || !connection) return;
+      if (!publicKey || !tokenAddress) return;
 
       try {
-        if (!tokenAddress) return;
+        const connection = await getConnection();
 
-        // In Solana, approvals work differently than in Ethereum.
-        // We typically use token accounts to track ownership and delegate authorities.
-        // Here, we'll check the token balance as a proxy for "approval"
         const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
           mint: new PublicKey(tokenAddress),
         });
@@ -39,7 +33,7 @@ export function useApprovalAmount(tokenAddress: string, txSignature?: string) {
     };
 
     fetchApprovedAmount();
-  }, [publicKey, connection, tokenAddress, txSignature, appAddress]);
+  }, [publicKey, getConnection, tokenAddress, txSignature]);
 
   return approvedAmount;
 }

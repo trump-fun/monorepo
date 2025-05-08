@@ -62,11 +62,11 @@ export const BettingForm = ({
       // Update slider if balance exists
       if (balance) {
         const inputNum = parseInt(value, 10);
-        const balanceNum = Number(balance.value) / Math.pow(10, balance.decimals);
+        const balanceNum = Number(formattedBalance);
 
         if (inputNum > 0 && balanceNum > 0) {
           // Calculate percentage of balance
-          const percentage = Math.min(100, Math.ceil((inputNum / balanceNum) * 100));
+          const percentage = Math.min(100, Math.floor((inputNum / balanceNum) * 100));
           setSliderValue([percentage]);
         }
       } else {

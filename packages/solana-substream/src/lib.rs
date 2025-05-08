@@ -23,7 +23,7 @@ use sologger_log_context::programs_selector::ProgramsSelector;
 use sologger_log_context::sologger_log_context::LogContext;
 use substreams_solana::pb::sf::solana::r#type::v1::Block;
 
-const PROGRAM_ID: &str = "i6PRmGAi4rZrvAJeLCskWCE8gTnYmUeoJaHpsu1XUtK";
+const PROGRAM_ID: &str = "4EzVzZHcgpyn9sRMLfM9iZnBbmS3zGPFiHaz2zM5z9m1";
 
 #[substreams::handlers::map]
 fn map_program_data(blk: Block) -> Data {

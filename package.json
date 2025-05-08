@@ -45,10 +45,7 @@
     "db-types": "bun run --cwd packages/common db-types"
   },
   "dependencies": {
-    "@solana/wallet-adapter-base": "^0.9.26",
-    "@solana/wallet-adapter-react": "^0.15.38",
-    "@solana/wallet-adapter-react-ui": "^0.9.38",
-    "@solana/wallet-adapter-wallets": "^0.19.36",
+    "@solana/spl-token": "^0.4.13",
     "@supabase/supabase-js": "^2.49.4",
     "bs58": "^6.0.0",
     "react": "^19.0.0",

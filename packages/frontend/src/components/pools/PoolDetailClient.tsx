@@ -13,7 +13,6 @@ import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { calculateOptionPercentages, getVolumeForTokenType } from '@/utils/betsInfo';
-import { showSuccessToast } from '@/utils/toast';
 import { POLLING_INTERVALS, Tables, USDC_DECIMALS } from '@trump-fun/common';
 
 import { useBettingForm } from '@/hooks/useBettingForm';
@@ -40,6 +39,11 @@ import {
   useGetPoolQuery,
 } from '@/types';
 import { Transaction } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
+import { isSolanaWallet } from '@dynamic-labs/solana';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useAnchorProvider } from '../providers/anchor-provider';
+import { useChainConfig } from '../providers/chain-config-provider';
 
 type PoolDetailClientProps = {
   id: string;
@@ -48,14 +52,18 @@ type PoolDetailClientProps = {
 
 export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
   const { tokenType } = useTokenContext();
-  const { isConnected, publicKey, authenticated } = useWalletAddress();
-  const { signAndSendTransaction } = useDynamicSolana();
+  const { isConnected, publicKey, authenticated, login: handleLogin } = useWalletAddress();
+  const { primaryWallet } = useDynamicContext();
+  const { signAndSendTransaction, isAuthenticated } = useDynamicSolana();
+
+  // Solana specific hooks
+  const { program } = useAnchorProvider();
+  const { chainConfig } = useChainConfig();
 
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
   const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [_error, _setError] = useState<string | null>(null);
 
   const {
     formattedBalance,
@@ -180,7 +188,6 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
 
   useEffect(() => {
     if (isSubmitting) {
-      showSuccessToast('Transaction confirmed!');
       refreshData();
     }
   }, [isSubmitting, refreshData]);
@@ -263,18 +270,27 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   const handleBet = useCallback(async () => {
     if (!pool?.id || !pool?.options) return;
 
-    setIsSubmitting(true);
+    if (!primaryWallet || !isSolanaWallet(primaryWallet)) {
+      console.error('Primary wallet is not a Solana wallet');
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
+      const connection: Connection = await primaryWallet.getConnection();
+
       await placeBet({
-        poolId: pool.id,
+        connection,
+        poolId: '1',
         betAmount,
         selectedOption,
-        options: pool.options,
       });
+    } catch (error) {
+      console.error('Error placing bet:', error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [placeBet, pool, betAmount, selectedOption, setIsSubmitting]);
+  }, [placeBet, pool, betAmount, selectedOption, primaryWallet]);
 
   if (loading) {
     return (

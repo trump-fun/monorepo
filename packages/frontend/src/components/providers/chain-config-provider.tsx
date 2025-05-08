@@ -4,8 +4,9 @@ import React, { createContext, useContext, useState } from 'react';
 import { PublicKey } from '@solana/web3.js';
 import { SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 
-// Configuration constants
-const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+// Define the token program address as a constant
+// This is the standard Solana SPL Token program address
+const TOKEN_PROGRAM_ID = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 
 interface ChainConfig {
   programId: PublicKey;
@@ -28,7 +29,7 @@ const defaultConfig: ChainConfig = {
   usdcMint: SOLANA_DEVNET_CONFIG.usdcMint,
   cluster: 'devnet',
   chainType: 'solana',
-  programTokenAccount: TOKEN_PROGRAM,
+  programTokenAccount: TOKEN_PROGRAM_ID,
   // appPda: PublicKey.findProgramAddressSync([BETTING_POOLS_SEED], PROGRAM_ID)[0],
 };
 

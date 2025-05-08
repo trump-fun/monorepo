@@ -1,7 +1,7 @@
 'use client';
 
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { DynamicLoginButton } from './login-button';
 
 export function TrumpUserPill() {

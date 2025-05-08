@@ -5,12 +5,14 @@ import { useChainConfig } from '@/components/providers/chain-config-provider';
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import { BN } from '@coral-xyz/anchor';
-import { useConnection } from '@solana/wallet-adapter-react';
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  getAssociatedTokenAddress,
+} from '@solana/spl-token';
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED } from '@trump-fun/common';
 import { useCallback } from 'react';
 import { useDynamicSolana } from './useDynamicSolana';
-import { useSolanaTokenBalance } from './useSolanaTokenBalance';
 import { useTokenContext } from './useTokenContext';
 
 // Solana well-known program addresses
@@ -27,225 +29,253 @@ interface PlaceBetParams {
   poolId: string;
   betAmount: string;
   selectedOption: number | null;
-  options?: string[];
+  connection: any;
 }
 
 export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetProps) {
   const { program } = useAnchorProvider();
   const { chainConfig } = useChainConfig();
-  const { connection } = useConnection();
-  const { tokenMint, tokenType, tokenSymbol } = useTokenContext();
-  const { publicKey, isAuthenticated } = useDynamicSolana();
-
-  const { tokenBalance } = useSolanaTokenBalance({
-    connection,
-    walletPublicKey: publicKey,
-    tokenMint: tokenMint,
-  });
+  const { tokenMint, tokenType } = useTokenContext();
+  const { publicKey } = useDynamicSolana();
 
   const placeBet = useCallback(
-    async ({ poolId, betAmount, selectedOption, options }: PlaceBetParams) => {
+    async ({ poolId, betAmount, selectedOption, connection }: PlaceBetParams) => {
       // Early checks for wallet connection and support
       if (!publicKey || !sendTransaction) {
         showErrorToast('Wallet not connected', 'Please connect your wallet first');
         return;
       }
-
       if (!program) {
         showErrorToast('Program error', 'Program not initialized');
         return;
       }
-
-      // Enhanced program validation - check if IDL is properly loaded
-      if (
-        !program.account ||
-        Object.keys(program.account).length === 0 ||
-        !program.methods ||
-        Object.keys(program.methods).length === 0
-      ) {
-        console.error('Program incorrectly initialized:', {
-          hasAccount: !!program.account,
-          accountKeys: Object.keys(program.account || {}),
-          hasMethods: !!program.methods,
-          methodKeys: Object.keys(program.methods || {}),
-        });
-        showErrorToast(
-          'Program error',
-          'Program not properly initialized. Please refresh the page or contact support.'
-        );
-        return;
-      }
-
       if (!betAmount || betAmount === '0' || selectedOption === null) {
-        showErrorToast('Please enter a bet amount and select an option');
+        showErrorToast('Invalid bet', 'Please enter a bet amount and select an option');
         return;
       }
-
-      console.log('Chain type:', chainConfig?.chainType);
-
+      if (selectedOption !== 0 && selectedOption !== 1) {
+        showErrorToast('Invalid option', 'Please select a valid option (0 or 1)');
+        return;
+      }
       if (!chainConfig || chainConfig.chainType !== 'solana') {
         showErrorToast('Unsupported chain', 'This chain does not support Solana betting');
         return;
       }
-
       try {
-        const amount = new BN(parseInt(betAmount));
-        const optionIndex = new BN(selectedOption);
-
-        // Get current betting pools state
         const [bettingPoolsPDA] = PublicKey.findProgramAddressSync(
           [BETTING_POOLS_SEED],
           program.programId
         );
 
-        console.log('Program ID:', program.programId.toString());
-        console.log('Program accounts:', Object.keys(program.account || {}));
-        console.log('Program methods:', Object.keys(program.methods || {}));
-
-        // Check if we have the required methods before proceeding
-        if (!program.methods?.placeBet) {
-          showErrorToast('Program error', 'placeBet method is not available');
-          console.error('Error: program.methods.placeBet is undefined');
-          return;
-        }
-
-        // Alternative approach without using bettingPoolsState directly
-        // Instead, we'll use direct PDAs and parameters
-
-        // Find the pool PDA
-        const poolIdBN = new BN(poolId);
-        const [poolPDA] = PublicKey.findProgramAddressSync(
-          [POOL_SEED, poolIdBN.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        );
-
-        // For the next bet ID, we'll use 0 as a default
-        // This will likely fail, but it's better than crashing completely
-        let nextBetId = new BN(0);
+        // what was the output over here?
+        // bettingPoolsPDA HDBy1YTm8yY2SZbjYSPrsbYTsWwgFkfnZxqvfm8hccfo
+        // the correct betting pools starts with i something right?
+        // wait lemme check discord
+        // see the config wait
+        // no it is D25G...
+        console.log('bettingPoolsPDA', bettingPoolsPDA.toString());
 
         try {
-          // Try to fetch the betting pools state if available
-          if (program.account?.bettingPoolsState) {
-            const bettingPoolsState =
-              await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
-            console.log('Betting pools state:', bettingPoolsState);
-            nextBetId = bettingPoolsState.nextBetId;
-          } else {
-            console.warn('bettingPoolsState account not available, using default nextBetId');
+          if (!(program as any).account?.bettingPoolsState) {
+            showErrorToast('Program setup error', 'Program interface is not properly loaded');
+            return;
           }
-        } catch (err) {
-          console.error('Failed to fetch bettingPoolsState:', err);
-        }
-
-        // Find the next bet PDA
-        const [betPDA] = PublicKey.findProgramAddressSync(
-          [BET_SEED, poolIdBN.toArrayLike(Buffer, 'le', 8), nextBetId.toArrayLike(Buffer, 'le', 8)],
-          program.programId
-        );
-
-        // Determine token type for Solana (maps to the TokenType enum in the contract)
-        const solanaTokenType = tokenType === TokenType.Usdc ? { usdc: {} } : { points: {} };
-
-        // Get the user's token account
-        const userTokenAccount = await connection.getTokenAccountsByOwner(publicKey, {
-          mint: new PublicKey(tokenMint),
-        });
-
-        if (!userTokenAccount.value.length) {
-          showErrorToast(
-            'Token account error',
-            `No ${tokenSymbol} token account found for your wallet`
+          const bettingPoolsState = await (program as any).account.bettingPoolsState.fetch(
+            bettingPoolsPDA
           );
+
+          if (!bettingPoolsState.isInitialized) {
+            showErrorToast(
+              'Program error',
+              'The betting program has not been properly initialized'
+            );
+            return;
+          }
+
+          // Convert inputs to proper types
+          const amount = new BN(parseInt(betAmount));
+          const optionIndex = new BN(selectedOption);
+
+          // Parse pool ID from string, if it's a number
+          let poolIdBN: BN;
+          try {
+            // Check if poolId is a valid number string
+            if (!/^\d+$/.test(poolId)) {
+              showErrorToast('Invalid pool ID', 'Pool ID must be a valid number');
+              return;
+            }
+
+            poolIdBN = new BN(parseInt(poolId));
+          } catch (error) {
+            showErrorToast('Invalid pool ID', 'Could not parse pool ID');
+            return;
+          }
+
+          // Validate amount
+          if (amount.lte(new BN(0))) {
+            showErrorToast('Invalid amount', 'Bet amount must be greater than 0');
+            return;
+          }
+
+          const nextBetId = bettingPoolsState.nextBetId;
+
+          // Get PDAs
+          const [poolPDA] = PublicKey.findProgramAddressSync(
+            [POOL_SEED, poolIdBN.toArrayLike(Buffer, 'le', 8)],
+            program.programId
+          );
+          const [betPDA] = PublicKey.findProgramAddressSync(
+            [
+              BET_SEED,
+              poolIdBN.toArrayLike(Buffer, 'le', 8),
+              nextBetId.toArrayLike(Buffer, 'le', 8),
+            ],
+            program.programId
+          );
+
+          // Set token type
+          const solanaTokenType = tokenType === TokenType.Usdc ? { usdc: {} } : { points: {} };
+
+          // Get user's token account
+          const userTokenAccountAddress = await getAssociatedTokenAddress(
+            new PublicKey(tokenMint),
+            publicKey
+          );
+
+          // Check program token account
+          if (!chainConfig.programTokenAccount) {
+            showErrorToast('Configuration error', 'Program token account not configured');
+            return;
+          }
+          const programTokenAccount = new PublicKey(chainConfig.programTokenAccount);
+
+          // Create instructions
+          const instructions = [];
+          instructions.push(
+            createAssociatedTokenAccountIdempotentInstruction(
+              publicKey, // payer
+              userTokenAccountAddress, // ata
+              publicKey, // owner
+              new PublicKey(tokenMint) // mint
+            )
+          );
+
+          console.log('Placing bet with accounts:', {
+            bettingPools: bettingPoolsPDA.toString(),
+            pool: poolPDA.toString(),
+            bet: betPDA.toString(),
+            bettor: publicKey.toString(),
+            bettorTokenAccount: userTokenAccountAddress.toString(),
+            programTokenAccount: programTokenAccount.toString(),
+          });
+
+          // Verify the pool exists before attempting to place a bet
+          try {
+            const poolAccount = await (program as any).account.pool.fetch(poolPDA);
+            if (!poolAccount || !poolAccount.id) {
+              showErrorToast('Pool not found', `No betting pool found with ID ${poolId}`);
+              return;
+            }
+
+            console.log('Found pool:', {
+              id: poolAccount.id.toString(),
+              status: Object.keys(poolAccount.status)[0],
+              options: poolAccount.options,
+            });
+          } catch (error) {
+            console.error('Error fetching pool:', error);
+            showErrorToast(
+              'Pool not found',
+              `The betting pool with ID ${poolId} does not exist or cannot be accessed`
+            );
+            return;
+          }
+
+          // Create and add program instruction
+          const anchorTx = await (program as any).methods
+            .placeBet(optionIndex, amount, solanaTokenType)
+            .accounts({
+              bettingPools: bettingPoolsPDA,
+              pool: poolPDA,
+              bet: betPDA,
+              bettor: publicKey,
+              bettorTokenAccount: userTokenAccountAddress,
+              programTokenAccount: programTokenAccount,
+              tokenProgram: new PublicKey(TOKEN_PROGRAM),
+              associatedTokenProgram: new PublicKey(ASSOCIATED_TOKEN_PROGRAM),
+              systemProgram: SystemProgram.programId,
+              rent: new PublicKey(SYSVAR_RENT),
+            })
+            .transaction();
+          instructions.push(...anchorTx.instructions);
+
+          // Create and sign transaction
+          const { blockhash } = await connection.getLatestBlockhash();
+          const tx = new Transaction();
+          tx.add(...instructions);
+          tx.recentBlockhash = blockhash;
+          tx.feePayer = publicKey;
+
+          // Send transaction
+          const txSignature = await sendTransaction(tx);
+
+          // Wait for confirmation
+          const latestBlockhash = await connection.getLatestBlockhash();
+          const confirmation = await connection.confirmTransaction({
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+            signature: txSignature,
+          });
+
+          if (confirmation.value.err) {
+            const errorMessage = confirmation.value.err.toString();
+            if (errorMessage.includes('BettingPeriodClosed')) {
+              showErrorToast('Betting period closed', 'This pool is no longer accepting bets');
+            } else if (errorMessage.includes('PoolNotOpen')) {
+              showErrorToast('Pool not open', 'This pool is not open for betting');
+            } else if (errorMessage.includes('InvalidOptionIndex')) {
+              showErrorToast('Invalid option', 'Please select a valid option');
+            } else if (errorMessage.includes('ZeroAmount')) {
+              showErrorToast('Invalid amount', 'Bet amount must be greater than 0');
+            } else {
+              showErrorToast('Error placing bet', `Transaction failed: ${errorMessage}`);
+            }
+            return;
+          }
+
+          showSuccessToast(
+            'Bet placed successfully',
+            `Transaction ID: ${txSignature.substring(0, 8)}...${txSignature.substring(txSignature.length - 8)}`
+          );
+          if (resetBettingForm) {
+            resetBettingForm();
+          }
+          return txSignature;
+        } catch (err) {
+          console.error('Error placing bet', err);
+          const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+
+          // Check for specific account not found error
+          if (errorMsg.includes('Account does not exist') || errorMsg.includes('has no data')) {
+            showErrorToast(
+              'Program initialization error',
+              `The betting program needs to be initialized first. The system encountered: ${errorMsg}`
+            );
+          } else {
+            showErrorToast('Error placing bet', errorMsg);
+          }
           return;
         }
-
-        // Get the program's token account
-        const programTokenAccount = new PublicKey(chainConfig.programTokenAccount);
-
-        console.log('Creating bet with accounts:', {
-          bettingPools: bettingPoolsPDA.toString(),
-          pool: poolPDA.toString(),
-          bet: betPDA.toString(),
-          bettor: publicKey.toString(),
-          bettorTokenAccount: userTokenAccount.value[0].pubkey.toString(),
-          programTokenAccount: programTokenAccount.toString(),
-        });
-
-        // Create the transaction with Anchor's method builder
-        const transaction = await program.methods
-          .placeBet(optionIndex, amount, solanaTokenType)
-          .accounts({
-            bettingPools: bettingPoolsPDA,
-            pool: poolPDA,
-            bet: betPDA,
-            bettor: publicKey,
-            bettorTokenAccount: userTokenAccount.value[0].pubkey,
-            programTokenAccount: programTokenAccount,
-            tokenProgram: new PublicKey(TOKEN_PROGRAM),
-            associatedTokenProgram: new PublicKey(ASSOCIATED_TOKEN_PROGRAM),
-            systemProgram: SystemProgram.programId,
-            rent: new PublicKey(SYSVAR_RENT),
-          })
-          .transaction();
-
-        // Get a recent blockhash
-        const { blockhash } = await connection.getLatestBlockhash();
-
-        // Create a new transaction with the instructions from the Anchor transaction
-        const compatibleTransaction = new Transaction();
-        compatibleTransaction.add(...transaction.instructions);
-        compatibleTransaction.recentBlockhash = blockhash;
-        compatibleTransaction.feePayer = publicKey;
-
-        // Send the transaction
-        const txSignature = await sendTransaction(compatibleTransaction);
-
-        // Wait for transaction confirmation
-        const latestBlockhash = await connection.getLatestBlockhash();
-        const confirmation = await connection.confirmTransaction({
-          blockhash: latestBlockhash.blockhash,
-          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-          signature: txSignature,
-        });
-
-        if (confirmation.value.err) {
-          throw new Error(`Transaction failed: ${confirmation.value.err.toString()}`);
-        }
-
-        let successMessage = `Betting ${betAmount} ${symbol}`;
-        if (options && options[selectedOption]) {
-          successMessage += ` on "${options[selectedOption]}"`;
-        }
-
-        showSuccessToast(
-          'Bet placed successfully',
-          `Transaction ID: ${txSignature.substring(0, 8)}...${txSignature.substring(txSignature.length - 8)}`
-        );
-
-        console.log(
-          `View placeBet TX on explorer: https://solana.fm/tx/${txSignature}?cluster=${chainConfig.cluster}`
-        );
-
-        if (resetBettingForm) {
-          resetBettingForm();
-        }
       } catch (error) {
-        console.error('Error placing bet:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error placing bet';
-        showErrorToast('Error placing bet', errorMessage);
+        console.error('Error placing bet', error);
+        showErrorToast(
+          'Error placing bet',
+          error instanceof Error ? error.message : 'Unknown error placing bet'
+        );
+        return;
       }
     },
-    [
-      publicKey,
-      sendTransaction,
-      program,
-      chainConfig,
-      tokenType,
-      connection,
-      tokenMint,
-      resetBettingForm,
-      tokenSymbol,
-    ]
+    [publicKey, sendTransaction, program, chainConfig, tokenType, tokenMint, resetBettingForm]
   );
 
   return placeBet;

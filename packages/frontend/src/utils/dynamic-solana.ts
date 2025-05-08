@@ -1,15 +1,15 @@
 'use client';
 
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { SolanaWallet } from '@dynamic-labs/solana';
-import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
+import { isSolanaWallet } from '@dynamic-labs/solana';
+import { PublicKey, Transaction, VersionedTransaction, Connection } from '@solana/web3.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 /**
  * Hook for handling Solana wallet functionality with Dynamic
  */
 export function useDynamicSolana() {
-  const { primaryWallet, isAuthenticated, user } = useDynamicContext();
+  const { primaryWallet, user } = useDynamicContext();
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
 
   // Get the Solana wallet instance from Dynamic
@@ -17,7 +17,7 @@ export function useDynamicSolana() {
     if (!primaryWallet || primaryWallet.connector.name !== 'Solana') {
       return null;
     }
-    return primaryWallet as SolanaWallet;
+    return primaryWallet;
   }, [primaryWallet]);
 
   // Update public key when wallet changes
@@ -33,18 +33,19 @@ export function useDynamicSolana() {
   // Handle signing and sending transactions
   const signAndSendTransaction = useCallback(
     async (transaction: Transaction | VersionedTransaction) => {
-      if (!solanaWallet) {
+      if (!solanaWallet || !isSolanaWallet(solanaWallet)) {
         throw new Error('Solana wallet not connected');
       }
 
       try {
+        const signer = await solanaWallet.getSigner();
         // For versioned transactions
         if (transaction instanceof VersionedTransaction) {
-          return await solanaWallet.sendTransaction(transaction);
+          return await signer.signAndSendTransaction(transaction);
         }
 
         // For legacy transactions
-        return await solanaWallet.sendTransaction(transaction as Transaction);
+        return await signer.signAndSendTransaction(transaction as Transaction);
       } catch (error) {
         console.error('Transaction error:', error);
         throw error;
@@ -61,9 +62,9 @@ export function useDynamicSolana() {
       }
 
       try {
-        // Convert string to Uint8Array if needed
+        // Keep message as string
         const messageToSign =
-          typeof message === 'string' ? new TextEncoder().encode(message) : message;
+          typeof message === 'string' ? message : new TextDecoder().decode(message);
 
         return await solanaWallet.signMessage(messageToSign);
       } catch (error) {
@@ -79,7 +80,7 @@ export function useDynamicSolana() {
     solanaWallet,
     signAndSendTransaction,
     signMessage,
-    isAuthenticated,
+
     userId: user?.userId,
   };
 }
@@ -87,17 +88,26 @@ export function useDynamicSolana() {
 /**
  * Returns a custom Solana connection configured through Dynamic
  */
-export function useSolanaConnection() {
+export function useSolanaConnection(): Connection | null {
   const { primaryWallet } = useDynamicContext();
+  const [connection, setConnection] = useState<Connection | null>(null);
 
-  const connection = useMemo(() => {
-    if (!primaryWallet || primaryWallet.connector.name !== 'Solana') {
-      return null;
-    }
+  useEffect(() => {
+    const initConnection = async () => {
+      try {
+        if (primaryWallet && isSolanaWallet(primaryWallet)) {
+          const newConnection = await primaryWallet.getConnection();
+          setConnection(newConnection);
+        } else {
+          setConnection(null);
+        }
+      } catch (error) {
+        console.error('Failed to initialize Solana connection:', error);
+        setConnection(null);
+      }
+    };
 
-    const solanaWallet = primaryWallet as SolanaWallet;
-    // Gets the configured connection from Dynamic
-    return solanaWallet.connector.provider?.connection || null;
+    initConnection();
   }, [primaryWallet]);
 
   return connection;

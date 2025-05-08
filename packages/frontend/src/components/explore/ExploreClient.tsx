@@ -6,7 +6,14 @@ import { PoolList } from '@/components/explore/pool-list';
 import { RightSidebar } from '@/components/explore/right-sidebar';
 import { SearchBar } from '@/components/explore/search-bar';
 import { useTokenContext } from '@/hooks/useTokenContext';
-import { OrderDirection, Pool_OrderBy, PoolStatus, TokenType, useGetPoolsQuery } from '@/types';
+import {
+  GetPoolsQueryVariables,
+  OrderDirection,
+  Pool_OrderBy,
+  PoolStatus,
+  TokenType,
+  useGetPoolsQuery,
+} from '@/types';
 import { NetworkStatus } from '@apollo/client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -33,7 +40,7 @@ export function ExploreClient() {
   // Determine query parameters based on activeFilter
   const queryParams = useMemo(() => {
     // Default filter and order settings
-    let filter: Record<string, any> = {
+    let filter: GetPoolsQueryVariables['filter'] = {
       status: PoolStatus.Pending,
       betsCloseAt_gt: currentTimestamp,
     };
@@ -56,7 +63,6 @@ export function ExploreClient() {
         orderDirection = OrderDirection.Asc;
         break;
       case 'recently_closed':
-        // For recently closed, we need different filter settings
         filter = {
           status: PoolStatus.Graded,
           betsCloseAt_lt: currentTimestamp,
@@ -69,6 +75,13 @@ export function ExploreClient() {
     return { filter, orderBy, orderDirection };
   }, [activeFilter, currentTimestamp, tokenType]);
 
+  const variables = {
+    filter: queryParams.filter,
+    orderBy: queryParams.orderBy,
+    orderDirection: queryParams.orderDirection,
+    first: 10,
+  };
+
   const {
     data,
     loading: isLoading,
@@ -77,12 +90,7 @@ export function ExploreClient() {
     networkStatus,
     error: getPoolsError,
   } = useGetPoolsQuery({
-    variables: {
-      filter: queryParams.filter,
-      orderBy: queryParams.orderBy,
-      orderDirection: queryParams.orderDirection,
-      first: 10,
-    },
+    variables,
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'cache-and-network',
     pollInterval: 10000,

@@ -14,7 +14,7 @@ import { MediaType } from '@/types';
 export async function fetchSolanaPool(
   poolId: number | string,
   programId: PublicKey,
-  endpoint: string = 'https://api.devnet.solana.com'
+  endpoint: string = 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af'
 ): Promise<SolanaPoolData | null> {
   try {
     // Convert string poolId to number if needed

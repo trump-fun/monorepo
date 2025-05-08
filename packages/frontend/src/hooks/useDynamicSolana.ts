@@ -4,17 +4,6 @@ import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { isSolanaWallet } from '@dynamic-labs/solana';
 import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNetwork } from './useNetwork';
-
-// Define a more comprehensive type for the SolanaWallet
-interface SolanaWallet {
-  address: string;
-  chainId?: string;
-  connector?: any;
-  sendTransaction: (transaction: Transaction | VersionedTransaction) => Promise<string>;
-  signMessage: (message: Uint8Array) => Promise<string>;
-  // Add any additional properties required
-}
 
 /**
  * Hook for handling Solana wallet functionality with Dynamic
@@ -22,14 +11,13 @@ interface SolanaWallet {
 export function useDynamicSolana() {
   const { primaryWallet, user } = useDynamicContext();
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
-  const { networkInfo } = useNetwork();
 
   // Get the Solana wallet instance from Dynamic
   const solanaWallet = useMemo(() => {
     if (!primaryWallet || !isSolanaWallet(primaryWallet)) {
       return null;
     }
-    return primaryWallet as unknown as SolanaWallet;
+    return primaryWallet;
   }, [primaryWallet]);
 
   // Update public key when wallet changes
@@ -50,13 +38,14 @@ export function useDynamicSolana() {
       }
 
       try {
+        const signer = await solanaWallet.getSigner();
         // For versioned transactions
         if (transaction instanceof VersionedTransaction) {
-          return await solanaWallet.sendTransaction(transaction);
+          return await signer.signAndSendTransaction(transaction);
         }
 
         // For legacy transactions
-        return await solanaWallet.sendTransaction(transaction as Transaction);
+        return await signer.signAndSendTransaction(transaction);
       } catch (error) {
         console.error('Transaction error:', error);
         throw error;
@@ -87,14 +76,14 @@ export function useDynamicSolana() {
   );
 
   // Get wallet connection
-  const getConnection = useCallback(() => {
-    if (solanaWallet?.connector?.provider?.connection) {
-      return Promise.resolve(solanaWallet.connector.provider.connection);
+  const getConnection = useCallback(async () => {
+    if (primaryWallet && isSolanaWallet(primaryWallet)) {
+      const connection: Connection = await primaryWallet.getConnection();
+      return connection;
     }
 
     // Fallback to creating a new connection
-    return Promise.resolve(new Connection(networkInfo.endpoint, 'confirmed'));
-  }, [solanaWallet, networkInfo.endpoint]);
+  }, [primaryWallet]);
 
   // Determine if the user is authenticated based on wallet connection
   const isAuthenticated = !!solanaWallet && !!publicKey;

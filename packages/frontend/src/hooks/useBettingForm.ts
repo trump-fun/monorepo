@@ -9,7 +9,12 @@ export function useBettingForm(balance: TokenBalance | null | undefined) {
 
   // Update bet amount when slider changes
   useEffect(() => {
+    // Skip if no balance or if user manually entered a value
     if (!balance || userEnteredValue) return;
+
+    // Skip if this effect is running due to a percentage button click
+    // (We now handle the bet amount update directly in handlePercentageClick)
+    if (document.activeElement?.tagName === 'BUTTON') return;
 
     const rawBalanceValue = Number(balance.value) / Math.pow(10, balance.decimals);
 
@@ -18,16 +23,20 @@ export function useBettingForm(balance: TokenBalance | null | undefined) {
 
       // Special case for 100%
       if (sliderValue[0] === 100) {
-        const exactAmount = Math.ceil(rawBalanceValue).toString();
-        if (exactAmount !== betAmount) {
-          setBetAmount(exactAmount);
+        const exactAmount = Math.floor(rawBalanceValue * 100) / 100;
+        const amountStr = exactAmount.toString();
+        if (amountStr !== betAmount) {
+          setBetAmount(amountStr);
         }
         return;
       }
 
-      // Compensate for the 1-off error
-      const amount = Math.max(Math.ceil(rawBalanceValue * percentage), 1);
-      const amountStr = amount.toString();
+      // Calculate with 2 decimal precision for better accuracy
+      const amount = Math.floor(rawBalanceValue * percentage * 100) / 100;
+
+      // Only use minimum of 1 if balance is sufficient
+      const finalAmount = rawBalanceValue >= 4 && amount < 1 ? 1 : amount;
+      const amountStr = finalAmount.toString();
 
       // Don't set the value if it's already the same (prevents cursor jumping)
       if (amountStr !== betAmount) {
@@ -45,15 +54,28 @@ export function useBettingForm(balance: TokenBalance | null | undefined) {
 
     let amount;
     if (percentage === 100) {
-      amount = Math.ceil(rawBalanceValue);
+      amount = Math.floor(rawBalanceValue * 100) / 100; // Use full balance with 2 decimal precision
     } else if (percentage === 0) {
       amount = 0;
     } else {
-      amount = Math.max(Math.ceil((rawBalanceValue * percentage) / 100), 1);
+      // Calculate percentage more precisely without excessive rounding
+      amount = Math.floor(((rawBalanceValue * percentage) / 100) * 100) / 100;
+
+      // Only enforce minimum of 1 if the balance is large enough
+      if (rawBalanceValue >= 4 && amount < 1) {
+        amount = 1;
+      }
     }
 
+    // First update the bet amount
     setBetAmount(amount.toString());
-    setSliderValue([percentage]);
+
+    // Then update the slider - do this in the next tick to avoid conflicts
+    setTimeout(() => {
+      setSliderValue([percentage]);
+    }, 0);
+
+    // Clear any user entered value
     setUserEnteredValue('');
   };
 
