@@ -2,6 +2,7 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import axios from 'axios';
 import { z } from 'zod';
 import { config } from '../../config';
+import { logger } from '../../logger';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 import type { Evidence } from './gather-evidence';
 
@@ -10,10 +11,10 @@ import type { Evidence } from './gather-evidence';
  * Uses a combination of basic and AI-powered search for more comprehensive results
  */
 export async function gatherXEvidence(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Gathering evidence from Twitter/X queries for all pools');
+  logger.info('Gathering evidence from Twitter/X queries for all pools');
 
   if (Object.keys(state.pendingPools).length === 0) {
-    console.error('No pending pools to gather Twitter/X evidence for');
+    logger.error('No pending pools to gather Twitter/X evidence for');
     return { pendingPools: {} };
   }
 
@@ -34,14 +35,14 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
   for (const [poolId, pendingPool] of Object.entries(state.pendingPools)) {
     // Skip pools that have already failed
     if (pendingPool.failed) {
-      console.log(`Skipping pool ${poolId} - already failed`);
+      logger.info(`Skipping pool ${poolId} - already failed`);
       updatedPendingPools[poolId] = pendingPool;
       continue;
     }
 
     // Skip pools that don't have Twitter search queries without marking as failed
     if (!pendingPool.xSearchQueries || pendingPool.xSearchQueries.length === 0) {
-      console.log(`Skipping pool ${poolId} - no Twitter search queries available`);
+      logger.info(`Skipping pool ${poolId} - no Twitter search queries available`);
       updatedPendingPools[poolId] = pendingPool;
       continue;
     }
@@ -97,7 +98,7 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
     // Process Twitter search queries for this pool using both standard and AI-powered search
     for (const query of pendingPool.xSearchQueries) {
       try {
-        console.log(`Searching Twitter/X for pool ${poolId} with query: ${query}`);
+        logger.info(`Searching Twitter/X for pool ${poolId} with query: ${query}`);
         let searchResults: any[] = [];
 
         // Try basic search first (faster and less expensive)
@@ -118,11 +119,11 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
           // Check if the basic search returned results
           if (Array.isArray(basicSearchResponse.data) && basicSearchResponse.data.length > 0) {
             searchResults = basicSearchResponse.data;
-            console.log(`Basic search returned ${searchResults.length} tweets for query: ${query}`);
+            logger.info(`Basic search returned ${searchResults.length} tweets for query: ${query}`);
           } else if (basicSearchResponse.data && basicSearchResponse.data.search_id) {
             // If response contains a search_id, it's using the async API pattern
             const searchId = basicSearchResponse.data.search_id;
-            console.log(`Initiated Twitter/X search with ID: ${searchId}`);
+            logger.info(`Initiated Twitter/X search with ID: ${searchId}`);
 
             // Wait a reasonable time for the search to complete
             await new Promise(resolve => setTimeout(resolve, 3000));
@@ -136,11 +137,11 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
 
             if (resultsResponse.data.status === 'completed' && resultsResponse.data.tweets) {
               searchResults = resultsResponse.data.tweets;
-              console.log(`Retrieved ${searchResults.length} tweets from search ID: ${searchId}`);
+              logger.info(`Retrieved ${searchResults.length} tweets from search ID: ${searchId}`);
             }
           }
         } catch (error: any) {
-          console.warn(
+          logger.warn(
             `Basic search failed for query '${query}', falling back to AI search: ${error.message}`
           );
         }
@@ -169,16 +170,16 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
               aiSearchResponse.data.miner_tweets.length > 0
             ) {
               searchResults = aiSearchResponse.data.miner_tweets;
-              console.log(`AI search returned ${searchResults.length} tweets for query: ${query}`);
+              logger.info(`AI search returned ${searchResults.length} tweets for query: ${query}`);
             }
           } catch (error: any) {
-            console.error(`AI search failed for query '${query}': ${error.message}`);
+            logger.error(`AI search failed for query '${query}': ${error.message}`);
           }
         }
 
         // Early termination if no results found from either search method
         if (searchResults.length === 0) {
-          console.log(`No tweets found for query: ${query}. Moving to next query.`);
+          logger.info(`No tweets found for query: ${query}. Moving to next query.`);
           continue;
         }
 
@@ -220,7 +221,7 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
 
             // Call the LLM with the formatted prompt
             const result = await structuredLlm.invoke(formattedPrompt);
-            console.log(
+            logger.info(
               `Tweet summary for @${username}: ${result.summary.substring(0, 100)}... (Credible: ${result.isCredible}, Can Grade: ${result.canGradeBet})`
             );
 
@@ -235,26 +236,26 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
               if (!isDuplicate) {
                 xEvidenceList.push(result);
               } else {
-                console.log(`Skipping duplicate evidence from URL: ${result.url}`);
+                logger.info(`Skipping duplicate evidence from URL: ${result.url}`);
               }
             } else if (!result.isCredible) {
-              console.log(
+              logger.info(
                 `Skipping non-credible evidence from @${username}: ${result.credibilityReasoning}`
               );
             } else {
-              console.log(
+              logger.info(
                 `Skipping irrelevant tweet from @${username}: ${result.gradingRelevance}`
               );
             }
           } catch (error: any) {
-            console.error(`Error processing tweet: ${error.message}`);
+            logger.error(`Error processing tweet: ${error.message}`);
             continue;
           }
         }
       } catch (error: any) {
         // Distinguish between bad requests and other errors for the search initiation
         if (error.response && error.response.status === 400) {
-          console.error(
+          logger.error(
             `Bad request error for query '${query}'. Query may be invalid:`,
             error.response.data
           );
@@ -262,17 +263,17 @@ export async function gatherXEvidence(state: GraderState): Promise<Partial<Grade
         } else if (error.response && error.response.status === 429) {
           // Handle rate limiting
           const retryAfter = error.response.headers['retry-after'] || 60;
-          console.warn(`Rate limited on Twitter/X search. Retry after ${retryAfter} seconds.`);
+          logger.warn(`Rate limited on Twitter/X search. Retry after ${retryAfter} seconds.`);
           // Wait and retry could be implemented here
         } else {
-          console.error(`Error processing Twitter/X query '${query}' for pool ${poolId}:`, error);
+          logger.error({ error, query, poolId: poolId }, 'Error processing Twitter/X query');
           // For other errors, we might retry in a future grading cycle
         }
         continue;
       }
     }
 
-    console.log(`Gathered ${xEvidenceList.length} pieces of Twitter/X evidence for pool ${poolId}`);
+    logger.info(`Gathered ${xEvidenceList.length} pieces of Twitter/X evidence for pool ${poolId}`);
 
     // Return updated pool with Twitter evidence
     updatedPendingPools[poolId] = {

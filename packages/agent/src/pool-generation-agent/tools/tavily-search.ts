@@ -1,6 +1,7 @@
 import { tavily } from '@tavily/core';
-import type { SingleResearchItemState } from '../single-betting-pool-graph';
 import config from '../../config';
+import { poolGenerationLogger as logger } from '../../logger';
+import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
 // Initialize tavily client
 const tavilyClient = tavily({
@@ -14,11 +15,11 @@ const tavilyClient = tavily({
 export async function tavilySearchFunctionSingle(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  console.log('tavilySearchFunctionSingle', state.research?.tavily_search_query);
+  logger.info({ query: state.research?.tavily_search_query }, 'Running Tavily search');
 
   const researchItem = state.research;
   if (!researchItem) {
-    console.log('No research item to search for');
+    logger.info('No research item to search for');
     return {
       research: undefined,
     };
@@ -26,14 +27,14 @@ export async function tavilySearchFunctionSingle(
 
   // Check if item should be processed
   if (researchItem.should_process === false) {
-    console.log('Item marked as should not process, skipping Tavily search');
+    logger.info('Item marked as should not process, skipping Tavily search');
     return {
       research: researchItem,
     };
   }
 
   if (!researchItem.tavily_search_query) {
-    console.log('No search query available for Tavily search');
+    logger.info('No search query available for Tavily search');
     return {
       research: {
         ...researchItem,
@@ -65,9 +66,9 @@ export async function tavilySearchFunctionSingle(
       include_raw_content: false,
     };
 
-    console.log('Searching Tavily with query:', researchItem.tavily_search_query);
+    logger.info({ query: researchItem.tavily_search_query }, 'Searching Tavily');
     const response = await tavilyClient.search(researchItem.tavily_search_query, searchParams);
-    console.log('Tavily search response:', response);
+    logger.debug({ response }, 'Tavily search response');
 
     const searchResults = response.results;
 
@@ -76,7 +77,7 @@ export async function tavilySearchFunctionSingle(
       return `${result.title}\nURL: ${result.url}\nSnippet: ${result.content.substring(0, 200)}...`;
     });
 
-    console.log(`Found ${formattedResults.length} search results from Tavily`);
+    logger.info(`Found ${formattedResults.length} search results from Tavily`);
 
     return {
       research: {
@@ -86,7 +87,7 @@ export async function tavilySearchFunctionSingle(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Error calling Tavily API: ${errorMessage}`);
+    logger.error({ error, errorMessage }, 'Error calling Tavily API');
 
     // Retry with a more generalized query if error seems to be query-related
     if (errorMessage.includes('query') || errorMessage.includes('invalid')) {
@@ -97,7 +98,7 @@ export async function tavilySearchFunctionSingle(
           .slice(0, 5) // Take just the first 5 words
           .join(' ');
 
-        console.log(`Retrying Tavily search with generalized query: ${generalizedQuery}`);
+        logger.info({ generalizedQuery }, 'Retrying Tavily search with generalized query');
         const retryResponse = await tavilyClient.search(generalizedQuery, {
           max_results: 3,
         });
@@ -107,7 +108,7 @@ export async function tavilySearchFunctionSingle(
         });
 
         if (retryResults.length > 0) {
-          console.log(`Retry successful, found ${retryResults.length} results`);
+          logger.info(`Retry successful, found ${retryResults.length} results`);
           return {
             research: {
               ...researchItem,
@@ -116,7 +117,7 @@ export async function tavilySearchFunctionSingle(
           };
         }
       } catch (retryError) {
-        console.error('Retry also failed:', retryError);
+        logger.error({ error: retryError }, 'Retry also failed');
       }
     }
 

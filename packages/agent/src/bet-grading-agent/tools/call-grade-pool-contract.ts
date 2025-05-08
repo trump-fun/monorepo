@@ -3,12 +3,13 @@ import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import type { EvmChainConfig } from '../../config';
 import { config } from '../../config';
+import { logger } from '../../logger';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 /**
  * Updates the smart contract with the grading results for all non-failed pools sequentially
  */
 export async function callGradePoolContract(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Updating contract with grading results sequentially on EVM chain...');
+  logger.info('Updating contract with grading results sequentially on EVM chain...');
 
   const { chainId } = state;
   if (!chainId) {
@@ -17,7 +18,7 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
 
   const chainConfig = config.chainConfig[chainId];
   if (!chainConfig) {
-    console.error(`Chain config not found for chain ID: ${chainId}`);
+    logger.error(`Chain config not found for chain ID: ${chainId}`);
     return { pendingPools: {} };
   }
 
@@ -29,7 +30,7 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
   const evmChainConfig = chainConfig as EvmChainConfig;
   const pendingPools = state.pendingPools;
   if (Object.keys(pendingPools).length === 0) {
-    console.error('No pending pools to update contract for');
+    logger.error('No pending pools to update contract for');
     return { pendingPools: {} };
   }
 
@@ -62,7 +63,7 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
 
       // Only process pools that have a valid result_code and are not "not ready to grade" or "error"
       if (result_code !== 0 && result_code !== 4) {
-        console.log(`Updating pool ${poolId} with result ${result_code}`);
+        logger.info(`Updating pool ${poolId} with result ${result_code}`);
 
         try {
           // Call the contract's gradeBet function
@@ -79,7 +80,7 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
             hash,
           });
 
-          console.log(`Grading pool transaction successful with hash: ${hash}, receipt:`, receipt);
+          logger.info({ hash, receipt }, `Grading pool transaction successful`);
 
           // Store result in updatedPools
           updatedPools[poolId] = {
@@ -88,7 +89,7 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
             txHash: hash,
           };
         } catch (error) {
-          console.error(`Error calling gradeBet contract for pool ${poolId}: ${error}`);
+          logger.error({ error, poolId }, `Error calling gradeBet contract`);
 
           // Store failure in updatedPools
           updatedPools[poolId] = {
@@ -97,14 +98,14 @@ export async function callGradePoolContract(state: GraderState): Promise<Partial
           };
         }
       } else {
-        console.log(`Skipping pool ${poolId} - not ready to grade or error (code: ${result_code})`);
+        logger.info(`Skipping pool ${poolId} - not ready to grade or error (code: ${result_code})`);
         updatedPools[poolId] = pendingPool;
       }
     }
 
     return { pendingPools: updatedPools };
   } catch (error) {
-    console.error(`Error in callGradePoolContract: ${error}`);
+    logger.error({ error }, `Error in callGradePoolContract`);
 
     // Mark all pools as failed due to error
     const updatedPools: Record<string, PendingPool> = {};

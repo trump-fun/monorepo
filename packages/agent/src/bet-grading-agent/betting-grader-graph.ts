@@ -6,7 +6,9 @@ import { callGradePoolContract } from './tools/call-grade-pool-contract';
 import { callGradePoolContractSolana } from './tools/call-grade-pool-contract-solana';
 import { fetchPendingPools } from './tools/fetch-pending-pools';
 import { gatherEvidence } from './tools/gather-evidence';
+import { gatherXEvidence } from './tools/gather-x-evidence';
 import { generateEvidenceQueries } from './tools/generate-evidence-queries';
+import { generateXQueries } from './tools/generate-x-queries';
 import { gradeBettingPoolIdea } from './tools/grade-betting-pool-idea';
 
 export type PendingPool = {
@@ -76,20 +78,20 @@ const builder = new StateGraph(GraderStateAnnotation);
 // Add nodes to the graph
 builder
   .addNode('fetch_pending_pools', fetchPendingPools)
-  // .addNode('generate_x_queries', generateXQueries, { ends: ['gather_x_evidence'] })
-  .addNode('generate_evidence_queries', generateEvidenceQueries /*, { ends: ['gather_evidence'] }*/)
-  // .addNode('gather_x_evidence', gatherXEvidence, { ends: ['gather_evidence'] })
-  .addNode('gather_tavily_evidence', gatherEvidence /*, { ends: ['grade_betting_pool_idea'] }*/)
-  .addNode('grade_betting_pool_idea', gradeBettingPoolIdea /*, { ends: ['choose_chain'] }*/)
+  .addNode('generate_x_queries', generateXQueries)
+  .addNode('generate_evidence_queries', generateEvidenceQueries)
+  .addNode('gather_x_evidence', gatherXEvidence)
+  .addNode('gather_tavily_evidence', gatherEvidence)
+  .addNode('grade_betting_pool_idea', gradeBettingPoolIdea)
   .addNode('choose_chain', chooseChainNode)
   .addNode('call_grade_pool_contract_evm', callGradePoolContract)
   .addNode('call_grade_pool_contract_solana', callGradePoolContractSolana)
   .addEdge(START, 'fetch_pending_pools')
-  // .addEdge('fetch_pending_pools', 'generate_x_queries')
-  // .addEdge('generate_x_queries', 'gather_x_evidence')
+  .addEdge('fetch_pending_pools', 'generate_x_queries')
+  .addEdge('generate_x_queries', 'gather_x_evidence')
   .addEdge('fetch_pending_pools', 'generate_evidence_queries')
   .addEdge('generate_evidence_queries', 'gather_tavily_evidence')
-  // .addEdge('gather_x_evidence', 'grade_betting_pool_idea')
+  .addEdge('gather_x_evidence', 'grade_betting_pool_idea')
   .addEdge('gather_tavily_evidence', 'grade_betting_pool_idea')
   .addEdge('grade_betting_pool_idea', 'choose_chain')
   .addConditionalEdges('choose_chain', selectChainType, {

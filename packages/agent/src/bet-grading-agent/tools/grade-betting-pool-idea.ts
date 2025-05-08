@@ -1,6 +1,7 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { z } from 'zod';
 import { config } from '../../config';
+import { logger } from '../../logger';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 
 export interface BettingPoolIdeaGraderOutput {
@@ -73,10 +74,10 @@ const gradingSysMsg = new SystemMessage(
  * Grades all non-failed betting pools concurrently based on evidence
  */
 export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Grading betting pools based on evidence concurrently');
+  logger.info('Grading betting pools based on evidence concurrently');
 
   if (Object.keys(state.pendingPools).length === 0) {
-    console.error('No pending pools to grade');
+    logger.error('No pending pools to grade');
     return { pendingPools: {} };
   }
 
@@ -88,7 +89,7 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
       const hasXEvidence = pendingPool.xEvidence && pendingPool.xEvidence.length > 0;
 
       if (pendingPool.failed || (!hasWebEvidence && !hasXEvidence)) {
-        console.log(`Skipping pool ${poolId} - failed or no evidence`);
+        logger.info(`Skipping pool ${poolId} - failed or no evidence`);
         return [
           poolId,
           {
@@ -140,7 +141,7 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
         // Call the LLM with the prompt
         const result = await structuredLlm.invoke([gradingSysMsg, gradingUserMsg]);
 
-        console.log('result.result', result.result);
+        logger.debug(`Raw result for pool ${poolId}: ${result.result}`);
         // Determine the result code based on the grading output
         let result_code = 4; // Default to ERROR
         if (result.result === 'not resolved yet') {
@@ -153,7 +154,7 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
           result_code = 3; // DRAW
         }
 
-        console.log(`Grading result for pool ${poolId}:`, result);
+        logger.info({ poolId, result: result.result, result_code }, `Grading result for pool`);
 
         // Return updated pool with grading result
         return [
@@ -170,7 +171,7 @@ export async function gradeBettingPoolIdea(state: GraderState): Promise<Partial<
           },
         ] as [string, PendingPool];
       } catch (error) {
-        console.error(`Error grading betting pool ${poolId}:`, error);
+        logger.error({ error, poolId }, `Error grading betting pool`);
         return [
           poolId,
           {

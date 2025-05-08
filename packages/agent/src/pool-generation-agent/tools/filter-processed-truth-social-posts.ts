@@ -1,4 +1,5 @@
 import { supabase } from '../../config';
+import { poolGenerationLogger as logger } from '../../logger';
 import type { AgentState } from '../betting-pool-graph';
 
 /**
@@ -11,12 +12,12 @@ import type { AgentState } from '../betting-pool-graph';
 export async function filterProcessedTruthSocialPosts(
   state: AgentState
 ): Promise<Partial<AgentState>> {
-  console.log('Filtering processed Truth Social posts');
+  logger.info('Filtering processed Truth Social posts');
 
   const researchItems = state.research || [];
 
   if (researchItems.length === 0) {
-    console.log('No research items to filter');
+    logger.info('No research items to filter');
     return {
       research: [],
     };
@@ -26,7 +27,7 @@ export async function filterProcessedTruthSocialPosts(
     // Extract post IDs from the research items
     const postIds = researchItems.map(item => item.truth_social_post.id);
 
-    console.log(`Checking Supabase for ${postIds.length} posts`);
+    logger.info(`Checking Supabase for ${postIds.length} posts`);
 
     // Query Supabase for all matching posts, without filtering on transaction_hash
     const { data: supabasePosts, error } = await supabase
@@ -35,13 +36,13 @@ export async function filterProcessedTruthSocialPosts(
       .in('post_id', postIds);
 
     if (error) {
-      console.error('Error querying Supabase:', error);
+      logger.error({ error }, 'Error querying Supabase');
       return {
         research: researchItems,
       };
     }
 
-    console.log(`Found ${supabasePosts?.length || 0} matching posts in Supabase`);
+    logger.info(`Found ${supabasePosts?.length || 0} matching posts in Supabase`);
 
     // Merge Supabase data with research items and set processing flags
     const updatedResearch = researchItems.map(item => {
@@ -54,8 +55,9 @@ export async function filterProcessedTruthSocialPosts(
           supabasePost.transaction_hash && supabasePost.transaction_hash.trim() !== '';
 
         if (hasTransactionHash) {
-          console.log(
-            `Marking post ${item.truth_social_post.id} as already processed (has transaction hash)`
+          logger.info(
+            { postId: item.truth_social_post.id },
+            'Marking post as already processed (has transaction hash)'
           );
           return {
             ...item,
@@ -96,7 +98,7 @@ export async function filterProcessedTruthSocialPosts(
       // const isRecent = postDate >= twentyFourHoursAgo;
 
       // if (!isRecent) {
-      //   console.log(
+      //   logger.info(
       //     `Marking post ${item.truthSocialPost.id} from ${postDate.toLocaleString()} as too old`
       //   );
       //   return {
@@ -115,13 +117,13 @@ export async function filterProcessedTruthSocialPosts(
 
     // Count how many items are marked for processing
     const processingCount = finalResearch.filter(item => item.should_process === true).length;
-    console.log(`${processingCount} research items will be processed after filtering`);
+    logger.info(`${processingCount} research items will be processed after filtering`);
 
     return {
       research: finalResearch,
     };
   } catch (error) {
-    console.error('Error filtering processed Truth Social posts:', error);
+    logger.error({ error }, 'Error filtering processed Truth Social posts');
     // Return original research items in case of error to avoid blocking the process
     return {
       research: researchItems,
