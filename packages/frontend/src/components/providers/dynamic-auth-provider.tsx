@@ -32,9 +32,8 @@ export function DynamicAuthProvider({ children }: DynamicAuthProviderProps) {
       setDynamicTheme(newTheme);
     };
 
-    updateTheme(); // Initial call
+    updateTheme();
 
-    // Watch for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
 
     return () => {
@@ -50,22 +49,9 @@ export function DynamicAuthProvider({ children }: DynamicAuthProviderProps) {
             process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID ||
             'ecf64c3a-50ac-44db-a0e3-e74a962dfe02',
           walletConnectors: [SolanaWalletConnectors],
-          //   solanaNetworks: [
-          //     {
-          //       name: 'devnet',
-          //       endpoint: 'http://127.0.0.1:8899/',
-          //       networkType: 'devnet',
-          //     },
-          //   ],
 
           appLogoUrl: `${SUPABASE_BUCKET}/logo/trump.svg`,
           appName: 'Trump Fun',
-          //   theme: {
-          //     mode: dynamicTheme,
-          //     colors: {
-          //       primary: '#ff6d00',
-          //     },
-          //   },
         }}
       >
         {children}

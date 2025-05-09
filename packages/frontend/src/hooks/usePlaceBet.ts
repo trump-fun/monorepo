@@ -72,7 +72,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
         console.log('bettingPoolsPDA', bettingPoolsPDA.toString());
 
         try {
-          if (!(program as any).account?.bettingPoolsState) {
+          if (!program.account?.bettingPoolsState) {
             showErrorToast('Program setup error', 'Program interface is not properly loaded');
             return;
           }
@@ -105,6 +105,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
 
             poolIdBN = new BN(parseInt(poolId));
           } catch (error) {
+            console.error('Error parsing pool ID:', error);
             showErrorToast('Invalid pool ID', 'Could not parse pool ID');
             return;
           }
@@ -194,7 +195,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
 
           // Verify the pool exists before attempting to place a bet
           try {
-            const poolAccount = await (program as any).account.pool.fetch(poolPDA);
+            const poolAccount = await program.account.pool.fetch(poolPDA);
             if (!poolAccount || !poolAccount.id) {
               showErrorToast('Pool not found', `No betting pool found with ID ${poolId}`);
               return;

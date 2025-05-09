@@ -6,12 +6,10 @@ import {
   getMint,
 } from '@solana/spl-token';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 import bs58 from 'bs58';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Environment variables for Solana configuration
-const FREEDOM_TOKEN_MINT =
-  process.env.NEXT_PUBLIC_SOLANA_FREEDOM_MINT || 'DHJnJEYe8GP2YRoT9sfhLRbjfQdScmEy5aM9oqQYQSf6';
 const FAUCET_PRIVATE_KEY = process.env.SOLANA_FAUCET_PRIVATE_KEY || '';
 
 // Define the response type
@@ -34,8 +32,8 @@ function getConnection(cluster: string = 'devnet') {
   const endpoint =
     cluster === 'mainnet-beta'
       ? 'https://api.mainnet-beta.solana.com'
-      : cluster === 'testnet'
-        ? 'https://api.testnet.solana.com'
+      : cluster === 'devnet'
+        ? SOLANA_DEVNET_CONFIG.rpcUrl
         : 'http://127.0.0.1:8899/';
 
   return new Connection(endpoint, 'confirmed');
@@ -93,7 +91,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
     const faucetKeyPair = Keypair.fromSecretKey(bs58.decode(FAUCET_PRIVATE_KEY));
 
     // Parse the Freedom token mint address
-    const freedomMint = new PublicKey(FREEDOM_TOKEN_MINT);
+    // const freedomMint = SOLANA_DEVNET_CONFIG.freedomMint;
+    const freedomMintAddress = 'F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5';
+    const freedomMint = new PublicKey(freedomMintAddress);
 
     // Get mint info to determine decimals
     const mintInfo = await getMint(connection, freedomMint);
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
     try {
       const tokenAccount = await connection.getAccountInfo(recipientAta);
       ataExists = tokenAccount !== null;
-    } catch (error) {
+    } catch {
       // ATA doesn't exist
       ataExists = false;
     }
@@ -147,6 +147,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
     transaction.feePayer = faucetKeyPair.publicKey;
 
     // Sign and send the transaction
+    // @ts-expect-error connection type mismatch
     const signature = await anchor.web3.sendAndConfirmTransaction(connection, transaction, [
       faucetKeyPair,
     ]);
@@ -157,14 +158,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
       amountMinted: mintAmount.toString(),
       signature,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error minting tokens:', error);
+
+    const errorMessage = error instanceof Error ? error.message : 'Failed to mint tokens';
 
     return NextResponse.json(
       {
         success: false,
         amountMinted: '0',
-        error: error.message || 'Failed to mint tokens',
+        error: errorMessage,
       },
       { status: 500 }
     );

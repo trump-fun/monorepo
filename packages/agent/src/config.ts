@@ -245,7 +245,7 @@ const initialChainConfig: Record<string, BettingChainConfig> = {
   'solana-devnet': {
     chainType: 'solana',
     cluster: 'devnet',
-    rpcUrl: 'http://127.0.0.1:8899/',
+    rpcUrl: SOLANA_DEVNET_CONFIG.rpcUrl,
     subgraphUrl: requireEnv('SOLANA_DEVNET_SUBGRAPH_URL'),
     subgraphApiKey: requireEnv('SOLANA_DEVNET_SUBGRAPH_API_KEY'),
     programId: SOLANA_DEVNET_CONFIG.programId,
@@ -259,7 +259,7 @@ const initialChainConfig: Record<string, BettingChainConfig> = {
     client: getSolanaClient({
       privateKeyString: requireEnv('SOLANA_DEVNET_PRIVATE_KEY'),
       config: {
-        rpcUrl: 'http://127.0.0.1:8899/',
+        rpcUrl: SOLANA_DEVNET_CONFIG.rpcUrl,
         cluster: 'devnet',
         programId: SOLANA_DEVNET_CONFIG.programId,
       },
