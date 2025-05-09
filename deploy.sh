@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Set variables
-SERVER="root@159.203.164.23"
-REMOTE_DIR="/root/trump-fun-monorepo"
+SERVER="root@65.109.98.153"
+REMOTE_DIR="/root/trump-fun"
 LOCAL_DIR="$(dirname "$0")"
 
 # No need to run a build step since Bun can run TypeScript files directly
@@ -13,8 +13,8 @@ ssh $SERVER "mkdir -p $REMOTE_DIR"
 
 # Use rsync to transfer files, excluding those in .gitignore
 rsync -avz --exclude-from=.gitignore \
-  $LOCAL_DIR/ $SERVER:$REMOTE_DIR/
-  # --exclude=".git/" \
+  $LOCAL_DIR/ $SERVER:$REMOTE_DIR/ \
+  --exclude=".git/"
 
 
 echo "Files transferred successfully!"
@@ -23,7 +23,7 @@ echo "Files transferred successfully!"
 # The below don't need to be build on the server because they're deployed elsewhere and the server has limited space
 echo "Installing dependencies for required packages (excluding frontend, graph, and contracts)..."
 ssh $SERVER "cd $REMOTE_DIR && \
-  export SKIP_PACKAGES='frontend graph contracts' && \
+  export SKIP_PACKAGES='frontend graph contracts solana solana-substream' && \
   export BUN_PATH='/root/.nvm/versions/node/v23.10.0/bin/bun' && \
   chmod +x ./install.sh && \
   ./install.sh"

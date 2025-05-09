@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  trump-fun-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    ports:
+      - '3010:3010'
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./packages/agent/.env
+    volumes:
+      - ./packages/agent/logs:/app/packages/agent/logs
+    restart: unless-stopped

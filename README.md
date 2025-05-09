@@ -55,3 +55,60 @@ The subgraph is deployed to Subgraph Studio, deploy by running: `graph deploy tr
 ## Contracts
 
 See the [contracts README](./packages/contracts/README.md)
+
+# Trump Fun Agent Service
+
+This repository contains a dockerized version of the agent service.
+
+## Docker Setup
+
+### Prerequisites
+
+- Docker and Docker Compose installed on your system
+
+### Environment Variables
+
+Create a `.env` file in the project root with the required environment variables:
+
+```
+REST_API_PORT=3010
+REST_API_USERNAME=your_username
+REST_API_PASSWORD=your_password
+# Add other required environment variables
+```
+
+### Running with Docker Compose
+
+Build and start the container:
+
+```bash
+docker-compose up -d
+```
+
+This will:
+
+- Build the Docker image using Dockerfile.agent
+- Start the container
+- Expose the agent API on port 3010
+- Store logs in a persistent volume
+
+### Accessing Logs
+
+Logs are stored in a Docker volume. You can access them with:
+
+```bash
+# List volumes to find the volume name
+docker volume ls
+
+# View files in the volume
+docker run --rm -v agent-logs:/logs alpine ls -la /logs
+
+# Copy logs to your local machine
+docker run --rm -v agent-logs:/logs -v $(pwd)/local-logs:/local alpine cp -r /logs /local
+```
+
+### Stopping the Service
+
+```bash
+docker-compose down
+```
