@@ -35,7 +35,7 @@ export function useNetwork() {
     return {
       name: 'Solana Devnet',
       cluster: 'devnet',
-      endpoint: 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af',
+      endpoint: 'http://127.0.0.1:8899/',
       color: 'bg-purple-500/10 text-purple-500',
       isSupported: true,
       programId: SOLANA_DEVNET_CONFIG.programId,

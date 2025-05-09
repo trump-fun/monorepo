@@ -9,19 +9,8 @@
   "instructions": [
     {
       "name": "claim_payout",
-      "docs": [
-        "Claim payouts for a bet"
-      ],
-      "discriminator": [
-        127,
-        240,
-        132,
-        62,
-        227,
-        198,
-        146,
-        133
-      ],
+      "docs": ["Claim payouts for a bet"],
+      "discriminator": [127, 240, 132, 62, 227, 198, 146, 133],
       "accounts": [
         {
           "name": "betting_pools",
@@ -30,22 +19,7 @@
               {
                 "kind": "const",
                 "value": [
-                  98,
-                  101,
-                  116,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  112,
-                  111,
-                  111,
-                  108,
-                  115,
-                  95,
-                  118,
-                  49
+                  98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49
                 ]
               }
             ]
@@ -57,15 +31,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108,
-                  95,
-                  118,
-                  49
-                ]
+                "value": [112, 111, 111, 108, 95, 118, 49]
               },
               {
                 "kind": "account",
@@ -82,14 +48,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  98,
-                  101,
-                  116,
-                  95,
-                  118,
-                  49
-                ]
+                "value": [98, 101, 116, 95, 118, 49]
               },
               {
                 "kind": "account",
@@ -129,21 +88,8 @@
       "args": []
     },
     {
-      "name": "create_pool",
-      "docs": [
-        "Create a new betting pool",
-        "Similar to the createPool function in the Solidity version"
-      ],
-      "discriminator": [
-        233,
-        146,
-        209,
-        142,
-        207,
-        104,
-        64,
-        188
-      ],
+      "name": "close_betting_pool",
+      "discriminator": [106, 107, 213, 179, 30, 148, 105, 114],
       "accounts": [
         {
           "name": "betting_pools",
@@ -153,22 +99,42 @@
               {
                 "kind": "const",
                 "value": [
-                  98,
-                  101,
-                  116,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  112,
-                  111,
-                  111,
-                  108,
-                  115,
-                  95,
-                  118,
-                  49
+                  98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": ["betting_pools"]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_pool",
+      "docs": [
+        "Create a new betting pool",
+        "Similar to the createPool function in the Solidity version"
+      ],
+      "discriminator": [233, 146, 209, 142, 207, 104, 64, 188],
+      "accounts": [
+        {
+          "name": "betting_pools",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49
                 ]
               }
             ]
@@ -181,15 +147,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108,
-                  95,
-                  118,
-                  49
-                ]
+                "value": [112, 111, 111, 108, 95, 118, 49]
               },
               {
                 "kind": "account",
@@ -203,9 +161,7 @@
           "name": "authority",
           "writable": true,
           "signer": true,
-          "relations": [
-            "betting_pools"
-          ]
+          "relations": ["betting_pools"]
         },
         {
           "name": "system_program",
@@ -220,10 +176,7 @@
         {
           "name": "options",
           "type": {
-            "array": [
-              "string",
-              2
-            ]
+            "array": ["string", 2]
           }
         },
         {
@@ -242,20 +195,8 @@
     },
     {
       "name": "grade_bet",
-      "docs": [
-        "Grade a betting pool",
-        "Determines the winning option and releases payouts"
-      ],
-      "discriminator": [
-        163,
-        14,
-        104,
-        39,
-        20,
-        221,
-        88,
-        64
-      ],
+      "docs": ["Grade a betting pool", "Determines the winning option and releases payouts"],
+      "discriminator": [163, 14, 104, 39, 20, 221, 88, 64],
       "accounts": [
         {
           "name": "betting_pools",
@@ -265,22 +206,7 @@
               {
                 "kind": "const",
                 "value": [
-                  98,
-                  101,
-                  116,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  112,
-                  111,
-                  111,
-                  108,
-                  115,
-                  95,
-                  118,
-                  49
+                  98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49
                 ]
               }
             ]
@@ -293,15 +219,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108,
-                  95,
-                  118,
-                  49
-                ]
+                "value": [112, 111, 111, 108, 95, 118, 49]
               },
               {
                 "kind": "account",
@@ -315,9 +233,7 @@
           "name": "authority",
           "writable": true,
           "signer": true,
-          "relations": [
-            "betting_pools"
-          ]
+          "relations": ["betting_pools"]
         },
         {
           "name": "system_program",
@@ -337,16 +253,7 @@
         "Initialize the BettingPools program",
         "Similar to the constructor in the Solidity version"
       ],
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
+      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
       "accounts": [
         {
           "name": "betting_pools",
@@ -356,22 +263,7 @@
               {
                 "kind": "const",
                 "value": [
-                  98,
-                  101,
-                  116,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  112,
-                  111,
-                  111,
-                  108,
-                  115,
-                  95,
-                  118,
-                  49
+                  98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49
                 ]
               }
             ]
@@ -400,20 +292,8 @@
     },
     {
       "name": "place_bet",
-      "docs": [
-        "Place a bet on a pool",
-        "Similar to the placeBet function in the Solidity version"
-      ],
-      "discriminator": [
-        222,
-        62,
-        67,
-        220,
-        63,
-        166,
-        126,
-        33
-      ],
+      "docs": ["Place a bet on a pool", "Similar to the placeBet function in the Solidity version"],
+      "discriminator": [222, 62, 67, 220, 63, 166, 126, 33],
       "accounts": [
         {
           "name": "betting_pools",
@@ -423,22 +303,7 @@
               {
                 "kind": "const",
                 "value": [
-                  98,
-                  101,
-                  116,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  112,
-                  111,
-                  111,
-                  108,
-                  115,
-                  95,
-                  118,
-                  49
+                  98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49
                 ]
               }
             ]
@@ -451,15 +316,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108,
-                  95,
-                  118,
-                  49
-                ]
+                "value": [112, 111, 111, 108, 95, 118, 49]
               },
               {
                 "kind": "account",
@@ -476,14 +333,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  98,
-                  101,
-                  116,
-                  95,
-                  118,
-                  49
-                ]
+                "value": [98, 101, 116, 95, 118, 49]
               },
               {
                 "kind": "account",
@@ -549,19 +399,8 @@
     },
     {
       "name": "set_image",
-      "docs": [
-        "Update the image URL for a pool"
-      ],
-      "discriminator": [
-        92,
-        53,
-        60,
-        157,
-        76,
-        46,
-        6,
-        181
-      ],
+      "docs": ["Update the image URL for a pool"],
+      "discriminator": [92, 53, 60, 157, 76, 46, 6, 181],
       "accounts": [
         {
           "name": "pool",
@@ -570,15 +409,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108,
-                  95,
-                  118,
-                  49
-                ]
+                "value": [112, 111, 111, 108, 95, 118, 49]
               },
               {
                 "kind": "account",
@@ -595,22 +426,7 @@
               {
                 "kind": "const",
                 "value": [
-                  98,
-                  101,
-                  116,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  112,
-                  111,
-                  111,
-                  108,
-                  115,
-                  95,
-                  118,
-                  49
+                  98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49
                 ]
               }
             ]
@@ -620,9 +436,7 @@
           "name": "authority",
           "writable": true,
           "signer": true,
-          "relations": [
-            "betting_pools"
-          ]
+          "relations": ["betting_pools"]
         },
         {
           "name": "system_program",
@@ -640,109 +454,37 @@
   "accounts": [
     {
       "name": "Bet",
-      "discriminator": [
-        147,
-        23,
-        35,
-        59,
-        15,
-        75,
-        155,
-        32
-      ]
+      "discriminator": [147, 23, 35, 59, 15, 75, 155, 32]
     },
     {
       "name": "BettingPoolsState",
-      "discriminator": [
-        136,
-        14,
-        114,
-        28,
-        173,
-        213,
-        192,
-        14
-      ]
+      "discriminator": [136, 14, 114, 28, 173, 213, 192, 14]
     },
     {
       "name": "Pool",
-      "discriminator": [
-        241,
-        154,
-        109,
-        4,
-        17,
-        177,
-        109,
-        188
-      ]
+      "discriminator": [241, 154, 109, 4, 17, 177, 109, 188]
     }
   ],
   "events": [
     {
       "name": "BetPlaced",
-      "discriminator": [
-        88,
-        88,
-        145,
-        226,
-        126,
-        206,
-        32,
-        0
-      ]
+      "discriminator": [88, 88, 145, 226, 126, 206, 32, 0]
     },
     {
       "name": "PayoutClaimed",
-      "discriminator": [
-        200,
-        39,
-        105,
-        112,
-        116,
-        63,
-        58,
-        149
-      ]
+      "discriminator": [200, 39, 105, 112, 116, 63, 58, 149]
     },
     {
       "name": "PoolClosed",
-      "discriminator": [
-        106,
-        46,
-        29,
-        231,
-        42,
-        44,
-        73,
-        119
-      ]
+      "discriminator": [106, 46, 29, 231, 42, 44, 73, 119]
     },
     {
       "name": "PoolCreated",
-      "discriminator": [
-        202,
-        44,
-        41,
-        88,
-        104,
-        220,
-        157,
-        82
-      ]
+      "discriminator": [202, 44, 41, 88, 104, 220, 157, 82]
     },
     {
       "name": "PoolImageSet",
-      "discriminator": [
-        28,
-        145,
-        103,
-        123,
-        72,
-        188,
-        54,
-        168
-      ]
+      "discriminator": [28, 145, 103, 123, 72, 188, 54, 168]
     }
   ],
   "errors": [
@@ -980,10 +722,7 @@
           {
             "name": "options",
             "type": {
-              "array": [
-                "string",
-                2
-              ]
+              "array": ["string", 2]
             }
           },
           {
@@ -997,19 +736,13 @@
           {
             "name": "usdc_bet_totals",
             "type": {
-              "array": [
-                "u64",
-                2
-              ]
+              "array": ["u64", 2]
             }
           },
           {
             "name": "points_bet_totals",
             "type": {
-              "array": [
-                "u64",
-                2
-              ]
+              "array": ["u64", 2]
             }
           },
           {
@@ -1079,10 +812,7 @@
           {
             "name": "options",
             "type": {
-              "array": [
-                "string",
-                2
-              ]
+              "array": ["string", 2]
             }
           },
           {

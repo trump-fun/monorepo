@@ -92,6 +92,35 @@ export type TrumpFun = {
       args: [];
     },
     {
+      name: 'closeBettingPool';
+      discriminator: [106, 107, 213, 179, 30, 148, 105, 114];
+      accounts: [
+        {
+          name: 'bettingPools';
+          writable: true;
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                value: [98, 101, 116, 116, 105, 110, 103, 95, 112, 111, 111, 108, 115, 95, 118, 49];
+              },
+            ];
+          };
+        },
+        {
+          name: 'authority';
+          writable: true;
+          signer: true;
+          relations: ['bettingPools'];
+        },
+        {
+          name: 'systemProgram';
+          address: '11111111111111111111111111111111';
+        },
+      ];
+      args: [];
+    },
+    {
       name: 'createPool';
       docs: [
         'Create a new betting pool',

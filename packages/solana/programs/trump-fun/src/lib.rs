@@ -322,6 +322,10 @@ pub mod trump_fun {
 
         Ok(())
     }
+
+    pub fn close_betting_pool(ctx: Context<CloseBettingPool>) -> Result<()> {
+        Ok(())
+    }
 }
 
 //--------- STATE STRUCTS ---------//
@@ -529,6 +533,23 @@ pub struct SetImage<'info> {
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CloseBettingPool<'info> {
+    #[account(
+        mut,
+        seeds = [BETTING_POOLS_SEED],
+        bump,
+        has_one = authority @ BettingPoolsError::NotAuthorized,
+        close = authority
+    )]
+    pub betting_pools: Account<'info, BettingPoolsState>,
+
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    pub system_program: Program<'info, System>
 }
 
 //--------- DATA STRUCTURES ---------//

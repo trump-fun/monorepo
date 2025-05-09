@@ -62,9 +62,9 @@ export function useDynamicSolana() {
       }
 
       try {
-        // Convert string to Uint8Array if needed
+        // Keep message as string
         const messageToSign =
-          typeof message === 'string' ? new TextEncoder().encode(message) : message;
+          typeof message === 'string' ? message : new TextDecoder().decode(message);
 
         return await solanaWallet.signMessage(messageToSign);
       } catch (error) {
