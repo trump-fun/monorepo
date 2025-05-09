@@ -51,52 +51,7 @@ export async function createBettingPoolSolana(
   }
 
   try {
-    // Get the Solana client from config
-    // once log this `bettingPoolsPDA`
-    // you can see terminal na?
-    // haan yea
-    //     PublicKey {
-    //   _bn: <BN: f0da5c05bff1e750fd14ddbe1c55d2cca581e45e03014638ed191c49a03d2d0e>,
-    //   equals: [Function: equals],
-    //   toBase58: [Function: toBase58],
-    //   toJSON: [Function: toJSON],
-    //   toBytes: [Function: toBytes],
-    //   toBuffer: [Function: toBuffer],
-    //   toString: [Function: toString],
-    //   encode: [Function: encode],
-    // }
-    // dumbass, convert to string
-    // what would i do with this
-    // wait lmao
-    // HDBy1YTm8yY2SZbjYSPrsbYTsWwgFkfnZxqvfm8hccfo
-    // huh?
-    // the ss which you sent showed some other address no?
-    // run this script now
-    // I am pretty sure same address cuz it began with HDB
-    // https://discord.com/channels/@me/1006203953547059401/1370098023992000643
-    // im talking about that
-    // look at the address which is in use
-    // D25G...
-    // `bettingPoolsPDA` this returned HDB
-    // maybe after resolving the seed issue you didn't run this script and that account still not initialized
-    // kaunsa script?
-    // ye wala, wtv yall call it
-    // run this to initialize the betting pool account
-    // ye to run kie hi ja raha
-    // wait
     const { program, payer, bettingPoolsPDA } = getSolanaClientFromConfig(chainConfig);
-    console.log(bettingPoolsPDA.toString());
-
-    // cause it has this piece of code
-    // await program.methods
-    //   .initialize(chainConfig.freedomMint, chainConfig.usdcMint)
-    //   .accounts({
-    //     authority: payer.publicKey,
-    //   })
-    //   .signers([payer])
-    //   .rpc({
-    //     commitment: 'confirmed',
-    //   });
 
     // Get the current betting pools state to find the next pool ID
     const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);

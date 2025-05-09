@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Environment variables for Solana configuration
 const FREEDOM_TOKEN_MINT =
-  process.env.NEXT_PUBLIC_SOLANA_FREEDOM_MINT || 'F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5';
+  process.env.NEXT_PUBLIC_SOLANA_FREEDOM_MINT || 'DHJnJEYe8GP2YRoT9sfhLRbjfQdScmEy5aM9oqQYQSf6';
 const FAUCET_PRIVATE_KEY = process.env.SOLANA_FAUCET_PRIVATE_KEY || '';
 
 // Define the response type
@@ -36,7 +36,7 @@ function getConnection(cluster: string = 'devnet') {
       ? 'https://api.mainnet-beta.solana.com'
       : cluster === 'testnet'
         ? 'https://api.testnet.solana.com'
-        : 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af';
+        : 'http://127.0.0.1:8899/';
 
   return new Connection(endpoint, 'confirmed');
 }

@@ -36,7 +36,7 @@ export function isDevnet(): boolean {
 // For freedom token:
 // - Set to null to deploy a new token on test run
 // - Set to a specific address to use an existing token
-export const DEVNET_FREEDOM_ADDRESS = 'F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5';
+export const DEVNET_FREEDOM_ADDRESS = 'DHJnJEYe8GP2YRoT9sfhLRbjfQdScmEy5aM9oqQYQSf6';
 export const LOCALNET_FREEDOM_ADDRESS = null;
 
 // USDC addresses

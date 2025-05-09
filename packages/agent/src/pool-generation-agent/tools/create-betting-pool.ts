@@ -11,6 +11,7 @@ export async function createBettingPool(
 ): Promise<Partial<SingleResearchItemState>> {
   console.log('Creating betting pool for research item(EVM)');
 
+  
   const { chainId } = state;
   if (!chainId) {
     throw new Error('Chain ID must be set');

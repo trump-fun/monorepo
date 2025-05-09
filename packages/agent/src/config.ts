@@ -245,7 +245,7 @@ const initialChainConfig: Record<string, BettingChainConfig> = {
   'solana-devnet': {
     chainType: 'solana',
     cluster: 'devnet',
-    rpcUrl: 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af',
+    rpcUrl: 'http://127.0.0.1:8899/',
     subgraphUrl: requireEnv('SOLANA_DEVNET_SUBGRAPH_URL'),
     subgraphApiKey: requireEnv('SOLANA_DEVNET_SUBGRAPH_API_KEY'),
     programId: SOLANA_DEVNET_CONFIG.programId,
@@ -259,7 +259,7 @@ const initialChainConfig: Record<string, BettingChainConfig> = {
     client: getSolanaClient({
       privateKeyString: requireEnv('SOLANA_DEVNET_PRIVATE_KEY'),
       config: {
-        rpcUrl: 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af',
+        rpcUrl: 'http://127.0.0.1:8899/',
         cluster: 'devnet',
         programId: SOLANA_DEVNET_CONFIG.programId,
       },

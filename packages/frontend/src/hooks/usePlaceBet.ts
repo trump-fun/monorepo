@@ -16,6 +16,8 @@ import { useDynamicSolana } from './useDynamicSolana';
 import { useTokenContext } from './useTokenContext';
 
 // Solana well-known program addresses
+// change this later on
+const PROGRAM_ESCROW_ACCOUNT = 'BjNG1JdTipxz6HjSjSY7p6kZc9koHjf44yxTRNeerKdF';
 const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 const ASSOCIATED_TOKEN_PROGRAM = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 const SYSVAR_RENT = 'SysvarRent111111111111111111111111111111111';
@@ -74,9 +76,9 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             showErrorToast('Program setup error', 'Program interface is not properly loaded');
             return;
           }
-          const bettingPoolsState = await (program as any).account.bettingPoolsState.fetch(
-            bettingPoolsPDA
-          );
+          const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
+
+          console.log(bettingPoolsState.freedomMint);
 
           if (!bettingPoolsState.isInitialized) {
             showErrorToast(
@@ -85,6 +87,8 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             );
             return;
           }
+
+          console.log('something', bettingPoolsState.freedomMint.toString());
 
           // Convert inputs to proper types
           const amount = new BN(parseInt(betAmount));
@@ -141,7 +145,10 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             showErrorToast('Configuration error', 'Program token account not configured');
             return;
           }
-          const programTokenAccount = new PublicKey(chainConfig.programTokenAccount);
+          const programTokenAccount = await getAssociatedTokenAddress(
+            new PublicKey(tokenMint),
+            new PublicKey(PROGRAM_ESCROW_ACCOUNT)
+          );
 
           // Verify the program token account exists and has the correct ownership
           try {
@@ -233,6 +240,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           tx.feePayer = publicKey;
 
           // Send transaction
+
           const txSignature = await sendTransaction(tx);
 
           // Wait for confirmation
