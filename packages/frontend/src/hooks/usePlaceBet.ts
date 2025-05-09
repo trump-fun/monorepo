@@ -9,18 +9,22 @@ import {
   createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
-import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED } from '@trump-fun/common';
+import { PublicKey, SystemProgram, Transaction, TransactionSignature } from '@solana/web3.js';
+import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED, SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 import { useCallback } from 'react';
 import { useDynamicSolana } from './useDynamicSolana';
 import { useTokenContext } from './useTokenContext';
 
 // Solana well-known program addresses
 // change this later on
-const PROGRAM_ESCROW_ACCOUNT = 'BjNG1JdTipxz6HjSjSY7p6kZc9koHjf44yxTRNeerKdF';
 const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 const ASSOCIATED_TOKEN_PROGRAM = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 const SYSVAR_RENT = 'SysvarRent111111111111111111111111111111111';
+
+// Retry configuration for transaction submission and confirmation
+const MAX_RETRIES = 5;
+const BASE_DELAY_MS = 500; // Start with 500ms delay
+const MAX_DELAY_MS = 15000; // Maximum delay of 15 seconds
 
 interface UsePlaceBetProps {
   sendTransaction: ((transaction: Transaction) => Promise<string>) | undefined;
@@ -32,6 +36,42 @@ interface PlaceBetParams {
   betAmount: string;
   selectedOption: number | null;
   connection: any;
+}
+
+/**
+ * Retry utility function with exponential backoff
+ * @param operation The async function to retry
+ * @param isRetryable Function to determine if an error is retryable
+ * @param maxRetries Maximum number of retry attempts
+ * @param baseDelayMs Initial delay in milliseconds
+ * @param maxDelayMs Maximum delay in milliseconds
+ */
+async function retryWithExponentialBackoff<T>(
+  operation: () => Promise<T>,
+  isRetryable: (error: any) => boolean,
+  maxRetries: number = MAX_RETRIES,
+  baseDelayMs: number = BASE_DELAY_MS,
+  maxDelayMs: number = MAX_DELAY_MS
+): Promise<T> {
+  let retries = 0;
+  let delay = baseDelayMs;
+
+  while (true) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (retries >= maxRetries || !isRetryable(error)) {
+        throw error;
+      }
+
+      console.log(`Retry attempt ${retries + 1}/${maxRetries} after ${delay}ms`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      // Exponential backoff with jitter to avoid thundering herd
+      delay = Math.min(delay * 1.5 + Math.random() * 100, maxDelayMs);
+      retries++;
+    }
+  }
 }
 
 export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetProps) {
@@ -69,16 +109,12 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           program.programId
         );
 
-        console.log('bettingPoolsPDA', bettingPoolsPDA.toString());
-
         try {
           if (!program.account?.bettingPoolsState) {
             showErrorToast('Program setup error', 'Program interface is not properly loaded');
             return;
           }
           const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
-
-          console.log(bettingPoolsState.freedomMint);
 
           if (!bettingPoolsState.isInitialized) {
             showErrorToast(
@@ -87,8 +123,6 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             );
             return;
           }
-
-          console.log('something', bettingPoolsState.freedomMint.toString());
 
           // Convert inputs to proper types
           const amount = new BN(parseInt(betAmount));
@@ -148,7 +182,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           }
           const programTokenAccount = await getAssociatedTokenAddress(
             new PublicKey(tokenMint),
-            new PublicKey(PROGRAM_ESCROW_ACCOUNT)
+            SOLANA_DEVNET_CONFIG.escrow
           );
 
           // Verify the program token account exists and has the correct ownership
@@ -184,15 +218,6 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             )
           );
 
-          console.log('Placing bet with accounts:', {
-            bettingPools: bettingPoolsPDA.toString(),
-            pool: poolPDA.toString(),
-            bet: betPDA.toString(),
-            bettor: publicKey.toString(),
-            bettorTokenAccount: userTokenAccountAddress.toString(),
-            programTokenAccount: programTokenAccount.toString(),
-          });
-
           // Verify the pool exists before attempting to place a bet
           try {
             const poolAccount = await program.account.pool.fetch(poolPDA);
@@ -200,12 +225,6 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
               showErrorToast('Pool not found', `No betting pool found with ID ${poolId}`);
               return;
             }
-
-            console.log('Found pool:', {
-              id: poolAccount.id.toString(),
-              status: Object.keys(poolAccount.status)[0],
-              options: poolAccount.options,
-            });
           } catch (error) {
             console.error('Error fetching pool:', error);
             showErrorToast(
@@ -216,7 +235,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           }
 
           // Create and add program instruction
-          const anchorTx = await (program as any).methods
+          const anchorTx = await program.methods
             .placeBet(optionIndex, amount, solanaTokenType)
             .accounts({
               bettingPools: bettingPoolsPDA,
@@ -233,27 +252,89 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             .transaction();
           instructions.push(...anchorTx.instructions);
 
-          // Create and sign transaction
-          const { blockhash } = await connection.getLatestBlockhash();
-          const tx = new Transaction();
-          tx.add(...instructions);
-          tx.recentBlockhash = blockhash;
-          tx.feePayer = publicKey;
+          // Get a fresh blockhash before each transaction attempt
+          const getNewTransaction = async (): Promise<Transaction> => {
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            const newTx = new Transaction();
+            newTx.add(...instructions);
+            newTx.recentBlockhash = blockhash;
+            newTx.feePayer = publicKey;
+            newTx.lastValidBlockHeight = lastValidBlockHeight;
+            return newTx;
+          };
 
-          // Send transaction
+          // Function to determine if error is retryable
+          const isRetryableError = (error: any): boolean => {
+            const errorMessage = error?.message || '';
+            const retryableErrors = [
+              'Network Error',
+              'Transaction simulation failed',
+              'failed to send transaction',
+              'Transaction was not confirmed',
+              'Blockhash not found',
+              'Timeout',
+            ];
 
-          const txSignature = await sendTransaction(tx);
+            // Check if error message includes any of the retryable errors
+            return retryableErrors.some((errMsg) => errorMessage.includes(errMsg));
+          };
 
-          // Wait for confirmation
-          const latestBlockhash = await connection.getLatestBlockhash();
-          const confirmation = await connection.confirmTransaction({
-            blockhash: latestBlockhash.blockhash,
-            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-            signature: txSignature,
-          });
+          // Send transaction with retry logic
+          let txSignature: TransactionSignature;
+          try {
+            txSignature = await retryWithExponentialBackoff(async () => {
+              const tx = await getNewTransaction();
+              return await sendTransaction(tx);
+            }, isRetryableError);
+          } catch (error) {
+            console.error('Failed to send transaction after retries:', error);
+            showErrorToast(
+              'Transaction error',
+              'Failed to send transaction after several attempts'
+            );
+            return;
+          }
 
-          if (confirmation.value.err) {
-            const errorMessage = confirmation.value.err.toString();
+          // Wait for confirmation with retry logic
+          try {
+            await retryWithExponentialBackoff(
+              async () => {
+                // Get updated blockhash for confirmation
+                const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+                const confirmation = await connection.confirmTransaction(
+                  {
+                    blockhash,
+                    lastValidBlockHeight,
+                    signature: txSignature,
+                  },
+                  'confirmed'
+                );
+
+                if (confirmation.value.err) {
+                  const errorMessage = confirmation.value.err.toString();
+                  throw new Error(`Transaction confirmation failed: ${errorMessage}`);
+                }
+
+                return confirmation;
+              },
+              (error) => {
+                // Only retry network/timeout errors, not transaction validation errors
+                const errorMsg = error?.message || '';
+                return (
+                  errorMsg.includes('Network Error') ||
+                  errorMsg.includes('Timeout') ||
+                  errorMsg.includes('failed to fetch') ||
+                  errorMsg.includes('Connection closed')
+                );
+              }
+            );
+          } catch (error) {
+            console.error('Transaction confirmation error:', error);
+
+            // Special error handling for known transaction errors
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
             if (errorMessage.includes('BettingPeriodClosed')) {
               showErrorToast('Betting period closed', 'This pool is no longer accepting bets');
             } else if (errorMessage.includes('PoolNotOpen')) {

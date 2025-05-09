@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
-declare_id!("4EzVzZHcgpyn9sRMLfM9iZnBbmS3zGPFiHaz2zM5z9m1");
+declare_id!("63YbbNwch9betCkqwmhyWFoFGeGYm2uQFDfak8t5Mxtr");
 
 pub const BETTING_POOLS_SEED: &[u8] = b"betting_pools_v1";
 pub const POOL_SEED: &[u8] = b"pool_v1";

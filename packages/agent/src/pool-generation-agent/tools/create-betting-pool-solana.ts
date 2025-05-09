@@ -53,7 +53,16 @@ export async function createBettingPoolSolana(
   try {
     const { program, payer, bettingPoolsPDA } = getSolanaClientFromConfig(chainConfig);
 
-    // Get the current betting pools state to find the next pool ID
+    await program.methods
+      .initialize(chainConfig.usdcMint, chainConfig.freedomMint)
+      .accounts({
+        authority: payer.publicKey,
+      })
+      .signers([payer])
+      .rpc({
+        commitment: 'confirmed',
+      });
+
     const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
     const poolId = bettingPoolsState.nextPoolId;
 

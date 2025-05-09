@@ -38,12 +38,9 @@ import {
   useGetBetsQuery,
   useGetPoolQuery,
 } from '@/types';
-import { Transaction } from '@solana/web3.js';
-import { Connection } from '@solana/web3.js';
-import { isSolanaWallet } from '@dynamic-labs/solana';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { useAnchorProvider } from '../providers/anchor-provider';
-import { useChainConfig } from '../providers/chain-config-provider';
+import { isSolanaWallet } from '@dynamic-labs/solana';
+import { Transaction } from '@solana/web3.js';
 
 type PoolDetailClientProps = {
   id: string;
@@ -55,23 +52,12 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   const { isConnected, publicKey, authenticated, login: handleLogin } = useWalletAddress();
   const { primaryWallet } = useDynamicContext();
   const { signAndSendTransaction, isAuthenticated } = useDynamicSolana();
-
-  // Solana specific hooks
-  const { program } = useAnchorProvider();
-  const { chainConfig } = useChainConfig();
-
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
   const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    formattedBalance,
-    symbol,
-    tokenLogo: rawTokenLogo,
-    rawBalance,
-    tokenAddress,
-  } = useTokenBalance();
+  const { formattedBalance, symbol, tokenLogo: rawTokenLogo, rawBalance } = useTokenBalance();
 
   // Provide a default value for tokenLogo to avoid undefined errors
   const tokenLogo = rawTokenLogo || '🪙'; // Default emoji as fallback
@@ -244,7 +230,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
 
   const handleFacts = useCallback(() => {
     handleFactsAction(isConnected, handleLogin);
-  }, [handleFactsAction, isConnected]);
+  }, [handleFactsAction, handleLogin, isConnected]);
 
   // Create a transaction sender that uses Dynamic's signAndSendTransaction
   const solanaTransactionSender = useCallback(
@@ -277,7 +263,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
 
     try {
       setIsSubmitting(true);
-      const connection: Connection = await primaryWallet.getConnection();
+      const connection = await primaryWallet.getConnection();
 
       await placeBet({
         connection,

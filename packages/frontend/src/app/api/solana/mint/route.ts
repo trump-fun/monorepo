@@ -34,7 +34,7 @@ function getConnection(cluster: string = 'devnet') {
       ? 'https://api.mainnet-beta.solana.com'
       : cluster === 'devnet'
         ? SOLANA_DEVNET_CONFIG.rpcUrl
-        : 'http://127.0.0.1:8899/';
+        : 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af/';
 
   return new Connection(endpoint, 'confirmed');
 }

@@ -1,11 +1,11 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { DynamicUserProfile, useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { DynamicLoginButton } from './login-button';
 
 export function TrumpUserPill() {
-  const { primaryWallet } = useDynamicContext();
+  const { primaryWallet, setShowDynamicUserProfile } = useDynamicContext();
 
   // Show login button if not authenticated
   if (!primaryWallet) {
@@ -18,7 +18,9 @@ export function TrumpUserPill() {
   // Show the user avatar
   return (
     <div className='flex items-center gap-2'>
-      <Avatar className='h-10 w-10'>
+      <DynamicUserProfile />
+
+      <Avatar className='h-10 w-10 cursor-pointer' onClick={() => setShowDynamicUserProfile(true)}>
         <AvatarImage
           src={`https://api.dicebear.com/7.x/identicon/svg?seed=${address}`}
           alt='User Avatar'

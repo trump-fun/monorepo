@@ -3,7 +3,7 @@ import { getAccount, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/s
 // Load environment variables
 import 'dotenv/config';
 
-const BTP_MINT_ADDRESS = 'DHJnJEYe8GP2YRoT9sfhLRbjfQdScmEy5aM9oqQYQSf6';
+const BTP_MINT_ADDRESS = 'HtkQKcrrfcspBSWbo63dPVQe9C8ZTPAHJebSAPyAgC2h';
 const TOKEN_DECIMALS = 6;
 
 /**

@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-solana = "4EzVzZHcgpyn9sRMLfM9iZnBbmS3zGPFiHaz2zM5z9m1"
+solana = "3G6TYRGE6JX4BZPdeix4L38VtbrAUMWyK1yJ5DQoRc7c"
 
 [programs.localnet]
-solana = "4EzVzZHcgpyn9sRMLfM9iZnBbmS3zGPFiHaz2zM5z9m1"
+solana = "3G6TYRGE6JX4BZPdeix4L38VtbrAUMWyK1yJ5DQoRc7c"
 
 [registry]
 url = "https://api.apr.dev"
@@ -20,3 +20,4 @@ wallet = "~/.config/solana/trump-fun.json"
 
 [scripts]
 test = "pnpm ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+create_token = "pnpm exec ts-mocha tests/create-token.ts"

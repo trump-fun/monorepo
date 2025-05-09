@@ -7,11 +7,23 @@ import {
 } from '@solana/spl-token';
 import { assert, expect } from 'chai';
 import * as fs from 'fs';
+import { describe } from 'mocha';
 import * as path from 'path';
 
 // Network and Token Configuration
 // Function to dynamically detect if we're on devnet based on the RPC endpoint
 export function isDevnet(): boolean {
+  // i mean, you can set the provider manually no
+  // oh okay wait, use anchor.AnchorProvider.env();
+  // `ANCHOR_PROVIDER_URL=something <the cmd>`
+  // but there are other variables are as well iirc anchor provider related
+  // so if you have to add them asw 
+  // instead anchor test is better but woh 
+  // scrso
+  // keypair he
+  // 
+  // I know how to set endpoint manually, provider me kya daalu
+  // wahi to use ho raha sob sob
   const provider = anchor.AnchorProvider.env();
   const endpoint = provider.connection.rpcEndpoint.toLowerCase();
 
@@ -36,7 +48,7 @@ export function isDevnet(): boolean {
 // For freedom token:
 // - Set to null to deploy a new token on test run
 // - Set to a specific address to use an existing token
-export const DEVNET_FREEDOM_ADDRESS = 'DHJnJEYe8GP2YRoT9sfhLRbjfQdScmEy5aM9oqQYQSf6';
+export const DEVNET_FREEDOM_ADDRESS = null;
 export const LOCALNET_FREEDOM_ADDRESS = null;
 
 // USDC addresses

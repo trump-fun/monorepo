@@ -1,45 +1,50 @@
 import { useAnchorProvider } from '@/components/providers/anchor-provider';
-import { useNetwork } from '@/hooks/useNetwork';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { TokenType } from '@/types';
 import { showErrorToast, showSuccessToast } from '@/utils/toast';
-import { BN } from '@coral-xyz/anchor';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { isSolanaWallet } from '@dynamic-labs/solana';
+import { getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
+import { BETTING_POOLS_SEED, SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 import { useMemo, useState } from 'react';
-import { useSolanaTransaction } from './useSolanaTransaction';
 
 export function useWithdraw() {
-  const { programId } = useNetwork();
   const { tokenType, tokenDecimals } = useTokenContext();
   const { publicKey } = useWalletAddress();
-  const { signAndSend } = useSolanaTransaction();
   const { program } = useAnchorProvider();
   const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [withdrawableBalance, setWithdrawableBalance] = useState<number | null>(null);
+  const { primaryWallet } = useDynamicContext();
 
-  // Fetch user's withdrawable balance from the program
   const fetchWithdrawableBalance = async () => {
+    if (!primaryWallet || !isSolanaWallet(primaryWallet)) {
+      showErrorToast('Wallet not connected', 'Please connect your wallet to fetch balance.');
+      return;
+    }
+
+    const connection = await primaryWallet.getConnection();
     if (!publicKey || !program) return;
 
     try {
       setIsLoading(true);
 
-      // Get user's balance account from the program
-      // Note: This is a placeholder - you'll need to adjust based on your Solana program's actual structure
-      const userBalanceAccount = await program.account.userBalances.fetch(
-        await getUserBalanceAccountAddress(publicKey, programId)
+      const [bettingPoolsPDA] = PublicKey.findProgramAddressSync(
+        [BETTING_POOLS_SEED],
+        program.programId
       );
+      const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
 
-      // Extract the balance for the selected token type
-      const rawBalance =
-        tokenType === TokenType.Usdc
-          ? userBalanceAccount.usdcBalance
-          : userBalanceAccount.freedomBalance;
+      const tokenAddress =
+        tokenType === TokenType.Usdc ? bettingPoolsState.usdcMint : bettingPoolsState.freedomMint;
 
-      // Convert to decimals for display
-      const balanceWithDecimals = rawBalance / Math.pow(10, tokenDecimals);
+      const bettorAta = await getAssociatedTokenAddress(tokenAddress, publicKey, true);
+      // @ts-ignore
+      const bettorAtaInfo = await getAccount(connection, bettorAta, 'confirmed');
+
+      const balanceWithDecimals = Number(bettorAtaInfo.amount) / Math.pow(10, tokenDecimals);
       setWithdrawableBalance(balanceWithDecimals);
     } catch (error) {
       console.error('Error fetching withdrawable balance:', error);
@@ -76,26 +81,36 @@ export function useWithdraw() {
     try {
       setIsLoading(true);
 
-      // Convert amount to raw units (lamports)
-      const rawAmount = new BN(withdrawAmount * Math.pow(10, tokenDecimals));
+      const [bettingPoolsPDA] = PublicKey.findProgramAddressSync(
+        [BETTING_POOLS_SEED],
+        program.programId
+      );
+      const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
 
-      // Create withdrawal transaction
+      const tokenAddress =
+        tokenType === TokenType.Usdc ? bettingPoolsState.usdcMint : bettingPoolsState.freedomMint;
+
+      const bettorAta = await getAssociatedTokenAddress(tokenAddress, publicKey, true);
+      const programAta = await getAssociatedTokenAddress(tokenAddress, SOLANA_DEVNET_CONFIG.escrow);
+
       const tx = await program.methods
-        .withdraw(
-          rawAmount,
-          // Use the appropriate token type for Solana program
-          tokenType === TokenType.Usdc ? { usdc: {} } : { freedom: {} }
-        )
+        .claimPayout()
         .accounts({
-          // Include necessary accounts based on your Solana program
-          userBalance: await getUserBalanceAccountAddress(publicKey, programId),
-          authority: publicKey,
-          // Add other required accounts
+          bettorTokenAccount: bettorAta,
+          programTokenAccount: programAta,
+          bettor: publicKey,
         })
         .transaction();
 
-      // Send transaction
-      const result = await signAndSend(tx);
+      if (!primaryWallet || !isSolanaWallet(primaryWallet)) {
+        showErrorToast('Wallet not connected', 'Please connect your wallet to withdraw funds.');
+        return;
+      }
+
+      const signer = await primaryWallet.getSigner();
+      const result = await signer.signAndSendTransaction(tx, {
+        maxRetries: 3,
+      });
 
       if (result) {
         showSuccessToast(
@@ -107,27 +122,16 @@ export function useWithdraw() {
         setWithdrawAmount(0);
         fetchWithdrawableBalance();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error withdrawing tokens:', error);
       showErrorToast(
         'Withdrawal failed',
-        error.message || 'There was an error processing your withdrawal.'
+        error instanceof Error ? error.message : 'There was an error processing your withdrawal.'
       );
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Helper function to derive user balance account address
-  async function getUserBalanceAccountAddress(user: PublicKey, programId: PublicKey) {
-    // This is a placeholder - you'll need to adjust based on your Solana program's PDA derivation
-    const [userBalanceAddress] = await PublicKey.findProgramAddress(
-      [Buffer.from('user_balance'), user.toBuffer()],
-      programId
-    );
-
-    return userBalanceAddress;
-  }
 
   return {
     formattedWithdrawableBalance,
