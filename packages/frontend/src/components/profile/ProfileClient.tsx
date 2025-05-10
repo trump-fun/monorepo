@@ -12,6 +12,7 @@ import { useUserBetsData } from '@/hooks/useUserBetsData';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useWalletAddress } from '@/hooks/useWalletAddress';
 import { useWithdraw } from '@/hooks/useWithdraw';
+// Import our custom types instead of from generated files
 import { Bet, PayoutClaimed } from '@/types';
 import { AlertCircle, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -26,17 +27,29 @@ export function ProfileClient() {
 
   // Use memoized values with proper type guards
   const memoizedBets = useMemo<Bet[]>(
-    () => (Array.isArray(betsData.bets) ? betsData.bets : []),
+    () =>
+      Array.isArray(betsData.bets)
+        ? betsData.bets.map(
+            (bet) =>
+              ({
+                ...bet,
+                isWithdrawn: 'isWithdrawn' in bet ? bet.isWithdrawn : false, // Ensure isWithdrawn is present
+              }) as Bet
+          )
+        : [],
     [betsData.bets]
   );
 
   const memoizedPayouts = useMemo<PayoutClaimed[]>(
     () =>
       Array.isArray(betsData.payoutClaimeds)
-        ? betsData.payoutClaimeds.map((payout) => ({
-            ...payout,
-            txHash: payout.txHash || '', // Add missing txHash property with default empty string
-          }))
+        ? betsData.payoutClaimeds.map(
+            (payout) =>
+              ({
+                ...payout,
+                txHash: 'txHash' in payout ? payout.txHash : '', // Add missing txHash property
+              }) as PayoutClaimed
+          )
         : [],
     [betsData.payoutClaimeds]
   );
@@ -72,12 +85,15 @@ export function ProfileClient() {
     <div className='flex h-[calc(100vh-4rem)] flex-col'>
       <div className='flex flex-1 overflow-hidden'>
         <ProfileSidebar
-          address={address!}
+          address={address || ''}
           activeFilter={activeFilter}
           handleFilterChange={handleFilterChange}
           userStats={userStats}
-          withdrawalProps={withdrawalProps}
-          tokenType={tokenType}
+          withdrawalProps={{
+            ...withdrawalProps,
+            setWithdrawAmount: withdrawalProps.setWithdrawAmount,
+          }}
+          tokenType={tokenType || 'USDC'} // Provide a default value for tokenType
           betWithdrawals={betsData.betWithdrawals}
         />
 
@@ -85,10 +101,10 @@ export function ProfileClient() {
           <div className='scrollbar-hide flex flex-1 justify-center overflow-y-auto p-4'>
             <div className='w-full max-w-2xl'>
               <MobileProfileSection
-                address={address}
+                address={address || ''}
                 userStats={userStats}
                 withdrawalProps={withdrawalProps}
-                tokenType={tokenType}
+                tokenType={tokenType || 'USDC'} // Provide a default value for tokenType
               />
 
               <div className='mb-4 md:hidden'>

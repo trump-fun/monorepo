@@ -52,7 +52,6 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
   const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const { formattedBalance, symbol, tokenLogo: rawTokenLogo, rawBalance } = useTokenBalance();
 
   // Provide a default value for tokenLogo to avoid undefined errors

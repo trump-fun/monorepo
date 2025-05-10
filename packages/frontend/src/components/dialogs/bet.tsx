@@ -15,6 +15,7 @@ import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 
 import { useDynamicSolana } from '@/hooks/useDynamicSolana';
+import { usePlaceBet } from '@/hooks/usePlaceBet';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { HandCoins, Loader2 } from 'lucide-react';
@@ -45,67 +46,81 @@ export const BetModal: FC<BetModalProps> = ({
   const [isUserTyping, setIsUserTyping] = useState(false);
   const [userEnteredValue, setUserEnteredValue] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [approvedAmount, setApprovedAmount] = useState('0');
 
   // Contract and wallet states
   const { primaryWallet, setShowAuthFlow } = useDynamicContext();
-  const { publicKey, getConnection } = useDynamicSolana();
+  const { publicKey } = useDynamicSolana();
 
   const { formattedBalance, symbol, tokenDecimals, tokenAddress, rawBalance } = useTokenBalance();
 
   // Update bet amount when slider changes
   useEffect(() => {
+    // Skip if user is actively typing or if a manual value is entered
     if (isUserTyping) return;
     if (userEnteredValue) return;
+    if (!formattedBalance) return;
 
-    const rawBalanceValue = Number(formattedBalance) / Math.pow(10, tokenDecimals);
+    const balanceValue = Number(formattedBalance);
 
     if (sliderValue[0] > 0) {
-      const percentage = sliderValue[0] / 100;
+      // Calculate amount based on percentage of balance
+      let amount;
 
       // Special case for 100%
       if (sliderValue[0] === 100) {
-        const exactAmount = Math.ceil(rawBalanceValue).toString();
-        if (exactAmount !== betAmount) {
-          setBetAmount(exactAmount);
-        }
-        return;
+        amount = balanceValue;
+      } else {
+        amount = Math.max((balanceValue * sliderValue[0]) / 100, 1);
       }
 
-      const amount = Math.max(Math.ceil(rawBalanceValue * percentage), 1);
       const amountStr = amount.toString();
-
       if (amountStr !== betAmount) {
         setBetAmount(amountStr);
       }
     } else if (sliderValue[0] === 0 && betAmount !== '') {
       setBetAmount('');
     }
-  }, [sliderValue, betAmount, isUserTyping, userEnteredValue, formattedBalance, tokenDecimals]);
+  }, [sliderValue, betAmount, isUserTyping, userEnteredValue, formattedBalance]);
 
-  const balance = {
-    value: rawBalance,
-    decimals: tokenDecimals,
-  };
+  const balance =
+    rawBalance && tokenDecimals
+      ? {
+          value: rawBalance,
+          decimals: tokenDecimals,
+          formatted: formattedBalance,
+        }
+      : undefined;
 
   const handlePercentageClick = (percentage: number) => {
-    if (!balance) return;
+    if (!balance || !formattedBalance) return;
 
-    const rawBalanceValue = Number(balance.value) / Math.pow(10, balance.decimals);
+    // Convert formattedBalance to a number for calculations
+    const rawBalanceValue = Number(formattedBalance);
 
     let amount;
     if (percentage === 100) {
-      amount = Math.ceil(rawBalanceValue);
+      amount = rawBalanceValue;
     } else if (percentage === 0) {
       amount = 0;
     } else {
-      amount = Math.max(Math.ceil(rawBalanceValue * (percentage / 100)), 1);
+      amount = Math.max((rawBalanceValue * percentage) / 100, 1);
     }
 
-    setBetAmount(amount.toString());
+    const amountStr = amount.toString();
+    setBetAmount(amountStr);
     setSliderValue([percentage]);
     setUserEnteredValue('');
   };
+
+  // Initialize the placeBet hook with reset function
+  const placeBetHook = usePlaceBet({
+    resetBettingForm: () => {
+      setBetAmount('');
+      setSelectedOption(null);
+      setSliderValue([0]);
+      setUserEnteredValue('');
+    },
+  });
 
   const placeBet = async () => {
     if (!primaryWallet) {
@@ -123,19 +138,33 @@ export const BetModal: FC<BetModalProps> = ({
       return;
     }
 
-    if (!placeBetWithHook) {
-      showErrorToast('Bet placement function not available');
+    // Check for insufficient balance
+    if (balance && Number(betAmount) > Number(balance.formatted)) {
+      showErrorToast('Insufficient balance', 'Your bet amount exceeds your available balance');
       return;
     }
 
+    // Use placeBetWithHook if provided (for backward compatibility), otherwise use the hook
     setIsSubmitting(true);
     try {
-      await placeBetWithHook({
-        poolId,
-        betAmount,
-        selectedOption,
-        options,
-      });
+      if (placeBetWithHook) {
+        await placeBetWithHook({
+          poolId,
+          betAmount,
+          selectedOption,
+          options,
+        });
+      } else {
+        await placeBetHook({
+          poolId,
+          betAmount,
+          selectedOption: selectedOption,
+        });
+      }
+
+      // Close the modal after successful bet
+      setIsOpen(false);
+      // Note: The form will be reset by the resetBettingForm callback
     } catch (error) {
       showErrorToast('Error placing bet');
       console.error('Bet error:', error);
@@ -158,9 +187,12 @@ export const BetModal: FC<BetModalProps> = ({
   };
 
   const isButtonDisabled =
-    !betAmount || betAmount === '0' || selectedOption === null || !primaryWallet || isSubmitting;
-
-  const needsApproval = approvedAmount && parseFloat(approvedAmount) < parseFloat(betAmount || '0');
+    !betAmount ||
+    betAmount === '0' ||
+    selectedOption === null ||
+    !primaryWallet ||
+    isSubmitting ||
+    (balance && Number(betAmount) > Number(balance.formatted));
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -220,7 +252,7 @@ export const BetModal: FC<BetModalProps> = ({
                   variant={sliderValue[0] === percent ? 'default' : 'outline'}
                   size='sm'
                   className={`flex-1 text-xs ${
-                    sliderValue[0] === percent ? 'bg-orange-500 hover:bg-orange-600' : ''
+                    sliderValue[0] === percent ? 'bg-orange-500 text-white hover:bg-orange-600' : ''
                   }`}
                   onClick={() => handlePercentageClick(percent)}
                 >
@@ -247,7 +279,7 @@ export const BetModal: FC<BetModalProps> = ({
                 inputMode='numeric'
                 placeholder='0'
                 className='h-12 pr-16 text-lg font-medium'
-                value={betAmount}
+                value={userEnteredValue || betAmount}
                 onChange={(e) => {
                   const value = e.target.value;
 
@@ -264,9 +296,9 @@ export const BetModal: FC<BetModalProps> = ({
                   if (/^[0-9]+$/.test(value)) {
                     setBetAmount(value);
 
-                    if (balance) {
-                      const inputNum = parseInt(value, 10);
-                      const balanceNum = Number(formattedBalance);
+                    if (formattedBalance) {
+                      const inputNum = parseFloat(value);
+                      const balanceNum = parseFloat(formattedBalance);
 
                       if (inputNum > 0 && balanceNum > 0) {
                         // Calculate percentage of balance (inputNum / balanceNum) * 100
@@ -313,7 +345,7 @@ export const BetModal: FC<BetModalProps> = ({
           <Button
             type='button'
             variant='default'
-            className={`flex-1 ${needsApproval ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-500 hover:bg-orange-600'}`}
+            className='flex-1 bg-orange-500 hover:bg-orange-600'
             onClick={placeBet}
             disabled={isButtonDisabled}
             title={
@@ -323,7 +355,9 @@ export const BetModal: FC<BetModalProps> = ({
                   ? 'Please select an option'
                   : !primaryWallet
                     ? 'Please connect your wallet'
-                    : ''
+                    : balance && Number(betAmount) > Number(balance.formatted)
+                      ? 'Insufficient balance'
+                      : ''
             }
           >
             {isSubmitting ? (
@@ -331,8 +365,12 @@ export const BetModal: FC<BetModalProps> = ({
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 Processing...
               </span>
-            ) : needsApproval ? (
-              'Approve Tokens'
+            ) : !betAmount || betAmount === '0' ? (
+              'Enter an amount'
+            ) : selectedOption === null ? (
+              'Select an outcome'
+            ) : balance && Number(betAmount) > Number(balance.formatted) ? (
+              'Insufficient balance'
             ) : (
               'Place Bet'
             )}

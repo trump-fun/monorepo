@@ -12,7 +12,12 @@ import { useFilterConfig } from './useFilterConfig';
 
 export function useUserBetsData(activeFilter: string) {
   const { address } = useWalletAddress();
+  console.log('useUserBetsData', address, activeFilter);
+
   const config = useFilterConfig(address!, activeFilter);
+
+  // Enhanced logging to debug the filter configuration
+  console.log('useUserBetsData config', JSON.stringify(config.where, null, 2));
 
   // Query for user bets using generated hook
   const {
@@ -30,7 +35,22 @@ export function useUserBetsData(activeFilter: string) {
     context: { name: 'userBets' },
     skip: !address || activeFilter === 'won',
     fetchPolicy: 'network-only',
+    onError: (error) => {
+      console.error('Error fetching bets:', error.message, error.graphQLErrors);
+    },
+    onCompleted: (data) => {
+      console.log(`Fetched ${data?.bets?.length || 0} bets for filter: ${activeFilter}`);
+    },
   });
+
+  const variables = {
+    where: config.where as PayoutClaimed_Filter,
+    orderBy: config.orderBy as PayoutClaimed_OrderBy,
+    orderDirection: config.orderDirection as OrderDirection,
+    first: 100,
+  };
+
+  console.log('useUserBetsData variables', JSON.stringify(variables, null, 2));
 
   // Query for payout claims using generated hook
   const {
@@ -39,15 +59,18 @@ export function useUserBetsData(activeFilter: string) {
     error: payoutsError,
     refetch: refetchPayouts,
   } = useGetPayoutClaimedQuery({
-    variables: {
-      where: config.where as PayoutClaimed_Filter,
-      orderBy: config.orderBy as PayoutClaimed_OrderBy,
-      orderDirection: config.orderDirection as OrderDirection,
-      first: 100,
-    },
+    variables,
     context: { name: 'payoutClaimeds' },
     skip: !address || activeFilter !== 'won',
     fetchPolicy: 'network-only',
+    onError: (error) => {
+      console.error('Error fetching payouts:', error.message, error.graphQLErrors);
+    },
+    onCompleted: (data) => {
+      console.log(
+        `Fetched ${data?.payoutClaimeds?.length || 0} payouts for filter: ${activeFilter}`
+      );
+    },
   });
 
   const refreshData = () => {
@@ -56,6 +79,14 @@ export function useUserBetsData(activeFilter: string) {
       if (activeFilter === 'won') refetchPayouts();
     }
   };
+
+  // Log any errors encountered during data fetching
+  if (betsError) {
+    console.error('Bets query error:', betsError.message, betsError.graphQLErrors);
+  }
+  if (payoutsError) {
+    console.error('Payouts query error:', payoutsError.message, payoutsError.graphQLErrors);
+  }
 
   return {
     betsData: {

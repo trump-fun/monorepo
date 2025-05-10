@@ -41,7 +41,7 @@ export function useWithdraw() {
         tokenType === TokenType.Usdc ? bettingPoolsState.usdcMint : bettingPoolsState.freedomMint;
 
       const bettorAta = await getAssociatedTokenAddress(tokenAddress, publicKey, true);
-      // @ts-ignore
+      // @ts-expect-error - Solana account type differences between libraries
       const bettorAtaInfo = await getAccount(connection, bettorAta, 'confirmed');
 
       const balanceWithDecimals = Number(bettorAtaInfo.amount) / Math.pow(10, tokenDecimals);
@@ -108,6 +108,8 @@ export function useWithdraw() {
       }
 
       const signer = await primaryWallet.getSigner();
+      // Handle transaction type compatibility between anchor and dynamic wallet
+      // @ts-expect-error - Transaction type mismatch between libraries but works at runtime
       const result = await signer.signAndSendTransaction(tx, {
         maxRetries: 3,
       });
@@ -139,6 +141,7 @@ export function useWithdraw() {
     setWithdrawAmount,
     handleWithdraw,
     isLoading,
+    isPending: isLoading, // Add isPending property that maps to isLoading
     fetchWithdrawableBalance,
   };
 }

@@ -85,7 +85,7 @@ export const topUpBalance = async (
       // Record successful top-up
       recordTopUp();
 
-      const formattedAmount = parseFloat(data.amountMinted).toLocaleString();
+      const formattedAmount = (parseFloat(data.amountMinted) / 10 ** 6).toLocaleString();
 
       showSuccessToast(
         `Thanks for dropping by! We've topped up your wallet with ${formattedAmount} FREEDOM, game on!`,

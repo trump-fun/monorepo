@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { PoolsQueryResultTypeSingle } from '@/types';
+import { HandCoins } from 'lucide-react';
 
 interface BettingFormProps {
   pool: PoolsQueryResultTypeSingle;
@@ -110,9 +111,12 @@ export const BettingForm = ({
         {[25, 50, 75, 100].map((percent) => (
           <Button
             key={percent}
-            variant='outline'
+            variant={sliderValue[0] === percent ? 'default' : 'outline'}
             size='sm'
-            className='w-full text-xs'
+            className={cn(
+              'w-full text-xs',
+              sliderValue[0] === percent ? 'bg-orange-500 text-white hover:bg-orange-600' : ''
+            )}
             onClick={() => handlePercentageClick(percent)}
           >
             {percent}%
@@ -178,24 +182,36 @@ export const BettingForm = ({
                     : ''
           }
         >
-          {isPending
-            ? 'Processing...'
-            : !betAmount || betAmount === '0'
-              ? 'Enter an amount'
-              : selectedOption === null
-                ? 'Select an outcome'
-                : Number(betAmount) > Number(balance?.formatted)
-                  ? 'Insufficient balance'
-                  : `Place Bet`}
+          {isPending ? (
+            <span className='flex items-center'>
+              <div className='mr-2 size-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
+              Processing...
+            </span>
+          ) : !betAmount || betAmount === '0' ? (
+            'Enter an amount'
+          ) : selectedOption === null ? (
+            'Select an outcome'
+          ) : Number(betAmount) > Number(balance?.formatted) ? (
+            'Insufficient balance'
+          ) : (
+            'Place Bet'
+          )}
         </Button>
       </div>
 
-      {/* {selectedOption !== null && betAmount && betAmount !== '0' && (
-        <p className='mb-4 text-xs text-gray-400'>
-          You are betting {betAmount} <span className='mx-1'>{tokenLogo}</span> {symbol} on &quot;
-          {pool.options[selectedOption]}&quot;
-        </p>
-      )} */}
+      {selectedOption !== null && betAmount && betAmount !== '0' && (
+        <div className='mt-2 flex items-center rounded-lg bg-gray-50 p-3 dark:bg-gray-900'>
+          <HandCoins className='mr-2 h-5 w-5 text-orange-500' />
+          <p className='text-sm'>
+            You are betting{' '}
+            <span className='font-medium text-orange-500'>
+              {betAmount} <span className='mx-1'>{tokenLogo}</span> {symbol}
+            </span>{' '}
+            on
+            <span className='font-medium'> &quot;{pool.options[selectedOption]}&quot;</span>
+          </p>
+        </div>
+      )}
     </div>
   );
 };
