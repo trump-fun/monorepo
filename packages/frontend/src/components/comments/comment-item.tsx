@@ -4,7 +4,8 @@ import { toggleLike } from '@/app/actions/like-actions';
 import { isCommentLiked, saveCommentLike } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/formatDate';
-import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 import { Tables } from '@trump-fun/common';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
@@ -33,11 +34,12 @@ const CommentItem = ({ comment }: CommentItemProps) => {
   const [isLoadingReplies, setIsLoadingReplies] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [hasTrumpReplies, setHasTrumpReplies] = useState(false);
-  const { login, authenticated } = usePrivy();
-  const { wallets } = useWallets();
-  const { signMessage } = useSignMessage();
 
-  const isWalletConnected = authenticated && wallets && wallets.length > 0 && wallets[0]?.address;
+  const { setShowAuthFlow } = useDynamicContext();
+  const { primaryWallet } = useDynamicContext();
+  const { signMessage, isAuthenticated } = useDynamicSolana();
+
+  const isWalletConnected = isAuthenticated && primaryWallet?.address;
 
   // Check for Trump replies when component mounts
   useEffect(() => {
@@ -49,8 +51,6 @@ const CommentItem = ({ comment }: CommentItemProps) => {
         if (!response.ok) throw new Error('Failed to fetch replies');
 
         const data = await response.json();
-
-        // Log the response to debug
 
         // Check if there are any Trump replies
         let trumpReplies: CommentData[] = [];
@@ -107,7 +107,7 @@ const CommentItem = ({ comment }: CommentItemProps) => {
     if (!comment || !comment.id) return;
 
     if (!isWalletConnected) {
-      login();
+      setShowAuthFlow(true);
       return;
     }
 
@@ -116,9 +116,7 @@ const CommentItem = ({ comment }: CommentItemProps) => {
     setIsSubmitting(true);
 
     try {
-      const wallet = wallets?.[0];
-
-      if (!wallet || !wallet.address) {
+      if (!primaryWallet?.address) {
         setIsSubmitting(false);
         return;
       }
@@ -142,22 +140,12 @@ const CommentItem = ({ comment }: CommentItemProps) => {
         commentId: comment.id,
         operation: newIsLiked ? 'like' : 'unlike',
         timestamp: new Date().toISOString(),
-        account: wallet.address.toLowerCase(),
+        account: primaryWallet.address.toLowerCase(),
       };
 
       const messageStr = JSON.stringify(messageObj);
 
-      const { signature } = await signMessage(
-        { message: messageStr },
-        {
-          uiOptions: {
-            title: newIsLiked ? 'Sign to FACTS' : 'Sign to remove FACTS',
-            description: 'Sign this message to verify your action',
-            buttonText: 'Sign',
-          },
-          address: wallet.address,
-        }
-      );
+      const signature = await signMessage(messageStr);
 
       // Call API first to ensure the data is saved
       const result = await toggleLike(
@@ -189,7 +177,16 @@ const CommentItem = ({ comment }: CommentItemProps) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isLiked, isSubmitting, isWalletConnected, login, wallets, signMessage, comment, upvotes]);
+  }, [
+    isLiked,
+    isSubmitting,
+    isWalletConnected,
+    setShowAuthFlow,
+    primaryWallet,
+    signMessage,
+    comment,
+    upvotes,
+  ]);
 
   const toggleReplies = useCallback(() => {
     setShowReplies(!showReplies);
@@ -201,7 +198,7 @@ const CommentItem = ({ comment }: CommentItemProps) => {
       const wasLiked = isCommentLiked(comment.id);
       setIsLiked(wasLiked);
     }
-  }, [comment?.id, authenticated]);
+  }, [comment?.id, isAuthenticated]);
 
   if (!comment || !comment.id) {
     return null;

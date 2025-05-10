@@ -2,8 +2,8 @@
 
 import { isPoolFactsd, savePoolFacts } from '@/app/pool-actions';
 import { Button } from '@/components/ui/button';
-import { PoolStatus } from '@trump-fun/common';
-import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { GetPoolQuery, GetPoolsQuery, PoolStatus, TokenType } from '@/types';
+import { getBetTotals, getVolumeForTokenType } from '@/utils/betsInfo';
 import { USDC_DECIMALS } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import { HandCoins, MessageCircle } from 'lucide-react';
@@ -16,75 +16,47 @@ import { CommentModal } from './dialogs/comment';
 import { PoolImage } from './pool-image';
 import CountdownTimer from './Timer';
 import { Badge } from './ui/badge';
-
-interface Bet {
-  amount: string;
-  tokenType: string;
-  betId: string;
-  option: string;
-  user: string;
-  updatedAt: string;
-  createdAt: string;
-}
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 
 interface BettingPostProps {
-  id: string;
-  imageUrl: string;
-  username: string;
-  time: number;
-  question: string;
-  options: string[];
-  truthSocialId: string;
-  status: PoolStatus;
+  pool: GetPoolQuery['pool'] | GetPoolsQuery['pools'][number];
+  tokenType: TokenType;
   commentCount?: number;
-  volume?: number;
-  optionBets?: string[];
-  closesAt?: number;
-  gradedBlockTimestamp?: number;
-  bets?: Bet[];
 }
 
-export function BettingPost({
-  id,
-  imageUrl,
-  username,
-  time,
-  question,
-  options,
-  truthSocialId,
-  status,
-  commentCount = 0,
-  volume = 0,
-  optionBets = [],
-  gradedBlockTimestamp,
-  closesAt,
-  bets,
-}: BettingPostProps) {
+export function BettingPost({ pool, tokenType, commentCount = 0 }: BettingPostProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [betModalOpen, setBetModalOpen] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { openWallet } = useDynamicContext();
+  const { publicKey, signMessage, isAuthenticated } = useDynamicSolana();
 
   const [factsCount, setFactsCount] = useState(() => {
     if (typeof window !== 'undefined') {
-      return parseInt(localStorage.getItem(`pool_facts_${id}`) || '0', 10);
+      return parseInt(localStorage.getItem(`pool_facts_${pool?.id}`) || '0', 10) || 5;
     }
     return 5;
   });
 
   const [hasFactsed, setHasFactsed] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(`pool_facts_liked_${id}`) === 'true';
+      return localStorage.getItem(`pool_facts_liked_${pool?.id}`) === 'true';
     }
     return false;
   });
-  const { authenticated, login } = usePrivy();
-  const { wallets } = useWallets();
-  const { signMessage } = useSignMessage();
 
-  const isActive = status === PoolStatus.Pending || status === PoolStatus.None;
-  const isWalletConnected = authenticated && wallets && wallets.length > 0 && wallets[0]?.address;
+  const isActive = pool?.status === PoolStatus.Pending || pool?.status === PoolStatus.None;
+  const isWalletConnected = isAuthenticated && publicKey;
+
+  const optionBets = useMemo(
+    () => pool?.options.map((_, index) => getBetTotals(pool, tokenType, index)) ?? [],
+    [pool, tokenType]
+  );
+
+  const volume = useMemo(() => getVolumeForTokenType(pool, tokenType), [pool, tokenType]);
 
   const betData = useMemo(() => {
     const betAmounts = optionBets.map(
@@ -115,38 +87,21 @@ export function BettingPost({
     };
   }, [optionBets]);
 
-  const currentUserAddress = '0x6bF08768995E7430184a48e96940B83C15c1653f';
+  const currentUserAddress = publicKey?.toString() || null;
 
   const userBetsByOption = useMemo(() => {
-    if (!bets || !currentUserAddress)
-      return {} as Record<string, { amount: string; tokenType: string }[]>;
-
-    const userBets = bets.filter(
-      (bet: Bet) => bet.user.toLowerCase() === currentUserAddress.toLowerCase()
-    );
+    if (!pool) return;
+    if (!currentUserAddress) return {} as Record<string, { amount: string; tokenType: string }[]>;
 
     const optionMapping: Record<string, string> = {};
-    options.forEach((opt, index) => {
+    pool.options.forEach((opt, index) => {
       optionMapping[opt] = index.toString();
     });
 
     const betsByOption: Record<string, { amount: string; tokenType: string }[]> = {};
 
-    userBets.forEach((bet: Bet) => {
-      const optionKey = optionMapping[bet.option] || bet.option;
-
-      if (!betsByOption[optionKey]) {
-        betsByOption[optionKey] = [];
-      }
-
-      betsByOption[optionKey].push({
-        amount: bet.amount,
-        tokenType: bet.tokenType,
-      });
-    });
-
     return betsByOption;
-  }, [bets, currentUserAddress, options]);
+  }, [currentUserAddress, pool]);
 
   // Format bet amount for display
   const formatBetAmount = (amount: string) => {
@@ -159,15 +114,17 @@ export function BettingPost({
   };
 
   useEffect(() => {
+    if (!pool) return;
     if (typeof window !== 'undefined') {
-      const wasFactsd = isPoolFactsd(id);
+      const wasFactsd = isPoolFactsd(pool.id);
       setHasFactsed(wasFactsd);
     }
-  }, [id]);
+  }, [pool]);
 
   const handleFacts = async () => {
+    if (!pool) return;
     if (!isWalletConnected) {
-      login();
+      openWallet();
       return;
     }
 
@@ -175,9 +132,7 @@ export function BettingPost({
     setIsSubmitting(true);
 
     try {
-      const wallet = wallets?.[0];
-
-      if (!wallet || !wallet.address) {
+      if (!publicKey) {
         setIsSubmitting(false);
         return;
       }
@@ -185,34 +140,24 @@ export function BettingPost({
       const isAdding = !hasFactsed;
       const messageObj = {
         action: 'toggle_facts',
-        poolId: id,
+        poolId: pool.id,
         operation: isAdding ? 'add_facts' : 'remove_facts',
         timestamp: new Date().toISOString(),
-        account: wallet.address.toLowerCase(),
+        account: publicKey.toString().toLowerCase(),
       };
 
       const messageStr = JSON.stringify(messageObj);
-      await signMessage(
-        { message: messageStr },
-        {
-          uiOptions: {
-            title: isAdding ? 'Sign to FACTS' : 'Sign to remove FACTS',
-            description: 'Sign this message to verify your action',
-            buttonText: 'Sign',
-          },
-          address: wallet.address,
-        }
-      );
+      await signMessage(messageStr);
 
-      const newFactsCount = isAdding ? factsCount + 1 : factsCount - 1;
+      const newFactsCount = isAdding ? factsCount + 1 : Math.max(factsCount - 1, 0);
 
       setHasFactsed(isAdding);
       setFactsCount(newFactsCount);
 
-      savePoolFacts(id, isAdding);
+      savePoolFacts(pool.id, isAdding);
       if (typeof window !== 'undefined') {
-        localStorage.setItem(`pool_facts_${id}`, newFactsCount.toString());
-        localStorage.setItem(`pool_facts_liked_${id}`, isAdding.toString());
+        localStorage.setItem(`pool_facts_${pool.id}`, newFactsCount.toString());
+        localStorage.setItem(`pool_facts_liked_${pool.id}`, isAdding.toString());
       }
 
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -288,21 +233,28 @@ export function BettingPost({
     );
   };
 
+  if (!pool) return null;
+
   return (
     <div className='bg-background overflow-hidden rounded-lg border border-gray-200 transition-colors hover:border-gray-100 dark:border-gray-800 dark:hover:border-gray-700'>
       <CommentModal
         isOpen={modalOpen}
         setIsOpen={setModalOpen}
-        poolId={id}
-        username={username}
-        avatar={imageUrl}
+        poolId={pool.id}
+        username='realDonaldTrump'
+        avatar={pool.imageUrl}
       />
-      <BetModal isOpen={betModalOpen} setIsOpen={setBetModalOpen} poolId={id} options={options} />
+      <BetModal
+        isOpen={betModalOpen}
+        setIsOpen={setBetModalOpen}
+        poolId={pool.id}
+        options={pool.options}
+      />
       <div className='p-4'>
         <div className='mb-2 flex items-center gap-2'>
-          <PoolImage imageUrl={imageUrl} width={32} height={32} />
+          <PoolImage imageUrl={pool.imageUrl} width={32} height={32} />
           <div className='flex-1'>
-            <div className='font-bold'>{username}</div>
+            <div className='font-bold'>realDonaldTrump</div>
           </div>
           <div className='flex items-center gap-2'>
             {isActive ? (
@@ -320,31 +272,31 @@ export function BettingPost({
             <span className='text-muted-foreground text-xs'>
               {formatDistanceToNow(
                 new Date(
-                  status === PoolStatus.Graded &&
-                  gradedBlockTimestamp &&
-                  !isNaN(new Date(gradedBlockTimestamp * 1000).getTime())
-                    ? gradedBlockTimestamp * 1000
-                    : time && !isNaN(new Date(time * 1000).getTime())
-                      ? time * 1000
+                  pool.status === PoolStatus.Graded &&
+                  pool.decisionTime &&
+                  !isNaN(new Date(pool.decisionTime * 1000).getTime())
+                    ? pool.decisionTime * 1000
+                    : pool.createdAt && !isNaN(new Date(pool.createdAt * 1000).getTime())
+                      ? pool.createdAt * 1000
                       : Date.now()
                 ),
                 { addSuffix: true }
               )}
             </span>
-            <TruthSocial postId={truthSocialId} />
+            <TruthSocial postId={pool.originalTruthSocialPostId} />
           </div>
         </div>
 
-        <Link href={`/pools/${id}`} className='block'>
+        <Link href={`/pools/${pool.id}`} className='block'>
           <p className='mb-4 text-lg font-medium transition-colors hover:text-orange-500'>
-            {question}
+            {pool.question}
           </p>
         </Link>
 
         <div className='mb-3 rounded-md'>{renderVolumeBar()}</div>
 
         <div className='mb-4 space-y-2'>
-          {options.map((option, i) => {
+          {pool.options.map((option, i) => {
             const optionColors = [
               { text: 'text-green-600 dark:text-green-400', bg: 'bg-green-500' },
               { text: 'text-red-600 dark:text-red-400', bg: 'bg-red-500' },
@@ -358,7 +310,7 @@ export function BettingPost({
             const percent = betData.displayPercentages[i] || 0;
 
             const optionKey = i.toString();
-            const userBetsOnOption = userBetsByOption[optionKey] || [];
+            const userBetsOnOption = userBetsByOption?.[optionKey] || [];
             const hasUserBet = userBetsOnOption.length > 0;
 
             return (
@@ -412,10 +364,10 @@ export function BettingPost({
 
         <div className='flex flex-wrap items-center justify-between gap-2'>
           <div className='flex w-full items-center gap-2 md:w-auto'>
-            {closesAt && !isNaN(new Date(closesAt * 1000).getTime()) && (
+            {pool.betsCloseAt && !isNaN(new Date(pool.betsCloseAt * 1000).getTime()) && (
               <div className='flex items-center gap-1'>
                 <CountdownTimer
-                  closesAt={closesAt * 1000}
+                  closesAt={pool.betsCloseAt * 1000}
                   containerClassName='flex'
                   wrapperClassName='flex'
                   digitClassName='text-xs text-gray-500 dark:text-gray-400'

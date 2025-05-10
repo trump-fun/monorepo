@@ -16,11 +16,13 @@ export async function fetchWithPuppeteer(url: string) {
   try {
     browser = await puppeteer.launch({
       headless: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-web-security',
         '--disable-features=IsolateOrigins,site-per-process',
+        '--disable-dev-shm-usage',
       ],
       timeout: 60000,
     });

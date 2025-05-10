@@ -5,11 +5,12 @@ interface CommentSectionWrapperProps {
   initialComments?: Tables<'comments'>[];
   isLoading: boolean;
   error: Error | null;
-  onCommentsUpdated?: () => void; // Add this prop
+  onCommentsUpdated?: () => void;
 }
 
 import { addComment } from '@/app/actions/comment-actions';
-import { usePrivy, useSignMessage, useWallets } from '@privy-io/react-auth';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useDynamicSolana } from '@/hooks/useDynamicSolana';
 import { Tables } from '@trump-fun/common';
 import { useEffect, useState } from 'react';
 import CommentInput from './comment-input';
@@ -32,9 +33,8 @@ export default function CommentSectionWrapper({
 }: CommentSectionWrapperProps) {
   const [comments, setComments] = useState<Tables<'comments'>[]>(initialComments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { wallets } = useWallets();
-  const { login, authenticated } = usePrivy();
-  const { signMessage } = useSignMessage();
+  const { primaryWallet, setShowAuthFlow } = useDynamicContext();
+  const { signMessage, isAuthenticated } = useDynamicSolana();
 
   useEffect(() => {
     if (initialComments && initialComments.length > 0) {
@@ -47,12 +47,10 @@ export default function CommentSectionWrapper({
     setIsSubmitting(true);
 
     try {
-      const wallet = wallets?.[0];
-
-      if (!wallet || !wallet.address) {
+      if (!primaryWallet?.address) {
         setIsSubmitting(false);
-        if (!authenticated) {
-          login();
+        if (!isAuthenticated) {
+          setShowAuthFlow(true);
         }
         return;
       }
@@ -62,22 +60,12 @@ export default function CommentSectionWrapper({
         poolId,
         content,
         timestamp: new Date().toISOString(),
-        account: wallet.address.toLowerCase(),
+        account: primaryWallet.address.toLowerCase(),
       };
 
       const messageStr = JSON.stringify(messageObj);
 
-      const { signature } = await signMessage(
-        { message: messageStr },
-        {
-          uiOptions: {
-            title: 'Sign your comment',
-            description: 'Sign this message to verify you are the author of this comment',
-            buttonText: 'Sign Comment',
-          },
-          address: wallet.address,
-        }
-      );
+      const signature = await signMessage(messageStr);
 
       // Submit the comment to the server without creating tempComment first
       await addComment(poolId, content, signature, messageStr);
@@ -107,11 +95,11 @@ export default function CommentSectionWrapper({
     <div className='mt-6 space-y-4'>
       <h2 className='text-xl font-semibold'>Comments</h2>
 
-      {authenticated ? (
-        <CommentInput onCommentSubmit={handleCommentSubmit} isWalletConnected={authenticated} />
+      {isAuthenticated ? (
+        <CommentInput onCommentSubmit={handleCommentSubmit} isWalletConnected={isAuthenticated} />
       ) : (
         <button
-          onClick={() => login()}
+          onClick={() => setShowAuthFlow(true)}
           className='w-full rounded-md bg-orange-500 py-2 text-center font-medium text-white transition-colors hover:bg-orange-600'
         >
           Connect Wallet to Comment

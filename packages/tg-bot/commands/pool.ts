@@ -54,8 +54,8 @@ function formatPoolMessage(poolData: Pool): string {
     betsCloseAt,
     usdcBetTotals,
     pointsBetTotals,
-    usdcVolume,
-    pointsVolume,
+    usdcBetTotals,
+    pointsBetTotals,
     winningOption,
     createdBlockTimestamp,
     isDraw,
@@ -115,7 +115,7 @@ ${question}
 <b>📊 Options:</b>
 ${optionsDisplay}
 
-💰 <b>Total Volume:</b> ${formatUSD(usdcVolume)} (${formatPoints(pointsVolume)} points)
+💰 <b>Total Volume:</b> ${formatUSD(usdcBetTotals)} (${formatPoints(pointsBetTotals)} points)
 ⏰ <b>Betting Closes:</b> ${formatDate(betsCloseAt)}
 🆕 <b>Created:</b> ${formatDate(createdBlockTimestamp)}
 🔄 <b>Status:</b> ${formatStatus(status)}

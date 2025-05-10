@@ -37,8 +37,8 @@ export const GET_POOLS: DocumentNode = gql`
       betsCloseAt
       usdcBetTotals
       pointsBetTotals
-      usdcVolume
-      pointsVolume
+      usdcBetTotals
+      pointsBetTotals
       originalTruthSocialPostId
       winningOption
       bets {
@@ -138,8 +138,8 @@ export const GET_POOL: DocumentNode = gql`
       betsCloseAt
       usdcBetTotals
       pointsBetTotals
-      usdcVolume
-      pointsVolume
+      usdcBetTotals
+      pointsBetTotals
       winningOption
       bets {
         id

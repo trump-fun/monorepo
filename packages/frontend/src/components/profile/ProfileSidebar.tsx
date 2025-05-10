@@ -5,10 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { TokenType } from '@/types';
-import { UserStats, WithdrawalData } from '@/types/interfaces';
+import { UserStats } from '@/types/interfaces';
 import { ArrowUpFromLine, History } from 'lucide-react';
 import { BettingStats } from './BettingStats';
 import { RecentWithdrawals } from './RecentWithdrawals';
+
+// Define the correct WithdrawalData interface directly in this file to match the expected structure
+interface WithdrawalData {
+  id: string;
+  amount: string;
+  createdAt: string;
+  bet?: {
+    amount: string;
+    tokenType: TokenType;
+    pool?: {
+      question?: string;
+    };
+  };
+}
 
 export function ProfileSidebar({
   address,
@@ -60,16 +74,14 @@ export function ProfileSidebar({
 
       {/* Token Actions */}
       <div className='space-y-3'>
-        {/* <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>Token Actions</div> */}
-
-        <p className='text-md text-center text-gray-500 dark:text-gray-400'>
+        <div className='text-md text-center text-gray-500 dark:text-gray-400'>
           <p className='font-bold'>Your winnings</p>
           <div className='flex items-center justify-center gap-2 text-center'>
             <p>{tokenLogo}</p>
             <p>{formattedWithdrawableBalance.toFixed(0).toLocaleString()}</p>
             <p>{symbol}</p>
           </div>
-        </p>
+        </div>
 
         <div className='mb-2'>
           <Input

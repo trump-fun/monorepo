@@ -1,6 +1,7 @@
-import type { Pool } from '@trump-fun/common';
 import { gql, request } from 'graphql-request';
 import config from '../../config';
+import { logger } from '../../logger';
+import { type Pool } from '../../types/__generated__/graphql-request';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 /**
  * Fetches pools with "PENDING" status from the GraphQL endpoint
@@ -20,7 +21,7 @@ const fetchPendingPoolsQuery = gql`
   }
 `;
 export async function fetchPendingPools(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Fetching pending pools...');
+  logger.info('Fetching pending pools...');
 
   const { chainId } = state;
   if (!chainId) {
@@ -46,7 +47,7 @@ export async function fetchPendingPools(state: GraderState): Promise<Partial<Gra
     });
 
     const pools = response.pools;
-    console.log(`Found ${pools.length} pending pools`);
+    logger.info(`Found ${pools.length} pending pools`);
 
     return {
       pendingPools: pools.slice(0, 1).reduce<Record<string, PendingPool>>(
@@ -72,7 +73,7 @@ export async function fetchPendingPools(state: GraderState): Promise<Partial<Gra
       ),
     };
   } catch (error) {
-    console.error(`Request failed: ${error}`);
+    logger.error({ error }, 'Request failed');
     return { pendingPools: {} };
   }
 }

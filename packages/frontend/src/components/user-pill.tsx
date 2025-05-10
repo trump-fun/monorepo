@@ -1,23 +1,32 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
-import { UserPill } from '@privy-io/react-auth/ui';
-import { PrivyLoginButton } from './login-button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DynamicUserProfile, useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { DynamicLoginButton } from './login-button';
 
 export function TrumpUserPill() {
-  const { authenticated, ready } = usePrivy();
+  const { primaryWallet, setShowDynamicUserProfile } = useDynamicContext();
 
-  if (!ready) {
-    return <div className='h-10 w-10 animate-pulse rounded-full bg-gray-300'></div>;
+  // Show login button if not authenticated
+  if (!primaryWallet) {
+    return <DynamicLoginButton />;
   }
 
-  if (!authenticated) {
-    return <PrivyLoginButton />;
-  }
+  // Get the wallet address for the avatar
+  const address = primaryWallet?.address || '';
 
+  // Show the user avatar
   return (
     <div className='flex items-center gap-2'>
-      <UserPill ui={{ background: 'accent' }} size={16} />
+      <DynamicUserProfile />
+
+      <Avatar className='h-10 w-10 cursor-pointer' onClick={() => setShowDynamicUserProfile(true)}>
+        <AvatarImage
+          src={`https://api.dicebear.com/7.x/identicon/svg?seed=${address}`}
+          alt='User Avatar'
+        />
+        <AvatarFallback>{address ? `${address.slice(0, 2)}` : 'U'}</AvatarFallback>
+      </Avatar>
     </div>
   );
 }

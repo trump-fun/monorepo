@@ -1,28 +1,14 @@
-import { apolloClient } from '@/lib/apollo';
-import { Pool } from '@/types';
-import { QueryOptions } from '@apollo/client/core';
-import { GET_POOL } from '@trump-fun/common';
+import { graphqlRequestSdk } from '@/lib/graphql-client';
 
-interface GetPoolQueryVariables {
-  poolId: string;
-}
-
-export async function fetchPool(
-  poolId: string,
-  options?: QueryOptions<GetPoolQueryVariables>
-): Promise<Pool | null> {
+export async function fetchPool(poolId: string | number) {
   try {
-    const { data } = await apolloClient.query({
-      ...options,
-      query: GET_POOL,
-      variables: {
-        poolId,
-      },
+    const { pool } = await graphqlRequestSdk.GetPool({
+      poolId: poolId.toString(),
     });
 
-    return data.pool;
+    return pool || null;
   } catch (error) {
-    console.error('Error in fetchPool:', error);
-    throw error;
+    console.error('Error fetching pool:', error);
+    return null;
   }
 }

@@ -2,13 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
-import { TokenBalance } from '@/types';
-import { Pool } from '@trump-fun/common';
-
-import { ReactNode } from 'react';
+import { PoolsQueryResultTypeSingle } from '@/types';
 
 interface BettingFormProps {
-  pool: Pool | Pool[][number]; // Replace with proper typing
+  pool: PoolsQueryResultTypeSingle;
   handlePercentageClick: (percentage: number) => void;
   sliderValue: number[];
   setSliderValue: (value: number[]) => void;
@@ -20,8 +17,8 @@ interface BettingFormProps {
   authenticated: boolean;
   isPending: boolean;
   symbol: string;
-  tokenLogo: ReactNode;
-  balance: TokenBalance | null | undefined;
+  tokenLogo: string;
+  balance?: { value: string; formatted: string; decimals: number };
   formattedBalance: string;
   setUserEnteredValue: (value: string) => void;
   userEnteredValue: string;
@@ -65,11 +62,11 @@ export const BettingForm = ({
       // Update slider if balance exists
       if (balance) {
         const inputNum = parseInt(value, 10);
-        const balanceNum = Number(balance.value) / Math.pow(10, balance.decimals);
+        const balanceNum = Number(formattedBalance);
 
         if (inputNum > 0 && balanceNum > 0) {
           // Calculate percentage of balance
-          const percentage = Math.min(100, Math.ceil((inputNum / balanceNum) * 100));
+          const percentage = Math.min(100, Math.floor((inputNum / balanceNum) * 100));
           setSliderValue([percentage]);
         }
       } else {

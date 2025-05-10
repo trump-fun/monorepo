@@ -43,8 +43,13 @@ export const CHAIN_CONFIG: Record<SupportedChainIds, ChainConfig> = {
 };
 
 export const SOLANA_DEVNET_CONFIG = {
-  rpcUrl: 'https://api.devnet.solana.com',
-  programId: new PublicKey('5YQ6yLsL3hAZk3rxW3CMgMbhMywADmVG69nS5SJWPstJ'),
-  freedomMint: new PublicKey('F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5'),
+  rpcUrl: 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af',
+  programId: new PublicKey('3G6TYRGE6JX4BZPdeix4L38VtbrAUMWyK1yJ5DQoRc7c'),
+  freedomMint: new PublicKey('HtkQKcrrfcspBSWbo63dPVQe9C8ZTPAHJebSAPyAgC2h'),
   usdcMint: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
+  escrow: new PublicKey('BjNG1JdTipxz6HjSjSY7p6kZc9koHjf44yxTRNeerKdF'),
 };
+
+export const BETTING_POOLS_SEED = Buffer.from('betting_pools_v1');
+export const POOL_SEED = Buffer.from('pool_v1');
+export const BET_SEED = Buffer.from('bet_v1');

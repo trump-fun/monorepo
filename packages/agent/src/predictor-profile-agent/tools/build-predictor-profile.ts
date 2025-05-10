@@ -1,9 +1,9 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { z } from 'zod';
 import axios from 'axios';
+import { z } from 'zod';
 import config from '../../config';
 import { PredictionTimeframe } from '../../prediction-finder-agent/types';
-import type { PredictionResult as BasePredictionResult } from '../../prediction-finder-agent/tools/find-predictions';
+import type { PredictionResult as BasePredictionResult } from '../types';
 
 // Extend the PredictionResult type to include the outcome property
 interface PredictionResult extends BasePredictionResult {
@@ -320,6 +320,7 @@ async function identifyPredictionInPost(post: any): Promise<PredictionResult | n
     return {
       is_prediction: true,
       prediction_text: predictionText || postText.substring(0, 100),
+      source_text: postText,
       implicit: isImplicit,
       post_id: postId,
       post_url: postUrl,
@@ -346,6 +347,7 @@ async function identifyPredictionInPost(post: any): Promise<PredictionResult | n
       return {
         is_prediction: true,
         prediction_text: postText.substring(0, 100),
+        source_text: postText,
         implicit: false,
         post_id: postId,
         post_url: postUrl,

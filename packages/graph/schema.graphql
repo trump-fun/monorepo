@@ -39,7 +39,7 @@ type Pool @entity {
   usdcBetTotals: [BigInt!]! # uint256[2]
   pointsBetTotals: [BigInt!]! # uint256[2]
   usdcVolume: BigInt! # Total USDC bet volume across all options
-  pointsVolume: BigInt! # Total POINTS bet volume across all options
+  pointsBetTotals: BigInt! # Total POINTS bet volume across all options
   betsCloseAt: BigInt! # uint40
   winningOption: BigInt! # uint256
   status: PoolStatus!

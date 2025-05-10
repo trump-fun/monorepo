@@ -1,5 +1,6 @@
 {
   "license": "ISC",
+  "name": "@trump-fun/solana",
   "scripts": {
     "lint:fix": "prettier --write \"**/*.{js,ts}\"",
     "lint": "prettier --check \"**/*.{js,ts}\""

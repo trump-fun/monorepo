@@ -9,36 +9,26 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { LogOut, Plus, Wallet } from 'lucide-react';
-import { useAccount } from 'wagmi';
-import { PrivyLoginButton } from './login-button';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { isSolanaWallet } from '@dynamic-labs/solana';
+import { LogOut, Wallet } from 'lucide-react';
+import { DynamicLoginButton } from './login-button';
 
 interface AuthButtonProps {
   className?: string;
 }
 
 export function AuthButton({ className }: AuthButtonProps) {
-  const { authenticated, ready: authReady, createWallet, logout } = usePrivy();
-  const { wallets, ready: walletsReady } = useWallets();
-  const { address } = useAccount();
+  const { primaryWallet, handleLogOut } = useDynamicContext();
 
-  // Only check authReady initially
-  if (!authReady) {
+  const address = primaryWallet?.address;
+  const isSolana = primaryWallet && isSolanaWallet(primaryWallet);
+
+  // Loading state - we'll use a simpler approach since Dynamic doesn't expose isInitializing
+  if (!primaryWallet && !address) {
     return (
       <div className='flex w-full gap-2'>
-        <Button size='lg' disabled className={cn('h-12 w-full bg-gray-400', className)}>
-          Loading Auth...
-        </Button>
-      </div>
-    );
-  }
-
-  // If not authenticated, show login options
-  if (!authenticated) {
-    return (
-      <div className='flex w-full gap-2'>
-        <PrivyLoginButton
+        <DynamicLoginButton
           variant='outlined'
           className={cn(
             'h-12 w-full border-2 border-orange-500 text-lg font-semibold text-orange-500 hover:bg-orange-50',
@@ -49,41 +39,7 @@ export function AuthButton({ className }: AuthButtonProps) {
     );
   }
 
-  // If authenticated but wallets aren't ready yet
-  if (!walletsReady) {
-    return (
-      <div className='flex gap-2'>
-        <Button
-          size='lg'
-          disabled
-          className={cn('h-12 w-full bg-gray-400 text-lg font-semibold', className)}
-        >
-          Loading Wallets...
-        </Button>
-      </div>
-    );
-  }
-
-  // If authenticated and wallets are ready, but no wallets exist
-  if (wallets.length === 0) {
-    return (
-      <div className='flex gap-2'>
-        <Button
-          size='lg'
-          onClick={() => createWallet()}
-          className={cn(
-            'h-12 w-full bg-orange-500 text-lg font-semibold hover:bg-orange-600',
-            className
-          )}
-        >
-          <Plus className='mr-2 h-4 w-4' />
-          Create Wallet with Passkey
-        </Button>
-      </div>
-    );
-  }
-
-  // If authenticated and has wallets, show wallet menu and explore button
+  // If authenticated and has wallet, show wallet menu
   return (
     <div className='flex w-full gap-2'>
       <DropdownMenu>
@@ -100,15 +56,12 @@ export function AuthButton({ className }: AuthButtonProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end' className='w-56'>
-          {wallets.map((wallet) => (
-            <DropdownMenuItem key={wallet.address} className='cursor-pointer'>
-              {wallet.address.slice(0, 6)}...
-              {wallet.address.slice(-4)}
-              {wallet.walletClientType === 'privy' ? ' (Embedded)' : ' (External)'}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuItem className='cursor-pointer'>
+            {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown address'}
+            {isSolana ? ' (Solana)' : ' (Other)'}
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className='cursor-pointer text-red-500' onClick={logout}>
+          <DropdownMenuItem className='cursor-pointer text-red-500' onClick={handleLogOut}>
             <LogOut className='mr-2 h-4 w-4' />
             Disconnect
           </DropdownMenuItem>

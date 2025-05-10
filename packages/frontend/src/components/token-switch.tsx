@@ -6,7 +6,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useTokenContext } from '@/hooks/useTokenContext';
 import { cn } from '@/lib/utils';
-import { TokenType } from '@/types';
+import { TokenType } from '@/types/__generated__/graphql';
 
 export function TokenSwitch() {
   const { tokenType, setTokenType, tokenLogo } = useTokenContext();

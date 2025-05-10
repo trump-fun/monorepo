@@ -3,7 +3,7 @@ import { getAccount, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/s
 // Load environment variables
 import 'dotenv/config';
 
-const BTP_MINT_ADDRESS = 'F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5';
+const BTP_MINT_ADDRESS = 'HtkQKcrrfcspBSWbo63dPVQe9C8ZTPAHJebSAPyAgC2h';
 const TOKEN_DECIMALS = 6;
 
 /**
@@ -47,7 +47,7 @@ async function main() {
 
   // Log which keypair is being used
   console.log(`Using wallet: ${provider.wallet.publicKey.toString()}`);
-  console.log(`Network: ${process.env.SOLANA_NETWORK || 'default'}`);
+  console.log(`Network: ${process.env.SOLANA_NETWORK || 'localnet'}`);
 
   try {
     // Convert recipient address string to PublicKey

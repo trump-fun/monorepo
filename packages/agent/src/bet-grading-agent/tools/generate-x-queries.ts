@@ -1,6 +1,7 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { z } from 'zod';
 import { config } from '../../config';
+import { logger } from '../../logger';
 import type { GraderState } from '../betting-grader-graph';
 
 /**
@@ -8,10 +9,10 @@ import type { GraderState } from '../betting-grader-graph';
  * Enhanced to produce more effective queries leveraging Twitter/X search operators
  */
 export async function generateXQueries(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Generating optimized Twitter/X search queries for all pending pools...');
+  logger.info('Generating optimized Twitter/X search queries for all pending pools...');
 
   if (Object.keys(state.pendingPools).length === 0) {
-    console.error('No pending pools to generate Twitter/X queries for');
+    logger.error('No pending pools to generate Twitter/X queries for');
     return { pendingPools: {} };
   }
 
@@ -121,17 +122,16 @@ export async function generateXQueries(state: GraderState): Promise<Partial<Grad
         });
 
         // Log the results with explanations
-        console.log(`Generated ${cleanedQueries.length} Twitter/X queries for pool ${poolId}:`);
-        cleanedQueries.forEach((query, index) => {
-          console.log(`  Query ${index + 1}: ${query}`);
-          if (index < result.query_explanations.length) {
-            console.log(`    Explanation: ${result.query_explanations[index]}`);
-          }
-        });
-        console.log(`  Advanced query: ${result.advanced_query}`);
-        console.log(`  Expected relevance: ${result.expected_grading_relevance}`);
-        console.log(`  Primary sources: ${result.search_strategy.primary_sources.join(', ')}`);
-        console.log(`  Fallback keywords: ${result.search_strategy.fallback_keywords.join(', ')}`);
+        logger.info(`Generated ${cleanedQueries.length} Twitter/X queries for pool ${poolId}:`);
+        for (let index = 0; index < cleanedQueries.length; index++) {
+          const query = cleanedQueries[index];
+          logger.debug(`  Query ${index + 1}: ${query}`);
+          logger.debug(`    Explanation: ${result.query_explanations[index]}`);
+        }
+        logger.debug(`  Advanced query: ${result.advanced_query}`);
+        logger.debug(`  Expected relevance: ${result.expected_grading_relevance}`);
+        logger.debug(`  Primary sources: ${result.search_strategy.primary_sources.join(', ')}`);
+        logger.debug(`  Fallback keywords: ${result.search_strategy.fallback_keywords.join(', ')}`);
 
         // Return updated pool with Twitter/X search queries and enhanced metadata
         return [
@@ -151,7 +151,7 @@ export async function generateXQueries(state: GraderState): Promise<Partial<Grad
       } catch (error) {
         // If the first attempt fails, try a simpler fallback prompt
         try {
-          console.warn(
+          logger.warn(
             `Error with full query generation for pool ${poolId}, attempting fallback method...`
           );
 
@@ -181,7 +181,7 @@ export async function generateXQueries(state: GraderState): Promise<Partial<Grad
 
           const fallbackResult = await fallbackLlm.invoke(await fallbackPrompt.formatMessages({}));
 
-          console.log(
+          logger.info(
             `Generated fallback queries for pool ${poolId}:`,
             fallbackResult.twitter_search_queries
           );
@@ -201,9 +201,9 @@ export async function generateXQueries(state: GraderState): Promise<Partial<Grad
             },
           ];
         } catch (fallbackError) {
-          console.error(
-            `Both primary and fallback query generation failed for pool ${poolId}:`,
-            fallbackError
+          logger.error(
+            { error: fallbackError, poolId },
+            `Both primary and fallback query generation failed`
           );
           return [
             poolId,

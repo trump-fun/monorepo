@@ -5,8 +5,9 @@
  * Learning session scheduled for Mar. 26th.
  * Please remove this comment after the single research subgraph is fully implemented
  */
-import { supabase } from '../../config';
 import type { Database, Json } from '@trump-fun/common';
+import { supabase } from '../../config';
+import { poolGenerationLogger as logger } from '../../logger';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
 /**
@@ -16,35 +17,41 @@ import type { SingleResearchItemState } from '../single-betting-pool-graph';
 export async function upsertTruthSocialPost(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  console.log('Upserting Truth Social post to database');
+  logger.info('Upserting Truth Social post to database');
 
   const researchItem = state.research;
 
   if (!researchItem) {
-    console.log('No research item to upsert');
+    logger.info('No research item to upsert');
     return {
       research: undefined,
     };
   }
 
   try {
-    console.log(`Upserting Truth Social post ${researchItem.truth_social_post.id} to database`);
+    logger.info(
+      { postId: researchItem.truth_social_post.id },
+      'Upserting Truth Social post to database'
+    );
 
     // Check if item should be processed
     if (researchItem.should_process === false) {
-      console.log('Item marked as should not process, skipping upsert');
+      logger.info('Item marked as should not process, skipping upsert');
       return {
         research: researchItem,
       };
     }
 
     // Add detailed debugging for the research item
-    console.log('Detailed research item:', {
-      id: researchItem.truth_social_post?.id,
-      pool_id: researchItem.pool_id,
-      transaction_hash: researchItem.transaction_hash,
-      should_process: researchItem.should_process,
-    });
+    logger.debug(
+      {
+        id: researchItem.truth_social_post?.id,
+        pool_id: researchItem.pool_id,
+        transaction_hash: researchItem.transaction_hash,
+        should_process: researchItem.should_process,
+      },
+      'Detailed research item'
+    );
 
     // Prepare the record for upsert
     const record: Database['public']['Tables']['truth_social_posts']['Insert'] = {
@@ -58,7 +65,7 @@ export async function upsertTruthSocialPost(
       prompt_data: JSON.parse(JSON.stringify(researchItem)) as Json,
     };
 
-    console.log('Upserting record to database');
+    logger.info('Upserting record to database');
 
     const { data, error } = await supabase.from('truth_social_posts').upsert(record, {
       onConflict: 'post_id',
@@ -66,17 +73,20 @@ export async function upsertTruthSocialPost(
     });
 
     if (error) {
-      console.error('Error upserting Truth Social post:', error);
+      logger.error({ error }, 'Error upserting Truth Social post');
       throw error;
     }
 
-    console.log(`Successfully upserted Truth Social post ${researchItem.truth_social_post.id}`);
+    logger.info(
+      { postId: researchItem.truth_social_post.id },
+      'Successfully upserted Truth Social post'
+    );
 
     return {
       research: researchItem,
     };
   } catch (error) {
-    console.error('Error upserting Truth Social post:', error);
+    logger.error({ error }, 'Error upserting Truth Social post');
     return {
       research: researchItem,
     };

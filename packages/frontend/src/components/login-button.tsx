@@ -2,86 +2,63 @@
 
 import { Button } from '@/components/ui/button';
 import { useNetwork } from '@/hooks/useNetwork';
-import { topUpBalance } from '@/utils/topUp';
-import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { LogIn } from 'lucide-react';
 import { useEffect } from 'react';
-import { useTokenBalance } from '../hooks/useTokenBalance';
+import { useSolanaTokens } from '../hooks/useSolanaTokens';
+import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 
-export const PrivyLogoutButton = () => {
-  const { logout } = usePrivy();
-  return <Button onClick={logout}>Log out</Button>;
+export const DynamicLogoutButton = () => {
+  const { handleLogOut } = useDynamicContext();
+  return <Button onClick={handleLogOut}>Log out</Button>;
 };
 
-type PrivyLoginButtonProps = {
+type DynamicLoginButtonProps = {
   className?: string;
   variant?: 'contained' | 'outlined';
 };
 
-export function PrivyLoginButton({
+export function DynamicLoginButton({
   className = 'bg-orange-500 text-white hover:bg-orange-600',
   variant = 'contained',
-}: PrivyLoginButtonProps) {
-  const { ready, authenticated } = usePrivy();
-  const { wallets } = useWallets();
-  const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
-  const { refetch: fetchBalance } = useTokenBalance();
-  const { chainId } = useNetwork();
+}: DynamicLoginButtonProps) {
+  const { primaryWallet, setShowAuthFlow } = useDynamicContext();
+  const { fetchBalances } = useSolanaTokens();
+  const { cluster } = useNetwork();
 
   useEffect(() => {
-    if (!ready || !authenticated || !embeddedWallet) {
+    if (!primaryWallet) {
       return;
     }
 
-    const makeCall = async () => {
-      try {
-        const result = await topUpBalance({
-          walletAddress: embeddedWallet.address,
-          chainId,
-        });
+    // When wallet is connected, fetch token balances
+    fetchBalances();
+  }, [primaryWallet, fetchBalances]);
 
-        if (result.success) {
-          fetchBalance();
-        }
-      } catch (error) {
-        console.error('Error in makeCall:', error);
-      }
-    };
+  const disableLogin = !!primaryWallet;
 
-    makeCall();
-  }, [ready, authenticated, embeddedWallet, fetchBalance, chainId]);
+  // For custom style buttons
+  if (variant === 'outlined' || variant === 'contained') {
+    const buttonVariant = variant === 'outlined' ? 'outline' : 'default';
 
-  const { login } = useLogin({
-    onError: (error) => {
-      console.error('Login error:', error);
-    },
+    return (
+      <Button
+        size='lg'
+        variant={buttonVariant}
+        disabled={disableLogin}
+        onClick={() => setShowAuthFlow(true)}
+        className={className}
+      >
+        <LogIn className='mr-2 h-4 w-4' />
+        Connect
+      </Button>
+    );
+  }
 
-    onComplete: async ({ user }) => {
-      await topUpBalance({
-        walletAddress: user.wallet?.address || '',
-        chainId,
-      });
-
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      fetchBalance();
-    },
-  });
-
-  const disableLogin = !ready || (ready && authenticated);
-
-  const buttonVariant = variant === 'outlined' ? 'outline' : 'default';
-
-  return (
-    <Button
-      size='lg'
-      variant={buttonVariant}
-      disabled={disableLogin}
-      onClick={() => login()}
-      className={className}
-    >
-      <LogIn className='mr-2 h-4 w-4' />
-      Connect
-    </Button>
-  );
+  // Use Dynamic's default widget
+  return <DynamicWidget variant='modal' buttonClassName={className} />;
 }
+
+// For backwards compatibility
+export const PrivyLoginButton = DynamicLoginButton;
+export const PrivyLogoutButton = DynamicLogoutButton;

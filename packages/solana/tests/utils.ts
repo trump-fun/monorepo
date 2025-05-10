@@ -7,7 +7,7 @@ import {
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
 
-import { Solana } from '../target/types/solana';
+import { TrumpFun } from '../target/types/trump_fun';
 
 // Constants
 export const BETTING_POOLS_SEED = Buffer.from('betting_pools_v1');
@@ -33,7 +33,7 @@ export function lamportsToTokens(lamports: number): number {
 
 // Utility function to create a betting pool
 export async function createBettingPool(
-  program: Program<Solana>,
+  program: Program<TrumpFun>,
   bettingPoolsAddress: anchor.web3.PublicKey,
   authority: anchor.web3.PublicKey,
   params: {

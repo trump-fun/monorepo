@@ -56,13 +56,13 @@ export const withdrawCommand = async (ctx: Context) => {
 
     // Parse the option to determine token type and amount
     if (option.toLowerCase() === 'usdc50') {
-      tokenType = TokenType.USDC;
+      tokenType = TokenType.Usdc;
       percentageAmount = 50;
     } else if (option.toLowerCase() === 'usdc100') {
-      tokenType = TokenType.USDC;
+      tokenType = TokenType.Usdc;
       percentageAmount = 100;
     } else if (option.toLowerCase() === 'usdcx') {
-      tokenType = TokenType.USDC;
+      tokenType = TokenType.Usdc;
       if (!amountOrDestination || isNaN(parseFloat(amountOrDestination))) {
         return ctx.reply('❌ Please specify a valid amount to withdraw.');
       }
@@ -95,7 +95,7 @@ export const withdrawCommand = async (ctx: Context) => {
 
     if (balance <= 0) {
       return ctx.reply(
-        `❌ You have no ${tokenType === TokenType.USDC ? 'USDC' : 'FREEDOM'} balance to withdraw.`
+        `❌ You have no ${tokenType === TokenType.Usdc ? 'USDC' : 'FREEDOM'} balance to withdraw.`
       );
     }
 
@@ -108,7 +108,7 @@ export const withdrawCommand = async (ctx: Context) => {
       if (withdrawAmount > balance) {
         return ctx.reply(
           `❌ Insufficient funds! Your balance: ${balance.toFixed(6)} ${
-            tokenType === TokenType.USDC ? 'USDC' : 'FREEDOM'
+            tokenType === TokenType.Usdc ? 'USDC' : 'FREEDOM'
           }\n` + `You requested to withdraw ${withdrawAmount.toFixed(6)}.`
         );
       }
@@ -121,7 +121,7 @@ export const withdrawCommand = async (ctx: Context) => {
     }
 
     // Start the withdrawal process
-    const tokenName = tokenType === TokenType.USDC ? 'USDC' : 'FREEDOM';
+    const tokenName = tokenType === TokenType.Usdc ? 'USDC' : 'FREEDOM';
     const statusMsg = await ctx.reply(
       `🔄 Processing your withdrawal...\n\n` +
         `Amount: ${withdrawAmount.toFixed(6)} ${tokenName}\n` +
@@ -135,7 +135,7 @@ export const withdrawCommand = async (ctx: Context) => {
     const nonce = await provider.getTransactionCount(wallet.address);
 
     // Format the amount based on token type (USDC = 6 decimals, FREEDOM = 18 decimals)
-    const tokenDecimals = tokenType === TokenType.USDC ? 6 : 18;
+    const tokenDecimals = tokenType === TokenType.Usdc ? 6 : 18;
     const tokenAmount = ethers.parseUnits(withdrawAmount.toString(), tokenDecimals);
 
     // Encode function call
@@ -145,7 +145,7 @@ export const withdrawCommand = async (ctx: Context) => {
       tokenAmount.toString(),
     ]);
 
-    const tokenAddress = tokenType === TokenType.USDC ? USDC_ADDRESS : POINTS_ADDRESS;
+    const tokenAddress = tokenType === TokenType.Usdc ? USDC_ADDRESS : POINTS_ADDRESS;
 
     const transaction = {
       from: wallet.address as `0x${string}`,
@@ -252,7 +252,7 @@ export const withdrawCommand = async (ctx: Context) => {
 async function showWithdrawOptions(ctx: Context, wallet: any, provider: ethers.JsonRpcProvider) {
   try {
     // Fetch both balances
-    const usdcBalance = await getUserBalance(provider, wallet.address, TokenType.USDC);
+    const usdcBalance = await getUserBalance(provider, wallet.address, TokenType.Usdc);
     const pointsBalance = await getUserBalance(provider, wallet.address, TokenType.FREEDOM);
 
     return ctx.reply(
@@ -295,7 +295,7 @@ async function getUserBalance(
     const balanceWei = await contract.userBalances(address, BigInt(tokenType));
 
     // Format based on token decimals (USDC = 6, FREEDOM = 6)
-    const decimals = tokenType === TokenType.USDC ? USDC_DECIMALS : FREEDOM_DECIMALS;
+    const decimals = tokenType === TokenType.Usdc ? USDC_DECIMALS : FREEDOM_DECIMALS;
     return parseFloat(ethers.formatUnits(balanceWei, decimals));
   } catch (error) {
     console.error('Error checking balance:', error);
@@ -313,8 +313,8 @@ async function transferFunds(
   statusMsg: any
 ): Promise<{ success: boolean; hash?: string }> {
   try {
-    const tokenAddress = tokenType === TokenType.USDC ? USDC_ADDRESS : POINTS_ADDRESS;
-    const decimals = tokenType === TokenType.USDC ? 6 : 18;
+    const tokenAddress = tokenType === TokenType.Usdc ? USDC_ADDRESS : POINTS_ADDRESS;
+    const decimals = tokenType === TokenType.Usdc ? 6 : 18;
     const tokenAmount = ethers.parseUnits(amount.toString(), decimals);
 
     const tokenInterface = new ethers.Interface([

@@ -1,103 +1,79 @@
 'use client';
 
-import { TokenType } from '@/types';
-import { CHAIN_CONFIG, DEFAULT_CHAIN_ID, USDC_DECIMALS } from '@trump-fun/common';
-import Image from 'next/image';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Address } from 'viem';
+import { FREEDOM_DECIMALS, USDC_DECIMALS } from '@trump-fun/common';
+import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import { PublicKey } from '@solana/web3.js';
 import { useNetwork } from './useNetwork';
-
-// Token logos/symbols
-export const TOKEN_SYMBOLS: Record<
-  TokenType,
-  {
-    symbol: string;
-    logo: React.ReactNode;
-    decimals: number;
-  }
-> = {
-  [TokenType.Usdc]: {
-    symbol: 'USDC',
-    logo: <Image src='/usdc.svg' alt='USD' width={16} height={16} style={{ display: 'inline' }} />,
-    decimals: 6, // Don't use USDC_DECIMALS, this "TOKEN_CONFIG" will eventually be our authority for token details
-  },
-  [TokenType.Freedom]: {
-    symbol: 'FREEDOM',
-    logo: (
-      <Image
-        src='/points2.png'
-        alt='FREEDOM'
-        width={16}
-        height={16}
-        style={{ display: 'inline' }}
-      />
-    ),
-    decimals: 6,
-  },
-};
+import { TokenType } from '@/types';
 
 interface TokenContextType {
   tokenType: TokenType;
-  setTokenType: (type: TokenType) => void;
-  tokenAddress: Address;
   tokenSymbol: string;
-  tokenLogo: React.ReactNode;
+  tokenLogo: string;
   tokenDecimals: number;
+  tokenMint: PublicKey;
+  setTokenType: (tokenType: TokenType) => void;
 }
 
-// Create context with default values
-const TokenContext = createContext<TokenContextType>({
-  tokenType: TokenType.Usdc,
-  setTokenType: () => {},
-  tokenAddress: CHAIN_CONFIG[DEFAULT_CHAIN_ID].usdcAddress,
-  tokenSymbol: TOKEN_SYMBOLS[TokenType.Usdc].symbol,
-  tokenLogo: TOKEN_SYMBOLS[TokenType.Usdc].logo,
-  tokenDecimals: USDC_DECIMALS,
-});
+const TokenContext = createContext<TokenContextType | undefined>(undefined);
 
-export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
-  const { usdcAddress, freedomAddress } = useNetwork();
-  const [tokenType, setTokenType] = useState<TokenType>(TokenType.Usdc);
+export const TokenProvider = ({ children }: { children: ReactNode }) => {
+  const [tokenType, setTokenType] = useState<TokenType>(TokenType.Freedom);
+  const { usdcMint, freedomMint } = useNetwork();
 
-  // Get token information
-  const {
-    symbol: tokenSymbol,
-    logo: tokenLogo,
-    decimals: tokenDecimals,
-  } = TOKEN_SYMBOLS[tokenType];
+  // Get token info based on selected token type
+  const tokenInfo = {
+    [TokenType.Usdc]: {
+      symbol: 'USDC',
+      logo: '💵',
+      decimals: USDC_DECIMALS,
+      mint: usdcMint,
+    },
+    [TokenType.Freedom]: {
+      symbol: 'FREEDOM',
+      logo: '🦅',
+      decimals: FREEDOM_DECIMALS,
+      mint: freedomMint,
+    },
+  };
 
-  const tokenAddress = tokenType === TokenType.Usdc ? usdcAddress : freedomAddress;
+  // Get the current token info
+  const currentTokenInfo = tokenInfo[tokenType];
 
-  // Load saved preference from localStorage
-  useEffect(() => {
+  // Handle token type change
+  const handleTokenTypeChange = useCallback((newTokenType: TokenType) => {
+    setTokenType(newTokenType);
+
+    // Save preference to localStorage
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('trump-fun-token-type');
-      if (saved !== null) {
-        if (saved === TokenType.Usdc || saved === TokenType.Freedom) {
-          setTokenType(saved as TokenType);
-        }
-      }
+      localStorage.setItem('preferred_token_type', newTokenType);
     }
   }, []);
 
-  // Save preference to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('trump-fun-token-type', tokenType);
-    }
-  }, [tokenType]);
+  // Read from localStorage on mount (handled in component)
 
-  const value: TokenContextType = {
-    tokenType,
-    setTokenType,
-    tokenAddress,
-    tokenSymbol,
-    tokenLogo,
-    tokenDecimals,
-  };
-
-  return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
+  return (
+    <TokenContext.Provider
+      value={{
+        tokenType,
+        tokenSymbol: currentTokenInfo.symbol,
+        tokenLogo: currentTokenInfo.logo,
+        tokenDecimals: currentTokenInfo.decimals,
+        tokenMint: currentTokenInfo.mint,
+        setTokenType: handleTokenTypeChange,
+      }}
+    >
+      {children}
+    </TokenContext.Provider>
+  );
 };
 
-// Hook for consuming the context
-export const useTokenContext = () => useContext(TokenContext);
+export const useTokenContext = () => {
+  const context = useContext(TokenContext);
+
+  if (context === undefined) {
+    throw new Error('useTokenContext must be used within a TokenProvider');
+  }
+
+  return context;
+};

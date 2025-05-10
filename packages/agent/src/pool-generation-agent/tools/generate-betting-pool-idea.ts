@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import config from '../../config';
+import { poolGenerationLogger as logger } from '../../logger';
 import type { ResearchItem } from '../../types/research-item';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 
@@ -25,7 +26,7 @@ export async function generateBettingPoolIdea(
 
   // If there's no research item, return early
   if (!researchItem) {
-    console.log('No research item available');
+    logger.info('No research item available');
     return {
       research: researchItem,
     };
@@ -33,7 +34,7 @@ export async function generateBettingPoolIdea(
 
   // Check if the item is marked to be processed
   if (researchItem.should_process !== true) {
-    console.log('Research item is not marked for processing');
+    logger.info('Research item is not marked for processing');
     return {
       research: researchItem,
     };
@@ -41,19 +42,19 @@ export async function generateBettingPoolIdea(
 
   // Check if the item already has a betting pool idea
   if (researchItem.betting_pool_idea) {
-    console.log(`Using existing betting pool idea: ${researchItem.betting_pool_idea}`);
+    logger.info({ idea: researchItem.betting_pool_idea }, 'Using existing betting pool idea');
     return {
       research: researchItem,
     };
   }
 
   try {
-    console.log(`Generating betting idea for post: ${researchItem.truth_social_post.id}`);
+    logger.info({ postId: researchItem.truth_social_post.id }, 'Generating betting idea for post');
 
     // Extract key content from the post
     const postContent = researchItem.truth_social_post.content.replace(/<\/?[^>]+(>|$)/g, ''); // Remove HTML tags
 
-    console.log(`Post content: ${postContent.substring(0, 100)}...`);
+    logger.debug(`Post content: ${postContent.substring(0, 100)}...`);
 
     // Get timestamps for post creation and current time
     const postCreatedAt = new Date(researchItem.truth_social_post.created_at);
@@ -147,9 +148,9 @@ Create a Yes/No question in Trump's style that users can bet on. The question sh
       bettingPoolIdea += '?';
     }
 
-    console.log(`Generated betting pool idea: ${bettingPoolIdea}`);
+    logger.info({ bettingPoolIdea }, 'Generated betting pool idea');
     if (responseObj.explanation) {
-      console.log(`Explanation: ${responseObj.explanation}`);
+      logger.debug({ explanation: responseObj.explanation }, 'Betting pool explanation');
     }
 
     // Return updated research item with the betting pool idea
@@ -163,7 +164,7 @@ Create a Yes/No question in Trump's style that users can bet on. The question sh
       research: updatedResearchItem,
     };
   } catch (error) {
-    console.error('Error generating betting pool idea:', error);
+    logger.error({ error }, 'Error generating betting pool idea');
     return {
       research: researchItem,
     };

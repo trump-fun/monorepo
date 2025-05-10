@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { searchForSourcesWithDatura } from '../api/datura-api';
-import { followReferenceChain, calculateChainConfidence } from './reference-chain';
-import { extractUrlsFromHtml } from '../utils/url-utils';
 import type { SingleResearchItemState } from '../../pool-generation-agent/single-betting-pool-graph';
 import type { ReferenceChain } from '../../types/research-item';
+import { searchForSourcesWithDatura } from '../api/datura-api';
+import { extractUrlsFromHtml } from '../utils/url-utils';
+import { calculateChainConfidence, followReferenceChain } from './reference-chain';
 
 /**
  * Traces information back to its original source through reference chains
@@ -132,7 +132,7 @@ export async function traceSourceChain(
 
         const chainId =
           existingChainIndex >= 0 && referenceChains[existingChainIndex]
-            ? referenceChains[existingChainIndex].chain_id || uuidv4()
+            ? referenceChains[existingChainIndex]!.chain_id || uuidv4()
             : uuidv4();
 
         let chain: ReferenceChain;

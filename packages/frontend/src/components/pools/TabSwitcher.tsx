@@ -1,9 +1,10 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BetPlaced, Pool, TokenType } from '@trump-fun/common';
+import { BetPlaced, PoolsQueryResultTypeSingle, TokenType } from '@/types';
+import { formatTokenAmount } from '@/utils/betsCalculations';
 import { RefetchOptions } from '@tanstack/react-query';
-import { Tables, formatTokenAmount, getTokenName } from '@trump-fun/common';
+import { Tables } from '@trump-fun/common';
 import { formatDistanceToNow } from 'date-fns';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import CommentSectionWrapper from '../comments/comment-section-wrapper';
@@ -12,7 +13,7 @@ import { Related } from '../Related';
 interface TabSwitcherProps {
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
-  pool: Pool;
+  pool: PoolsQueryResultTypeSingle;
   bets: BetPlaced[];
   comments: Tables<'comments'>[];
   isCommentsLoading: boolean;
@@ -88,25 +89,17 @@ export const TabSwitcher = ({
                       <span> bet on </span>
                       <span
                         className={
-                          ('option' in bet && typeof bet.option === 'number'
-                            ? bet.option
-                            : Number(bet.optionIndex)) === 0
+                          Number(bet.optionIndex) === 0
                             ? 'font-medium text-green-500'
                             : 'font-medium text-red-500'
                         }
                       >
-                        {
-                          pool.options[
-                            ('option' in bet && typeof bet.option === 'number'
-                              ? bet.option
-                              : Number(bet.optionIndex)) as number
-                          ]
-                        }
+                        {pool.options[Number(bet.optionIndex)]}
                       </span>
                     </div>
                     <span className='text-muted-foreground text-xs'>
-                      {bet.blockTimestamp && !isNaN(Number(bet.blockTimestamp))
-                        ? formatDistanceToNow(new Date(Number(bet.blockTimestamp) * 1000), {
+                      {bet.createdAt && !isNaN(Number(bet.createdAt))
+                        ? formatDistanceToNow(new Date(Number(bet.createdAt) * 1000), {
                             addSuffix: true,
                           })
                         : 'Unknown time'}
@@ -116,9 +109,11 @@ export const TabSwitcher = ({
                 <div className='font-medium'>
                   {formatTokenAmount(
                     bet.amount,
-                    bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom
+                    bet.tokenType === TokenType.Usdc
+                      ? Number(TokenType.Usdc)
+                      : Number(TokenType.Freedom)
                   )}{' '}
-                  {getTokenName(bet.tokenType === 0 ? TokenType.Usdc : TokenType.Freedom)}
+                  {bet.tokenType === TokenType.Usdc ? 'USDC' : 'Freedom'}
                 </div>
               </div>
             ))}

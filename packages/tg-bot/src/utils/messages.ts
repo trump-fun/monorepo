@@ -49,8 +49,8 @@ export function formatPoolMessage(pool: Pool): string {
     betsCloseAt,
     usdcBetTotals,
     pointsBetTotals,
-    usdcVolume,
-    pointsVolume,
+    usdcBetTotals,
+    pointsBetTotals,
     winningOption,
     createdBlockTimestamp,
     isDraw,
@@ -124,7 +124,7 @@ ${question}
 <b>📊 Options:</b>
 ${optionsDisplay}
 
-💰 <b>Total Volume:</b> ${formatUSDC(usdcVolume || '0')} (${formatFreedom(pointsVolume || '0')} points)
+💰 <b>Total Volume:</b> ${formatUSDC(usdcBetTotals || '0')} (${formatFreedom(pointsBetTotals || '0')} points)
 ⏰ <b>Betting Closes:</b> ${formatDate(betsCloseAt || '0')}${timeRemaining}
 🕒 <b>Created:</b> ${formatDate(createdBlockTimestamp || pool.createdAt || '0')}
 🔄 <b>Status:</b> ${status}${status === PoolStatus.Pending ? ' (OPEN FOR BETTING)' : status === PoolStatus.Graded || status === PoolStatus.Regraded ? ' (COMPLETED)' : ' (BETTING CLOSED)'}
@@ -153,8 +153,8 @@ export function formatPoolsList(pools: Pool[]): string {
         : '';
 
     // Format volume information if available
-    const usdcVolume = pool.usdcVolume ? formatUSDC(pool.usdcVolume) : '$0.00';
-    const volumeInfo = pool.usdcVolume ? ` | Vol: ${usdcVolume}` : '';
+    const usdcBetTotals = pool.usdcBetTotals ? formatUSDC(pool.usdcBetTotals) : '$0.00';
+    const volumeInfo = pool.usdcBetTotals ? ` | Vol: ${usdcBetTotals}` : '';
 
     // Format options count
     const optionsCount = pool.options?.length || 0;

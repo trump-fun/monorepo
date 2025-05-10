@@ -1,6 +1,7 @@
 import * as web3 from '@solana/web3.js';
 import { BN } from 'bn.js';
 import { config } from '../../config';
+import { logger } from '../../logger';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 
 /**
@@ -10,10 +11,10 @@ import type { GraderState, PendingPool } from '../betting-grader-graph';
 export async function callGradePoolContractSolana(
   state: GraderState
 ): Promise<Partial<GraderState>> {
-  console.log('Grading betting pools on Solana blockchain');
+  logger.info('Grading betting pools on Solana blockchain');
 
   if (Object.keys(state.pendingPools).length === 0) {
-    console.log('No pools to grade on Solana');
+    logger.info('No pools to grade on Solana');
     return state;
   }
 
@@ -32,19 +33,19 @@ export async function callGradePoolContractSolana(
     async ([poolId, pendingPool]) => {
       // Skip pools that failed in previous processing
       if (pendingPool.failed) {
-        console.log(`Skipping failed pool ${poolId}`);
+        logger.info(`Skipping failed pool ${poolId}`);
         return [poolId, pendingPool] as [string, PendingPool];
       }
 
       // Skip pools that don't have a grading result
       if (!pendingPool.gradingResult) {
-        console.log(`Skipping pool ${poolId} - no grading result yet`);
+        logger.info(`Skipping pool ${poolId} - no grading result yet`);
         return [poolId, pendingPool] as [string, PendingPool];
       }
 
       // Skip pools that have already been updated on contract
       if (pendingPool.contractUpdated) {
-        console.log(`Skipping pool ${poolId} - already updated on contract`);
+        logger.info(`Skipping pool ${poolId} - already updated on contract`);
         return [poolId, pendingPool] as [string, PendingPool];
       }
 
@@ -59,7 +60,7 @@ export async function callGradePoolContractSolana(
         } else if (pendingPool.gradingResult.result === 'push') {
           responseOption = 2; // Draw
         } else {
-          console.log(
+          logger.info(
             `Skipping pool ${poolId} - not ready or has unrecognized result: ${pendingPool.gradingResult.result}`
           );
           return [poolId, pendingPool] as [string, PendingPool];
@@ -130,7 +131,10 @@ export async function callGradePoolContractSolana(
           keypair,
         ]);
 
-        console.log(`Successfully graded pool ${poolId} on Solana blockchain`, signedTransaction);
+        logger.info(
+          { txHash: signedTransaction },
+          `Successfully graded pool ${poolId} on Solana blockchain`
+        );
 
         // Update the pool in state
         return [
@@ -142,7 +146,7 @@ export async function callGradePoolContractSolana(
           },
         ] as [string, PendingPool];
       } catch (error) {
-        console.error(`Error grading pool ${poolId} on Solana:`, error);
+        logger.error({ error, poolId }, `Error grading pool on Solana`);
 
         // Mark as failed
         return [

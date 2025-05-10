@@ -7,7 +7,7 @@ import {
 } from '@solana/spl-token';
 import { expect } from 'chai';
 
-import { Solana } from '../target/types/solana';
+import { TrumpFun } from '../target/types/trump_fun';
 import { getOrCreateFreedomMint, getUsdcMint } from './create-token';
 import {
   BETTING_POOLS_SEED,
@@ -22,7 +22,7 @@ describe('solana', () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.solana as Program<Solana>;
+  const program = anchor.workspace.trumpFun as Program<TrumpFun>;
   const wallet = anchor.AnchorProvider.env().wallet;
   const connection = anchor.getProvider().connection;
 
@@ -68,10 +68,10 @@ describe('solana', () => {
   it('Is initialized!', async () => {
     // Add your test here.
     console.log('---Initialize---');
-    console.log('BettingPools address:', bettingPoolsAddress);
-    console.log('USDC mint:', usdcMint);
-    console.log('FREEDOM mint:', freedomMint);
-    console.log('Wallet:', wallet.publicKey);
+    console.log('BettingPools address:', bettingPoolsAddress.toString());
+    console.log('USDC mint:', usdcMint.toString());
+    console.log('FREEDOM mint:', freedomMint.toString());
+    console.log('Wallet:', wallet.publicKey.toString());
 
     try {
       // Try to fetch the account first to see if it's already initialized

@@ -21,7 +21,7 @@ export function UserAvatar({ address, size = 'md' }: UserAvatarProps) {
 
   return (
     <Avatar className={`${sizeClass[size]} overflow-hidden rounded-full`}>
-      <RandomAvatar size={avatarSize[size]} name={address} />
+      <RandomAvatar size={avatarSize[size]} name={address || ''} />
     </Avatar>
   );
 }

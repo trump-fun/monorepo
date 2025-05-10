@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import config from '../../config';
+import { poolGenerationLogger as logger } from '../../logger';
 import bettingContractAbi from '../../types/BettingContract.json';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
 /**
@@ -9,7 +10,7 @@ import type { SingleResearchItemState } from '../single-betting-pool-graph';
 export async function createBettingPool(
   state: SingleResearchItemState
 ): Promise<Partial<SingleResearchItemState>> {
-  console.log('Creating betting pool for research item(EVM)');
+  logger.info('Creating betting pool for research item(EVM)');
 
   const { chainId } = state;
   if (!chainId) {
@@ -25,7 +26,7 @@ export async function createBettingPool(
 
   // If there's no research item, return early
   if (!researchItem) {
-    console.log('No research item available');
+    logger.info('No research item available');
     return {
       research: researchItem,
     };
@@ -33,7 +34,7 @@ export async function createBettingPool(
 
   // Check if the item is marked to be processed and has a betting pool idea
   if (researchItem.should_process !== true || !researchItem.betting_pool_idea) {
-    console.log('Research item is not marked for processing or has no betting pool idea');
+    logger.info('Research item is not marked for processing or has no betting pool idea');
     return {
       research: researchItem,
     };
@@ -41,7 +42,7 @@ export async function createBettingPool(
 
   // Check if the pool has already been created
   if (researchItem.pool_id || researchItem.transaction_hash) {
-    console.log(`Betting pool already created with ID: ${researchItem.pool_id}`);
+    logger.info({ poolId: researchItem.pool_id }, 'Betting pool already created');
     return {
       research: researchItem,
     };
@@ -54,9 +55,14 @@ export async function createBettingPool(
   // Create contract instance and ensure it has createPool method
   const contract = new ethers.Contract(chainConfig.contractAddress, bettingContractAbi.abi, wallet);
 
-  console.log('Connected to chain ID:', (await provider.getNetwork()).chainId);
+  const networkInfo = await provider.getNetwork();
+  logger.info({ chainId: networkInfo.chainId }, 'Connected to chain');
+
   try {
-    console.log(`Creating betting pool for research item: ${researchItem.truth_social_post.id}`);
+    logger.info(
+      { postId: researchItem.truth_social_post.id },
+      'Creating betting pool for research item'
+    );
 
     // Set up the parameters for the betting pool
     const betsCloseAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
@@ -69,7 +75,7 @@ export async function createBettingPool(
       originalTruthSocialPostId: researchItem.truth_social_post?.id?.toString() || '',
       imageUrl: researchItem.image_url || '',
     };
-    console.log('Params passed to createPool:', poolParams);
+    logger.debug({ params: poolParams }, 'Params passed to createPool');
 
     // Check if createPool method exists
     if (typeof contract.createPool !== 'function') {
@@ -78,11 +84,11 @@ export async function createBettingPool(
 
     // Send the transaction
     const tx = await contract.createPool(poolParams);
-    console.log(`Transaction sent, hash: ${tx.hash}`);
+    logger.info({ txHash: tx.hash }, 'Transaction sent');
 
     // Wait for transaction receipt
     const receipt = await tx.wait(1); // Wait for 1 confirmation
-    console.log(`Transaction confirmed, status: ${receipt?.status}`);
+    logger.info({ txHash: tx.hash, status: receipt?.status }, 'Transaction confirmed');
 
     if (receipt?.status === 1) {
       // 1 means success in ethers.js
@@ -107,7 +113,7 @@ export async function createBettingPool(
         const parsedLog = eventInterface.parseLog(log as ethers.Log);
         if (parsedLog && parsedLog.args && parsedLog.args.poolId) {
           const poolId = parsedLog.args.poolId.toString();
-          console.log(`Pool created, poolId: ${poolId}`);
+          logger.info({ poolId }, 'Pool created successfully');
 
           // Add pool ID to the already updated item
           updatedResearchItem = {
@@ -115,14 +121,18 @@ export async function createBettingPool(
             pool_id: poolId,
           };
         } else {
-          console.log('Pool created but could not parse poolId from logs');
+          logger.warn('Pool created but could not parse poolId from logs');
         }
       } else {
-        console.log(`No pool ID found in logs, but transaction was successful`);
+        logger.warn(
+          { txHash: tx.hash },
+          'No pool ID found in logs, but transaction was successful'
+        );
       }
 
-      console.log(
-        `Research item updated with transaction hash: ${updatedResearchItem.transaction_hash}`
+      logger.info(
+        { txHash: updatedResearchItem.transaction_hash, poolId: updatedResearchItem.pool_id },
+        'Research item updated with transaction hash'
       );
       return {
         research: updatedResearchItem,
@@ -133,7 +143,7 @@ export async function createBettingPool(
       research: researchItem,
     };
   } catch (error) {
-    console.error('Error creating betting pool:', error);
+    logger.error({ error }, 'Error creating betting pool');
 
     // Mark the item as should not process with reason for failure
     const updatedResearchItem = {

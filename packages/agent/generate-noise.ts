@@ -40,8 +40,8 @@ const GET_POOLS_QUERY = gql`
       betsCloseAt
       usdcBetTotals
       pointsBetTotals
-      usdcVolume
-      pointsVolume
+      usdcBetTotals
+      pointsBetTotals
       originalTruthSocialPostId
     }
   }
@@ -54,7 +54,7 @@ type Pool = {
   question: string;
   options: string[];
   status: string;
-  pointsVolume: string;
+  pointsBetTotals: string;
   betsCloseAt: string;
 };
 
@@ -388,7 +388,7 @@ const getTopPoolsByVolume = async (count: number): Promise<Pool[]> => {
         status: 'PENDING',
         betsCloseAt_gt: currentTimeSeconds.toString(),
       },
-      orderBy: 'pointsVolume',
+      orderBy: 'pointsBetTotals',
       orderDirection: 'desc',
       first: count,
     });

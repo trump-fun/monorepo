@@ -1,4 +1,5 @@
 import { DEFAULT_CHAIN_ID } from '../../config';
+import { poolGenerationLogger as logger } from '../../logger';
 import type { ResearchItem } from '../../types/research-item';
 import type { AgentState } from '../betting-pool-graph';
 import { singleBettingPoolGraph } from '../single-betting-pool-graph';
@@ -8,12 +9,12 @@ import { singleBettingPoolGraph } from '../single-betting-pool-graph';
  * This replaces the previous approach of generating ideas in batch
  */
 export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partial<AgentState>> {
-  console.log('Processing research items through single betting pool graph');
+  logger.info('Processing research items through single betting pool graph');
 
   const researchItems = state.research || [];
 
   if (researchItems.length === 0) {
-    console.log('No research items to process');
+    logger.info('No research items to process');
     return {
       research: [],
     };
@@ -23,12 +24,12 @@ export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partia
     // Filter research items to only process those marked with shouldProcess: true
     const itemsToProcess = researchItems.filter(item => item.should_process === true);
 
-    console.log(
+    logger.info(
       `Processing ${itemsToProcess.length} out of ${researchItems.length} total research items`
     );
 
     if (itemsToProcess.length === 0) {
-      console.log('No items to process after filtering');
+      logger.info('No items to process after filtering');
       return {
         research: researchItems,
       };
@@ -42,7 +43,7 @@ export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partia
 
       // Skip if item is undefined (shouldn't happen, but TypeScript needs this check)
       if (!currentItem) {
-        console.log(`Item at index ${i} is undefined, skipping`);
+        logger.warn(`Item at index ${i} is undefined, skipping`);
         continue;
       }
 
@@ -52,13 +53,13 @@ export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partia
       );
 
       if (itemIndex === -1) {
-        console.log(
+        logger.warn(
           `Could not find item with ID ${currentItem.truth_social_post.id} in original array, skipping`
         );
         continue;
       }
 
-      console.log(
+      logger.info(
         `Processing item ${i + 1}/${itemsToProcess.length}: ${currentItem.truth_social_post.id}`
       );
 
@@ -74,19 +75,19 @@ export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partia
         if (result.research) {
           // Update the specific item in our copy of the array
           updatedResearch[itemIndex] = result.research as ResearchItem;
-          console.log(`Item ${i + 1} successfully processed through single betting pool graph`);
+          logger.info(`Item ${i + 1} successfully processed through single betting pool graph`);
 
           // Log transaction hash and pool ID if available
           if (result.research.transaction_hash) {
-            console.log(`Transaction hash: ${result.research.transaction_hash}`);
+            logger.info({ txHash: result.research.transaction_hash }, 'Transaction hash');
           }
 
           if (result.research.pool_id) {
-            console.log(`Pool ID: ${result.research.pool_id}`);
+            logger.info({ poolId: result.research.pool_id }, 'Pool ID');
           }
         }
       } catch (error) {
-        console.error(`Error processing item ${i + 1}:`, error);
+        logger.error({ error }, `Error processing item ${i + 1}`);
         // Mark the item as should not process with reason for failure - ensure we have all required properties
         updatedResearch[itemIndex] = {
           ...currentItem,
@@ -101,7 +102,7 @@ export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partia
       }
     }
 
-    console.log(
+    logger.info(
       `Processed ${itemsToProcess.length} research items through single betting pool graph`
     );
 
@@ -109,7 +110,7 @@ export async function runBettingPoolSubgraphs(state: AgentState): Promise<Partia
       research: updatedResearch,
     };
   } catch (error) {
-    console.error('Error processing items through single betting pool graph:', error);
+    logger.error({ error }, 'Error processing items through single betting pool graph');
     return {
       research: researchItems,
     };

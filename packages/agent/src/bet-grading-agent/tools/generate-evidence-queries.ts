@@ -1,16 +1,17 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { z } from 'zod';
 import { config } from '../../config';
+import { logger } from '../../logger';
 import type { GraderState } from '../betting-grader-graph';
 
 /**
  * Generates evidence search queries for all pending pools concurrently
  */
 export async function generateEvidenceQueries(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Generating evidence search queries for all pending pools...');
+  logger.info('Generating evidence search queries for all pending pools...');
 
   if (Object.keys(state.pendingPools).length === 0) {
-    console.error('No pending pools to generate queries for');
+    logger.error('No pending pools to generate queries for');
     return { pendingPools: {} };
   }
 
@@ -72,7 +73,10 @@ export async function generateEvidenceQueries(state: GraderState): Promise<Parti
 
         // Call the LLM with the formatted prompt
         const result = await structuredLlm.invoke(formattedPrompt);
-        console.log(`Generated queries for pool ${poolId} (${pendingPool.pool.question}):`, result);
+        logger.info(
+          { poolId, question: pendingPool.pool.question, queries: result.evidence_search_queries },
+          `Generated queries for pool`
+        );
 
         // Return updated pool with evidence search queries
         return [
@@ -83,7 +87,7 @@ export async function generateEvidenceQueries(state: GraderState): Promise<Parti
           },
         ];
       } catch (error) {
-        console.error(`Error generating evidence search queries for pool ${poolId}:`, error);
+        logger.error({ error, poolId }, `Error generating evidence search queries`);
         return [
           poolId,
           {

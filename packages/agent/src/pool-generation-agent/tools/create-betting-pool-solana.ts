@@ -1,11 +1,9 @@
 import { BN } from '@coral-xyz/anchor';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
+import { POOL_SEED } from '@trump-fun/common';
+import config from '../../config';
 import { getSolanaClientFromConfig } from '../../solana';
 import type { SingleResearchItemState } from '../single-betting-pool-graph';
-import config from '../../config';
-
-// Pool seed constant - should match the one in your Solana program
-const POOL_SEED = Buffer.from('pool_v1');
 
 /**
  * Creates a betting pool for a single research item on Solana
@@ -53,10 +51,20 @@ export async function createBettingPoolSolana(
   }
 
   try {
-    // Get the Solana client from config
     const { program, payer, bettingPoolsPDA } = getSolanaClientFromConfig(chainConfig);
+    console.log(program.programId.toString());
+    console.log(program);
 
-    // Get the current betting pools state to find the next pool ID
+    // await program.methods
+    //   .initialize(chainConfig.usdcMint, chainConfig.freedomMint)
+    //   .accounts({
+    //     authority: payer.publicKey,
+    //   })
+    //   .signers([payer])
+    //   .rpc({
+    //     commitment: 'confirmed',
+    //   });
+
     const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
     const poolId = bettingPoolsState.nextPoolId;
 

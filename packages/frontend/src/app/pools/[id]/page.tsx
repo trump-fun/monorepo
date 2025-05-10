@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteName = 'Trump.fun';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://trump-fun.vercel.app/';
   const poolUrl = `${baseUrl}/pools/${id}`;
-  const imageUrl = pool?.mediaUrl || '/default-pool-image.jpg';
+  const imageUrl = pool?.imageUrl || '/default-pool-image.jpg';
 
   return {
     title: poolQuestion
@@ -96,5 +96,8 @@ export default async function PoolDetailPage({ params }: Props) {
   const id = (await params).id;
   const { comments } = await getPoolData(id);
 
-  return <PoolDetailClient id={id} initialComments={comments} />;
+  // Convert the data to a serializable format
+  const serializableComments = JSON.parse(JSON.stringify(comments));
+
+  return <PoolDetailClient id={id} initialComments={serializableComments} />;
 }

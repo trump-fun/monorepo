@@ -21,7 +21,7 @@ export async function analyzePredictionStyle(
     evidence_based: number;
     time_horizon: string;
   };
-  verified_accuracy: number | null;
+  verified_accuracy?: number;
 }> {
   // If no predictions found, return default values
   if (predictions.length === 0) {
@@ -33,7 +33,7 @@ export async function analyzePredictionStyle(
         evidence_based: 0.5,
         time_horizon: 'medium',
       },
-      verified_accuracy: null,
+      verified_accuracy: undefined,
     };
   }
 
@@ -66,7 +66,7 @@ export async function analyzePredictionStyle(
     const result = await structuredLlm.invoke(formattedPrompt);
 
     // Calculate verified accuracy if available
-    let verifiedAccuracy = null;
+    let verifiedAccuracy = undefined;
     const verifiedPredictions = predictions.filter(
       p => p.outcome === 'correct' || p.outcome === 'partially_correct' || p.outcome === 'incorrect'
     );
@@ -80,7 +80,8 @@ export async function analyzePredictionStyle(
     }
 
     return {
-      ...result,
+      expertise_areas: result.expertise_areas,
+      prediction_style: result.prediction_style,
       verified_accuracy: verifiedAccuracy,
     };
   } catch (error) {
@@ -102,7 +103,7 @@ export async function analyzePredictionStyle(
         evidence_based: 0.5,
         time_horizon: 'medium',
       },
-      verified_accuracy: null,
+      verified_accuracy: undefined,
     };
   }
 }

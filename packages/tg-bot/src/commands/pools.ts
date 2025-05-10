@@ -33,7 +33,7 @@ function formatPoolsList(pools: Pool[]): string {
   let message = '<b>🇺🇸 TRUMP PREDICTIONS:</b>\n\n';
 
   pools.forEach((pool, index) => {
-    const totalVolume = Number(pool.usdcVolume || '0') + Number(pool.pointsVolume || '0');
+    const totalVolume = Number(pool.usdcBetTotals || '0') + Number(pool.pointsBetTotals || '0');
     const formattedVolume = `$${(Number(totalVolume) / 10 ** 6).toFixed(2)}`;
 
     // Determine pool status with appropriate emoji

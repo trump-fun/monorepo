@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/common",
+    "packages/agent",
+    "packages/frontend",
+    "packages/tg-bot",
+    "packages/solana"
   ],
   "scripts": {
     "format": "prettier --log-level warn --ignore-path .gitignore '**/*.{js,ts,sol}' --write",
@@ -33,7 +37,7 @@
     "run:find-predictions": "bun run --cwd packages/agent find-predictions",
     "run:build-profile": "bun run --cwd packages/agent build-profile",
     "run:verify-prediction": "bun run --cwd packages/agent verify-prediction",
-    "codegen": "bun run --cwd packages/common codegen && bun run --cwd packages/frontend codegen && bun run format",
+    "codegen": "bun run --cwd packages/frontend codegen && bun run format",
     "build:contract-types": "bun run --cwd packages/contracts build:types",
     "prepare": "husky",
     "lint-staged": "lint-staged",
@@ -41,7 +45,9 @@
     "db-types": "bun run --cwd packages/common db-types"
   },
   "dependencies": {
+    "@solana/spl-token": "^0.4.13",
     "@supabase/supabase-js": "^2.49.4",
+    "bs58": "^6.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -52,6 +58,9 @@
     "eslint-config-prettier": "^10.1.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
+    "pino": "9.6.0",
+    "pino-pretty": "13.0.0",
+    "pino-roll": "3.1.0",
     "prettier": "^3.5.3",
     "prettier-plugin-solidity": "^1.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",

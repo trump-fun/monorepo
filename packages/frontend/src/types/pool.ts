@@ -1,13 +1,8 @@
-import { PoolStatus } from './__generated__/graphql';
-// Using GraphQL generated types as the source of truth
-export interface BetData {
-  id: string;
-  user: string;
-  amount: string;
-  option: string;
-  updatedAt?: string;
-  tokenType: string;
-}
+import { GetPoolQuery, GetPoolsQuery } from './__generated__/graphql';
+import {
+  GetPoolQuery as GetPoolQueryBackend,
+  GetPoolsQuery as GetPoolsQueryBackend,
+} from './__generated__/graphql-request';
 
 export interface TokenBalance {
   value: string | bigint;
@@ -16,16 +11,12 @@ export interface TokenBalance {
   symbol?: string;
 }
 
-export interface PoolData {
-  id: string;
-  question: string;
-  options: string[];
-  status: PoolStatus;
-  createdAt: string;
-  endDate?: string;
-  uniqueUsers: number;
-  originalTruthSocialPostId?: string;
-  bets: BetData[];
-  totalAmount: string;
-  totalAmountPoints: string;
-}
+//Frontend types
+export type PoolsQueryResultTypeMulti = GetPoolsQuery['pools'];
+export type PoolsQueryResultTypeSingle = GetPoolQuery['pool'] | GetPoolsQuery['pools'][0];
+
+//Backend types
+export type PoolsQueryResultTypeMultiBackend = GetPoolsQueryBackend['pools'];
+export type PoolsQueryResultTypeSingleBackend =
+  | GetPoolQueryBackend['pool']
+  | GetPoolsQueryBackend['pools'][0];

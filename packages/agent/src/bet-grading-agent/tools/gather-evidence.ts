@@ -2,6 +2,7 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { tavily } from '@tavily/core';
 import { z } from 'zod';
 import { config } from '../../config';
+import { logger } from '../../logger';
 import type { GraderState, PendingPool } from '../betting-grader-graph';
 /**
  * Gathers evidence from search queries for all non-failed pools concurrently
@@ -20,10 +21,10 @@ export interface Evidence {
 }
 
 export async function gatherEvidence(state: GraderState): Promise<Partial<GraderState>> {
-  console.log('Gathering evidence from search queries for all pools concurrently');
+  logger.info('Gathering evidence from search queries for all pools concurrently');
 
   if (Object.keys(state.pendingPools).length === 0) {
-    console.error('No pending pools to gather evidence for');
+    logger.error('No pending pools to gather evidence for');
     return { pendingPools: {} };
   }
 
@@ -63,7 +64,7 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
       poolBatch.map(async ([poolId, pendingPool]) => {
         // Skip pools that have failed or don't have search queries
         if (pendingPool.failed || pendingPool.evidenceSearchQueries.length === 0) {
-          console.log(`Skipping pool ${poolId} - failed or no search queries`);
+          logger.info(`Skipping pool ${poolId} - failed or no search queries`);
           return [
             poolId,
             {
@@ -115,7 +116,7 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
           try {
             // Add context to the query for better results
             const enhancedQuery = `${query} ${pendingPool.pool.question.includes('?') ? '' : pendingPool.pool.question}`;
-            console.log(`Searching for evidence for pool ${poolId} with query: ${enhancedQuery}`);
+            logger.info(`Searching for evidence for pool ${poolId} with query: ${enhancedQuery}`);
 
             // Use Tavily to gather evidence with improved parameters
             const searchDocsRaw = await tavilyClient.search(enhancedQuery, {
@@ -126,13 +127,13 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
             });
             const searchDocs = searchDocsRaw.results;
 
-            console.log(`Found ${searchDocs.length} search results for query: ${enhancedQuery}`);
+            logger.info(`Found ${searchDocs.length} search results for query: ${enhancedQuery}`);
 
             // Process each search result
             for (const doc of searchDocs) {
               // Skip if URL already processed
               if (processedUrls.has(doc.url)) {
-                console.log(`Skipping duplicate URL: ${doc.url}`);
+                logger.debug(`Skipping duplicate URL: ${doc.url}`);
                 continue;
               }
 
@@ -154,7 +155,7 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
                 // Call the LLM with the formatted prompt
                 const evidence = await structuredLlm.invoke(formattedPrompt);
 
-                console.log(
+                logger.info(
                   `Search result from ${evidence.url}: ${evidence.summary.substring(0, 100)}...`
                 );
 
@@ -163,17 +164,17 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
                   evidenceList.push(evidence);
                   processedUrls.add(doc.url);
                 } else {
-                  console.log(
+                  logger.debug(
                     `Skipping low-relevance evidence (score: ${evidence.relevance_score})`
                   );
                 }
               } catch (docError) {
-                console.error(`Error processing document ${doc.url}:`, docError);
+                logger.error({ error: docError, url: doc.url }, `Error processing document`);
                 continue;
               }
             }
           } catch (error) {
-            console.error(`Error processing query '${query}' for pool ${poolId}:`, error);
+            logger.error({ error, query, poolId }, `Error processing query`);
             // Continue to next query rather than failing the whole pool
             continue;
           }
@@ -187,7 +188,7 @@ export async function gatherEvidence(state: GraderState): Promise<Partial<Grader
           return 0;
         });
 
-        console.log(`Gathered ${sortedEvidence.length} pieces of evidence for pool ${poolId}`);
+        logger.info(`Gathered ${sortedEvidence.length} pieces of evidence for pool ${poolId}`);
 
         // Return updated pool with evidence
         return [

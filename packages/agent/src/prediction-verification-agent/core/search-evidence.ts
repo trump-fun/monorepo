@@ -1,7 +1,6 @@
 import axios from 'axios';
 import config from '../../config';
 import type { Evidence, TavilySearchResult } from '../types';
-import { sleep } from '../../utils/sleep';
 
 /**
  * Searches for evidence related to prediction claims across multiple sources
@@ -291,7 +290,7 @@ async function searchTavily(query: string, afterDate?: string): Promise<Evidence
               console.log(
                 `Rate limited. Retrying in ${backoffTime}ms (attempt ${retries}/${maxRetries})`
               );
-              await sleep(backoffTime);
+              await new Promise(resolve => setTimeout(resolve, backoffTime));
               continue;
             }
           }
@@ -315,7 +314,7 @@ async function searchTavily(query: string, afterDate?: string): Promise<Evidence
         console.log(
           `Search failed. Retrying in ${backoffTime}ms (attempt ${retries}/${maxRetries})`
         );
-        await sleep(backoffTime);
+        await new Promise(resolve => setTimeout(resolve, backoffTime));
         continue;
       }
 

@@ -8,23 +8,21 @@ import { ChatOpenAI } from '@langchain/openai';
 import { PublicKey } from '@solana/web3.js';
 import { createClient } from '@supabase/supabase-js';
 import type { ChainConfig, Database } from '@trump-fun/common';
-import { SOLANA_DEVNET_CONFIG } from '@trump-fun/common/src/config';
+import { BETTING_POOLS_SEED, SOLANA_DEVNET_CONFIG } from '@trump-fun/common/src/config';
 import { baseSepolia, type Chain } from 'viem/chains';
 import { getSolanaClient, type SolanaClientResult } from './solana';
 
-// Define Solana constants
-const BETTING_POOLS_SEED = Buffer.from('betting_pools');
 // export const DEFAULT_CHAIN_ID = process.env.CHAIN_ID || baseSepolia.id.toString();
 export const DEFAULT_CHAIN_ID = process.env.CHAIN_ID || 'solana-devnet';
 
 export type CommonChainConfig = {
-  chain: Chain;
   rpcUrl: string;
   subgraphUrl: string;
   subgraphApiKey: string;
 };
 
 export type EvmChainConfig = CommonChainConfig & {
+  chain: Chain;
   chainType: 'evm';
   subgraphUrl: string;
   subgraphApiKey: string;
@@ -247,7 +245,7 @@ const initialChainConfig: Record<string, BettingChainConfig> = {
   'solana-devnet': {
     chainType: 'solana',
     cluster: 'devnet',
-    rpcUrl: 'https://api.devnet.solana.com',
+    rpcUrl: SOLANA_DEVNET_CONFIG.rpcUrl,
     subgraphUrl: requireEnv('SOLANA_DEVNET_SUBGRAPH_URL'),
     subgraphApiKey: requireEnv('SOLANA_DEVNET_SUBGRAPH_API_KEY'),
     programId: SOLANA_DEVNET_CONFIG.programId,
@@ -261,7 +259,7 @@ const initialChainConfig: Record<string, BettingChainConfig> = {
     client: getSolanaClient({
       privateKeyString: requireEnv('SOLANA_DEVNET_PRIVATE_KEY'),
       config: {
-        rpcUrl: 'https://api.devnet.solana.com',
+        rpcUrl: SOLANA_DEVNET_CONFIG.rpcUrl,
         cluster: 'devnet',
         programId: SOLANA_DEVNET_CONFIG.programId,
       },

@@ -5,7 +5,7 @@
       "name": "trump-fun",
       "dependencies": {
         "@graphprotocol/graph-cli": "0.96.0",
-        "@graphprotocol/graph-ts": "0.37.0",
+        "@graphprotocol/graph-ts": "0.38.0",
       },
       "devDependencies": {
         "matchstick-as": "0.6.0",
@@ -25,7 +25,7 @@
 
     "@graphprotocol/graph-cli": ["@graphprotocol/graph-cli@0.96.0", "", { "dependencies": { "@float-capital/float-subgraph-uncrashable": "0.0.0-internal-testing.5", "@oclif/core": "4.2.6", "@oclif/plugin-autocomplete": "^3.2.11", "@oclif/plugin-not-found": "^3.2.29", "@oclif/plugin-warn-if-update-available": "^3.1.24", "@pinax/graph-networks-registry": "^0.6.5", "@whatwg-node/fetch": "^0.10.1", "assemblyscript": "0.19.23", "chokidar": "4.0.3", "debug": "4.4.0", "docker-compose": "1.1.0", "fs-extra": "11.3.0", "glob": "11.0.1", "gluegun": "5.2.0", "graphql": "16.10.0", "immutable": "5.0.3", "jayson": "4.1.3", "js-yaml": "4.1.0", "kubo-rpc-client": "^5.0.2", "open": "10.1.0", "prettier": "3.4.2", "semver": "7.7.1", "tmp-promise": "3.0.3", "undici": "7.3.0", "web3-eth-abi": "4.4.1", "yaml": "2.7.0" }, "bin": { "graph": "bin/run.js" } }, "sha512-zjVMtzoipxj5tBEAXFBVAIHT6kkxMYauXHX00/IoTu3pE26hdt4ogV1vbfBai/TnPkQCDR86vJiN0XqPfc+7sw=="],
 
-    "@graphprotocol/graph-ts": ["@graphprotocol/graph-ts@0.37.0", "", { "dependencies": { "assemblyscript": "0.27.31" } }, "sha512-3xp/sO8zFDBkX44ydGB87ow5Cyrfr/SAm/cWzIRzUVL7ROw0KUyFBG1xj4KKlMnAod7/RL99zChYquC15H4Oqg=="],
+    "@graphprotocol/graph-ts": ["@graphprotocol/graph-ts@0.38.0", "", { "dependencies": { "assemblyscript": "0.27.31" } }, "sha512-fx9IpqbXHWMskl6wLDstKLy0VeszTQg6K5xsUEHXPkpOtceDkWAiDE8FyqsGF0IVTmE2Pxafw4t6+rEG8lVfyw=="],
 
     "@inquirer/checkbox": ["@inquirer/checkbox@4.1.4", "", { "dependencies": { "@inquirer/core": "^10.1.9", "@inquirer/figures": "^1.0.11", "@inquirer/type": "^3.0.5", "ansi-escapes": "^4.3.2", "yoctocolors-cjs": "^2.1.2" }, "peerDependencies": { "@types/node": ">=18" }, "optionalPeers": ["@types/node"] }, "sha512-d30576EZdApjAMceijXA5jDzRQHT/MygbC+J8I7EqA6f/FRpYxlRtRJbHF8gHeWYeSdOuTEJqonn7QLB1ELezA=="],
 

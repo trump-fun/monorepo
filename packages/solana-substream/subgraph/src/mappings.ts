@@ -109,6 +109,7 @@ export function handleTriggers(bytes: Uint8Array): void {
     bet.outcome = 'None';
     bet.tokenType = mapTokenType(event.tokenType);
     bet.txHash = event.trxHash;
+    bet.isWithdrawn = false;
     bet.save();
 
     const bp = new BetPlaced(event.trxHash.concat('-').concat(betId));

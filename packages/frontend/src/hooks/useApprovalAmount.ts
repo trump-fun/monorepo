@@ -1,37 +1,39 @@
-import { freedomAbi } from '@trump-fun/common';
+import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
-import { Address } from 'viem';
-import { useAccount, usePublicClient } from 'wagmi';
-import { useNetwork } from './useNetwork';
+import { useDynamicSolana } from './useDynamicSolana';
 
-export function useApprovalAmount(tokenAddress: Address, hash?: `0x${string}`) {
-  const { appAddress } = useNetwork();
+export function useApprovalAmount(tokenAddress: string, txSignature?: string) {
   const [approvedAmount, setApprovedAmount] = useState<bigint>(BigInt(0));
-  const account = useAccount();
-  const publicClient = usePublicClient();
+  const { publicKey, getConnection } = useDynamicSolana();
 
   useEffect(() => {
     const fetchApprovedAmount = async () => {
-      if (!account.address || !publicClient) return;
+      if (!publicKey || !tokenAddress) return;
 
       try {
-        if (!tokenAddress) return;
+        const connection = await getConnection();
 
-        const allowance = await publicClient.readContract({
-          abi: freedomAbi,
-          address: tokenAddress,
-          functionName: 'allowance',
-          args: [account.address as `0x${string}`, appAddress],
+        const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
+          mint: new PublicKey(tokenAddress),
         });
 
-        setApprovedAmount(allowance);
+        if (tokenAccounts.value.length > 0) {
+          const tokenAccountInfo = await connection.getTokenAccountBalance(
+            tokenAccounts.value[0].pubkey
+          );
+
+          setApprovedAmount(BigInt(tokenAccountInfo.value.amount));
+        } else {
+          setApprovedAmount(BigInt(0));
+        }
       } catch (error) {
-        console.error('Error fetching approved amount:', error);
+        console.error('Error fetching token amount:', error);
+        setApprovedAmount(BigInt(0));
       }
     };
 
     fetchApprovedAmount();
-  }, [account.address, publicClient, tokenAddress, hash, appAddress]);
+  }, [publicKey, getConnection, tokenAddress, txSignature]);
 
   return approvedAmount;
 }
