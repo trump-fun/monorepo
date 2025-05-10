@@ -2,7 +2,7 @@
 
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { isSolanaWallet } from '@dynamic-labs/solana';
-import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 /**
@@ -29,30 +29,6 @@ export function useDynamicSolana() {
       setPublicKey(null);
     }
   }, [solanaWallet]);
-
-  // Handle signing and sending transactions
-  const signAndSendTransaction = useCallback(
-    async (transaction: Transaction | VersionedTransaction) => {
-      if (!solanaWallet) {
-        throw new Error('Solana wallet not connected');
-      }
-
-      try {
-        const signer = await solanaWallet.getSigner();
-        // For versioned transactions
-        if (transaction instanceof VersionedTransaction) {
-          return await signer.signAndSendTransaction(transaction);
-        }
-
-        // For legacy transactions
-        return await signer.signAndSendTransaction(transaction);
-      } catch (error) {
-        console.error('Transaction error:', error);
-        throw error;
-      }
-    },
-    [solanaWallet]
-  );
 
   // Sign a message
   const signMessage = useCallback(
@@ -91,7 +67,6 @@ export function useDynamicSolana() {
   return {
     publicKey,
     solanaWallet,
-    signAndSendTransaction,
     signMessage,
     getConnection,
     userId: user?.userId,

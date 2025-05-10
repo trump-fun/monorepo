@@ -3,13 +3,48 @@
 import { AuthButton } from '@/components/auth-button';
 import { PoolList } from '@/components/pools/pool-list';
 import { Button } from '@/components/ui/button';
+import { useTokenBalance } from '@/hooks/useTokenBalance';
+import { topUpBalance } from '@/utils/topUp';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { Compass } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function Home() {
   const [heroImage, setHeroImage] = useState('/hero.png');
+  const { primaryWallet } = useDynamicContext();
+  const { refetch: fetchBalance } = useTokenBalance();
+
+  const handleTopUp = useCallback(async () => {
+    if (!primaryWallet) {
+      return;
+    }
+
+    try {
+      const result = await topUpBalance({
+        walletAddress: primaryWallet.address,
+        cluster: 'devnet',
+      });
+
+      if (!result.success) {
+        if (result.error) {
+          console.error(`Top-up failed: ${result.error}`);
+        }
+      } else {
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      fetchBalance();
+    } catch (error) {
+      console.error('Error in handleTopUp:', error);
+    }
+  }, [primaryWallet, fetchBalance]);
+
+  useEffect(() => {
+    if (primaryWallet) {
+      handleTopUp();
+    }
+  }, [handleTopUp, primaryWallet]);
 
   return (
     <div className='bg-background flex min-h-screen'>

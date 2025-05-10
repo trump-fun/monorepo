@@ -9,25 +9,25 @@ import {
   createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
-import { PublicKey, SystemProgram, Transaction, TransactionSignature } from '@solana/web3.js';
+import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from '@solana/web3.js';
 import { BET_SEED, BETTING_POOLS_SEED, POOL_SEED, SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 import { useCallback } from 'react';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { isSolanaWallet } from '@dynamic-labs/solana';
 import { useDynamicSolana } from './useDynamicSolana';
 import { useTokenContext } from './useTokenContext';
 
 // Solana well-known program addresses
-// change this later on
 const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
 const ASSOCIATED_TOKEN_PROGRAM = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
 const SYSVAR_RENT = 'SysvarRent111111111111111111111111111111111';
 
 // Retry configuration for transaction submission and confirmation
-const MAX_RETRIES = 5;
-const BASE_DELAY_MS = 500; // Start with 500ms delay
-const MAX_DELAY_MS = 15000; // Maximum delay of 15 seconds
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 500;
+const MAX_DELAY_MS = 5000;
 
 interface UsePlaceBetProps {
-  sendTransaction: ((transaction: Transaction) => Promise<string>) | undefined;
   resetBettingForm?: () => void;
 }
 
@@ -35,20 +35,15 @@ interface PlaceBetParams {
   poolId: string;
   betAmount: string;
   selectedOption: number | null;
-  connection: any;
 }
 
 /**
  * Retry utility function with exponential backoff
- * @param operation The async function to retry
- * @param isRetryable Function to determine if an error is retryable
- * @param maxRetries Maximum number of retry attempts
- * @param baseDelayMs Initial delay in milliseconds
- * @param maxDelayMs Maximum delay in milliseconds
  */
 async function retryWithExponentialBackoff<T>(
   operation: () => Promise<T>,
-  isRetryable: (error: any) => boolean,
+  // Use Error | unknown type instead of any
+  isRetryable: (error: Error | unknown) => boolean,
   maxRetries: number = MAX_RETRIES,
   baseDelayMs: number = BASE_DELAY_MS,
   maxDelayMs: number = MAX_DELAY_MS
@@ -64,41 +59,63 @@ async function retryWithExponentialBackoff<T>(
         throw error;
       }
 
-      console.log(`Retry attempt ${retries + 1}/${maxRetries} after ${delay}ms`);
       await new Promise((resolve) => setTimeout(resolve, delay));
-
-      // Exponential backoff with jitter to avoid thundering herd
       delay = Math.min(delay * 1.5 + Math.random() * 100, maxDelayMs);
       retries++;
     }
   }
 }
 
-export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetProps) {
+/**
+ * Custom hook for placing bets using the Solana blockchain
+ *
+ * NOTE ABOUT TYPE ASSERTIONS:
+ * There are multiple type assertions (using 'as unknown as ...') throughout this file.
+ * These are necessary because we're dealing with version mismatches between different
+ * Solana web3.js libraries. The Dynamic SDK uses its own version of @solana/web3.js
+ * which conflicts with the version imported at the top of this file. These type assertions
+ * allow us to bypass TypeScript's checks while maintaining runtime compatibility.
+ */
+export function usePlaceBet({ resetBettingForm }: UsePlaceBetProps) {
   const { program } = useAnchorProvider();
   const { chainConfig } = useChainConfig();
   const { tokenMint, tokenType } = useTokenContext();
   const { publicKey } = useDynamicSolana();
+  const { primaryWallet } = useDynamicContext();
 
   const placeBet = useCallback(
-    async ({ poolId, betAmount, selectedOption, connection }: PlaceBetParams) => {
+    async ({ poolId, betAmount, selectedOption }: PlaceBetParams) => {
       // Early checks for wallet connection and support
-      if (!publicKey || !sendTransaction) {
+      if (!publicKey || !primaryWallet) {
         showErrorToast('Wallet not connected', 'Please connect your wallet first');
         return;
       }
+
+      // Validate wallet is a Solana wallet
+      if (!isSolanaWallet(primaryWallet)) {
+        showErrorToast('Wallet error', 'Please connect a Solana wallet');
+        return;
+      } // Get connection from wallet
+      const connection = await primaryWallet.getConnection();
+
+      // Get the Solana signer for transaction signing
+      const signer = await primaryWallet.getSigner();
+
       if (!program) {
         showErrorToast('Program error', 'Program not initialized');
         return;
       }
+
       if (!betAmount || betAmount === '0' || selectedOption === null) {
         showErrorToast('Invalid bet', 'Please enter a bet amount and select an option');
         return;
       }
+
       if (selectedOption !== 0 && selectedOption !== 1) {
         showErrorToast('Invalid option', 'Please select a valid option (0 or 1)');
         return;
       }
+
       if (!chainConfig || chainConfig.chainType !== 'solana') {
         showErrorToast('Unsupported chain', 'This chain does not support Solana betting');
         return;
@@ -125,7 +142,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           }
 
           // Convert inputs to proper types
-          const amount = new BN(parseInt(betAmount));
+          const amount = new BN(parseInt(betAmount) * 10 ** 6);
           const optionIndex = new BN(selectedOption);
 
           // Parse pool ID from string, if it's a number
@@ -208,7 +225,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           }
 
           // Create instructions
-          const instructions = [];
+          const instructions: TransactionInstruction[] = [];
           instructions.push(
             createAssociatedTokenAccountIdempotentInstruction(
               publicKey, // payer
@@ -234,10 +251,13 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
             return;
           }
 
-          // Create and add program instruction
-          const anchorTx = await program.methods
+          // Create the Anchor transaction instruction directly
+          // Using the Anchor program to create the instruction
+          const ixResult = await program.methods
             .placeBet(optionIndex, amount, solanaTokenType)
             .accounts({
+              // Include all required accounts here using TypeScript comments to bypass type checking
+              // @ts-expect-error: Anchor accounts type mismatch due to version conflicts
               bettingPools: bettingPoolsPDA,
               pool: poolPDA,
               bet: betPDA,
@@ -249,23 +269,16 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
               systemProgram: SystemProgram.programId,
               rent: new PublicKey(SYSVAR_RENT),
             })
-            .transaction();
+            .instruction();
+
+          // Create a transaction and add the instruction
+          const anchorTx = new Transaction();
+          anchorTx.add(ixResult);
           instructions.push(...anchorTx.instructions);
 
-          // Get a fresh blockhash before each transaction attempt
-          const getNewTransaction = async (): Promise<Transaction> => {
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            const newTx = new Transaction();
-            newTx.add(...instructions);
-            newTx.recentBlockhash = blockhash;
-            newTx.feePayer = publicKey;
-            newTx.lastValidBlockHeight = lastValidBlockHeight;
-            return newTx;
-          };
-
           // Function to determine if error is retryable
-          const isRetryableError = (error: any): boolean => {
-            const errorMessage = error?.message || '';
+          const isRetryableError = (error: Error | unknown): boolean => {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             const retryableErrors = [
               'Network Error',
               'Transaction simulation failed',
@@ -280,12 +293,45 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
           };
 
           // Send transaction with retry logic
-          let txSignature: TransactionSignature;
+          let txSignature: string;
           try {
-            txSignature = await retryWithExponentialBackoff(async () => {
-              const tx = await getNewTransaction();
-              return await sendTransaction(tx);
+            const signResult = await retryWithExponentialBackoff(async () => {
+              // Get a fresh blockhash for each attempt
+              const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+              // Create a new transaction
+              const tx = new Transaction();
+              tx.add(...instructions);
+              tx.recentBlockhash = blockhash;
+              tx.feePayer = publicKey;
+              tx.lastValidBlockHeight = lastValidBlockHeight;
+
+              // Skip simulation since it's causing compatibility issues
+              // The transaction will be validated by the network when sent
+
+              // Send the transaction using Dynamic SDK's signer directly
+              try {
+                // Use a more direct approach to sign and send the transaction
+                // This avoids the header issues seen in the error message
+                // Cast transaction to resolve compatibility issues between different @solana/web3.js versions
+                const signedTx = await signer.signTransaction(tx as any);
+
+                // Send the signed transaction
+                const signature = await connection.sendRawTransaction(signedTx.serialize());
+
+                // Return result in format expected by the rest of the code
+                return {
+                  signature,
+                };
+              } catch (e) {
+                console.error('Error preparing transaction:', e);
+                throw e;
+              }
             }, isRetryableError);
+
+            txSignature = signResult.signature;
+
+            console.log('Transaction sent:', txSignature);
           } catch (error) {
             console.error('Failed to send transaction after retries:', error);
             showErrorToast(
@@ -318,9 +364,9 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
 
                 return confirmation;
               },
-              (error) => {
+              (error: Error | unknown) => {
                 // Only retry network/timeout errors, not transaction validation errors
-                const errorMsg = error?.message || '';
+                const errorMsg = error instanceof Error ? error.message : String(error);
                 return (
                   errorMsg.includes('Network Error') ||
                   errorMsg.includes('Timeout') ||
@@ -381,7 +427,7 @@ export function usePlaceBet({ sendTransaction, resetBettingForm }: UsePlaceBetPr
         return;
       }
     },
-    [publicKey, sendTransaction, program, chainConfig, tokenType, tokenMint, resetBettingForm]
+    [publicKey, primaryWallet, program, chainConfig, tokenType, tokenMint, resetBettingForm]
   );
 
   return placeBet;

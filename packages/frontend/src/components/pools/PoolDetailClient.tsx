@@ -38,9 +38,6 @@ import {
   useGetBetsQuery,
   useGetPoolQuery,
 } from '@/types';
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { isSolanaWallet } from '@dynamic-labs/solana';
-import { Transaction } from '@solana/web3.js';
 
 type PoolDetailClientProps = {
   id: string;
@@ -50,8 +47,7 @@ type PoolDetailClientProps = {
 export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps) {
   const { tokenType } = useTokenContext();
   const { isConnected, publicKey, authenticated, login: handleLogin } = useWalletAddress();
-  const { primaryWallet } = useDynamicContext();
-  const { signAndSendTransaction, isAuthenticated } = useDynamicSolana();
+  const { isAuthenticated } = useDynamicSolana();
   const [selectedTab, setSelectedTab] = useState<string>('comments');
   const [userBetsData, setUserBetsData] = useState<Bet[]>([]);
   const [betPlacedData, setBetPlacedData] = useState<BetPlaced[]>([]);
@@ -232,41 +228,16 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     handleFactsAction(isConnected, handleLogin);
   }, [handleFactsAction, handleLogin, isConnected]);
 
-  // Create a transaction sender that uses Dynamic's signAndSendTransaction
-  const solanaTransactionSender = useCallback(
-    async (transaction: Transaction) => {
-      if (!signAndSendTransaction) {
-        throw new Error('Transaction sender not available');
-      }
-
-      // Use Dynamic's signAndSendTransaction to send the Solana transaction
-      const signature = await signAndSendTransaction(transaction);
-
-      // Return signature as string
-      return signature;
-    },
-    [signAndSendTransaction]
-  );
-
   const placeBet = usePlaceBet({
-    sendTransaction: solanaTransactionSender,
     resetBettingForm,
   });
 
   const handleBet = useCallback(async () => {
     if (!pool?.id || !pool?.options) return;
 
-    if (!primaryWallet || !isSolanaWallet(primaryWallet)) {
-      console.error('Primary wallet is not a Solana wallet');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
-      const connection = await primaryWallet.getConnection();
-
       await placeBet({
-        connection,
         poolId: '1',
         betAmount,
         selectedOption,
@@ -276,7 +247,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     } finally {
       setIsSubmitting(false);
     }
-  }, [placeBet, pool, betAmount, selectedOption, primaryWallet]);
+  }, [placeBet, pool, betAmount, selectedOption]);
 
   if (loading) {
     return (
