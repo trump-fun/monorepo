@@ -5,7 +5,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "db-types": "npx supabase gen types typescript --project-id fxewzungnacaxpsnowcu --schema public > database.types.ts",
+    "db-types": "npx supabase gen types typescript --project-id fxewzungnacaxpsnowcu --schema public > src/database.types.ts",
     "codegen": "graphql-codegen && grep -v \"PoolId = 'pool__id',\\|BetId = 'bet__id',\" src/types/__generated__/graphql.ts > temp.ts && mv temp.ts src/types/__generated__/graphql.ts"
   },
   "dependencies": {

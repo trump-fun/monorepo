@@ -5,7 +5,7 @@ import {
   getAssociatedTokenAddressSync,
   getMint,
 } from '@solana/spl-token';
-import { Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL, SystemProgram } from '@solana/web3.js';
 import { SOLANA_DEVNET_CONFIG } from '@trump-fun/common';
 import bs58 from 'bs58';
 import { NextRequest, NextResponse } from 'next/server';
@@ -86,6 +86,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
     // Create Keypair from private key
     const faucetKeyPair = Keypair.fromSecretKey(bs58.decode(FAUCET_PRIVATE_KEY));
 
+    // Check recipient's SOL balance
+    const recipientBalance = await connection.getBalance(recipientPublicKey);
+    const minimumSolBalance = 0.001 * LAMPORTS_PER_SOL; // 0.001 SOL in lamports
+
     // Parse the Freedom token mint address
     const freedomMint = SOLANA_DEVNET_CONFIG.freedomMint;
 
@@ -111,6 +115,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
 
     // Build the transaction
     const transaction = new anchor.web3.Transaction();
+
+    // If recipient has less than minimum SOL, send them 0.001 SOL
+    if (recipientBalance < minimumSolBalance) {
+      console.log(
+        `Recipient has low SOL balance (${recipientBalance / LAMPORTS_PER_SOL} SOL). Sending 0.001 SOL.`
+      );
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey: faucetKeyPair.publicKey,
+          toPubkey: recipientPublicKey,
+          lamports: minimumSolBalance,
+        })
+      );
+    }
 
     // If ATA doesn't exist, add instruction to create it
     if (!ataExists) {

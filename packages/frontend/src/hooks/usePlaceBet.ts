@@ -431,7 +431,16 @@ export function usePlaceBet({ resetBettingForm }: UsePlaceBetProps) {
         return;
       }
     },
-    [publicKey, primaryWallet, program, chainConfig, tokenType, tokenMint, resetBettingForm, refetchBalance]
+    [
+      publicKey,
+      primaryWallet,
+      program,
+      chainConfig,
+      tokenType,
+      tokenMint,
+      resetBettingForm,
+      refetchBalance,
+    ]
   );
 
   return placeBet;
