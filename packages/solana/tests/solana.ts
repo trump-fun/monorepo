@@ -68,10 +68,10 @@ describe('solana', () => {
   it('Is initialized!', async () => {
     // Add your test here.
     console.log('---Initialize---');
-    console.log('BettingPools address:', bettingPoolsAddress);
-    console.log('USDC mint:', usdcMint);
-    console.log('FREEDOM mint:', freedomMint);
-    console.log('Wallet:', wallet.publicKey);
+    console.log('BettingPools address:', bettingPoolsAddress.toString());
+    console.log('USDC mint:', usdcMint.toString());
+    console.log('FREEDOM mint:', freedomMint.toString());
+    console.log('Wallet:', wallet.publicKey.toString());
 
     try {
       // Try to fetch the account first to see if it's already initialized
