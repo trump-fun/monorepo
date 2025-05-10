@@ -58,6 +58,8 @@ export const topUpBalance = async (
   params: SolanaTopUpBalanceParams
 ): Promise<SolanaTopUpBalanceResponse> => {
   // Check if user is eligible for daily top-up
+  console.log('Checking if user can top up...');
+  console.log(canTopUp());
   if (!canTopUp()) {
     return {
       success: false,

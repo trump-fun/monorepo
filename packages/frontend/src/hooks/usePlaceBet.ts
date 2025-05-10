@@ -16,6 +16,7 @@ import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { isSolanaWallet } from '@dynamic-labs/solana';
 import { useDynamicSolana } from './useDynamicSolana';
 import { useTokenContext } from './useTokenContext';
+import { useTokenBalance } from './useTokenBalance';
 
 // Solana well-known program addresses
 const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
@@ -82,6 +83,7 @@ export function usePlaceBet({ resetBettingForm }: UsePlaceBetProps) {
   const { tokenMint, tokenType } = useTokenContext();
   const { publicKey } = useDynamicSolana();
   const { primaryWallet } = useDynamicContext();
+  const { refetch: refetchBalance } = useTokenBalance();
 
   const placeBet = useCallback(
     async ({ poolId, betAmount, selectedOption }: PlaceBetParams) => {
@@ -402,6 +404,8 @@ export function usePlaceBet({ resetBettingForm }: UsePlaceBetProps) {
           if (resetBettingForm) {
             resetBettingForm();
           }
+
+          refetchBalance();
           return txSignature;
         } catch (err) {
           console.error('Error placing bet', err);
@@ -427,7 +431,7 @@ export function usePlaceBet({ resetBettingForm }: UsePlaceBetProps) {
         return;
       }
     },
-    [publicKey, primaryWallet, program, chainConfig, tokenType, tokenMint, resetBettingForm]
+    [publicKey, primaryWallet, program, chainConfig, tokenType, tokenMint, resetBettingForm, refetchBalance]
   );
 
   return placeBet;

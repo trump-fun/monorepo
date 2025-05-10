@@ -151,7 +151,7 @@ const CommentItem = ({ comment }: CommentItemProps) => {
       const result = await toggleLike(
         comment.id,
         newIsLiked ? 'like' : 'unlike',
-        signature,
+        signature!,
         messageStr
       );
 

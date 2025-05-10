@@ -238,7 +238,7 @@ export function PoolDetailClient({ id, initialComments }: PoolDetailClientProps)
     try {
       setIsSubmitting(true);
       await placeBet({
-        poolId: '1',
+        poolId: pool.id,
         betAmount,
         selectedOption,
       });

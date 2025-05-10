@@ -22,6 +22,7 @@ export default function Home() {
     }
 
     try {
+      console.log('Top-up triggered');
       const result = await topUpBalance({
         walletAddress: primaryWallet.address,
         cluster: 'devnet',

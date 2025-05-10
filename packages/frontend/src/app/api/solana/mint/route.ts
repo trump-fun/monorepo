@@ -12,7 +12,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const FAUCET_PRIVATE_KEY = process.env.SOLANA_FAUCET_PRIVATE_KEY || '';
 
-// Define the response type
 export interface SolanaMintResponse {
   success: boolean;
   amountMinted: string;
@@ -21,27 +20,24 @@ export interface SolanaMintResponse {
   message?: string;
 }
 
-// Define the request parameters type
 export interface SolanaMintParams {
   walletAddress: string;
   cluster?: string;
 }
 
-// Get the connection for a given cluster
 function getConnection(cluster: string = 'devnet') {
   const endpoint =
     cluster === 'mainnet-beta'
       ? 'https://api.mainnet-beta.solana.com'
       : cluster === 'devnet'
         ? SOLANA_DEVNET_CONFIG.rpcUrl
-        : 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af/';
+        : 'http://localhost:8899';
 
   return new Connection(endpoint, 'confirmed');
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<SolanaMintResponse>> {
   try {
-    // Parse request body
     const { walletAddress, cluster = 'devnet' } = (await request.json()) as SolanaMintParams;
 
     // Validation
@@ -73,7 +69,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
     let recipientPublicKey: PublicKey;
     try {
       recipientPublicKey = new PublicKey(walletAddress);
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           success: false,
@@ -91,9 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
     const faucetKeyPair = Keypair.fromSecretKey(bs58.decode(FAUCET_PRIVATE_KEY));
 
     // Parse the Freedom token mint address
-    // const freedomMint = SOLANA_DEVNET_CONFIG.freedomMint;
-    const freedomMintAddress = 'F1dQHEE2ZDnXzYb6znLY8TwHLdxgkgcUSwCuJmo8Fcp5';
-    const freedomMint = new PublicKey(freedomMintAddress);
+    const freedomMint = SOLANA_DEVNET_CONFIG.freedomMint;
 
     // Get mint info to determine decimals
     const mintInfo = await getMint(connection, freedomMint);
@@ -146,7 +140,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<SolanaMin
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = faucetKeyPair.publicKey;
 
-    // Sign and send the transaction
     // @ts-expect-error connection type mismatch
     const signature = await anchor.web3.sendAndConfirmTransaction(connection, transaction, [
       faucetKeyPair,

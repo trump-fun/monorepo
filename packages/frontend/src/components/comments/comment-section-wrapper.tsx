@@ -67,6 +67,11 @@ export default function CommentSectionWrapper({
 
       const signature = await signMessage(messageStr);
 
+      if (!signature) {
+        setIsSubmitting(false);
+        return;
+      }
+
       // Submit the comment to the server without creating tempComment first
       await addComment(poolId, content, signature, messageStr);
 
