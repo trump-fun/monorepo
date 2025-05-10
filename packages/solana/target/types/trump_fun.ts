@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/trump_fun.json`.
  */
 export type TrumpFun = {
-  "address": "63YbbNwch9betCkqwmhyWFoFGeGYm2uQFDfak8t5Mxtr",
+  "address": "Cc3juTiDWjZRR9XSVmXmcC2ntkNERjiyw4wbio7ioz2T",
   "metadata": {
     "name": "trumpFun",
     "version": "0.1.0",

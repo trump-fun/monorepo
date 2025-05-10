@@ -44,7 +44,7 @@ export const CHAIN_CONFIG: Record<SupportedChainIds, ChainConfig> = {
 
 export const SOLANA_DEVNET_CONFIG = {
   rpcUrl: 'https://devnet.helius-rpc.com/?api-key=6af7fe62-90e3-4622-8b32-4bd78f0c83af',
-  programId: new PublicKey('3G6TYRGE6JX4BZPdeix4L38VtbrAUMWyK1yJ5DQoRc7c'),
+  programId: new PublicKey('Cc3juTiDWjZRR9XSVmXmcC2ntkNERjiyw4wbio7ioz2T'),
   freedomMint: new PublicKey('HtkQKcrrfcspBSWbo63dPVQe9C8ZTPAHJebSAPyAgC2h'),
   usdcMint: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
   escrow: new PublicKey('BjNG1JdTipxz6HjSjSY7p6kZc9koHjf44yxTRNeerKdF'),

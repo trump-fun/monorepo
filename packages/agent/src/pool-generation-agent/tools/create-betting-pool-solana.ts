@@ -52,16 +52,18 @@ export async function createBettingPoolSolana(
 
   try {
     const { program, payer, bettingPoolsPDA } = getSolanaClientFromConfig(chainConfig);
+    console.log(program.programId.toString());
+    console.log(program);
 
-    await program.methods
-      .initialize(chainConfig.usdcMint, chainConfig.freedomMint)
-      .accounts({
-        authority: payer.publicKey,
-      })
-      .signers([payer])
-      .rpc({
-        commitment: 'confirmed',
-      });
+    // await program.methods
+    //   .initialize(chainConfig.usdcMint, chainConfig.freedomMint)
+    //   .accounts({
+    //     authority: payer.publicKey,
+    //   })
+    //   .signers([payer])
+    //   .rpc({
+    //     commitment: 'confirmed',
+    //   });
 
     const bettingPoolsState = await program.account.bettingPoolsState.fetch(bettingPoolsPDA);
     const poolId = bettingPoolsState.nextPoolId;
